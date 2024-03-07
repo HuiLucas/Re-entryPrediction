@@ -1,3 +1,5 @@
+# First time running code in this repo: activate conda environment and run: conda create --name re-entrypredictionenv --file requirements.txt
+
 import requests
 import re
 from datetime import datetime, timedelta
