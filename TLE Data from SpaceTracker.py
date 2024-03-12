@@ -16,7 +16,8 @@ login_data = {
     'identity': 'wschaerlaecken@gmail.com',
     'password': 'groupd03123456789'}
 
-NORAD_CAT_ID = 39428 #Delfi N3XT
+NORAD_CAT_ID = 51074 #Delfi N3XT
+DATE = "2022-09-06--2022-09-07"
 # Create a session
 with requests.Session() as session:
     # Post the login data
@@ -25,7 +26,8 @@ with requests.Session() as session:
     # Check if login was successful
     if post_response.status_code == 200:
         # If login is successful, make the GET request
-        url = f"https://www.space-track.org/basicspacedata/query/class/gp/NORAD_CAT_ID/{NORAD_CAT_ID}/orderby/TLE_LINE1 ASC/format/tle"
+        url = f"https://www.space-track.org/basicspacedata/query/class/gp_history/NORAD_CAT_ID/{NORAD_CAT_ID}/orderby/TLE_LINE1%20ASC/EPOCH/{DATE}/format/tle"
+        print(url)
         get_response = session.get(url)
 
         if get_response.status_code == 200:
@@ -132,14 +134,14 @@ print("Rev Num:", Rev_Num)
 print("Check Sum 2:", Check_Sum_2)
 
 print("Actual date and time:", actual_date)
-print("Period:", round(Period/60), "Minutes")
-print("Semi Major Axis:", round(semi_major_axis/1000), "km")
-print("Perigee:", round(rp/1000), "km")
-print("Apogee:", round(ra/1000), "km")
-print("Height Apogee:", round(Height_apo), "km")
-print("Height Perigee:", round(Height_peri), "km")
-print("Velocity at Perigee:", round(Vp*3.6), "km/h")
-print("Velocity at Apogee:", round(Va*3.6), "km/h")
+print("Period:", Period/60, "Minutes")
+print("Semi Major Axis:", semi_major_axis/1000, "km")
+print("Perigee:", rp/1000, "km")
+print("Apogee:", ra/1000, "km")
+print("Height Apogee:", Height_apo, "km")
+print("Height Perigee:", Height_peri, "km")
+print("Velocity at Perigee:", Vp*3.6, "km/h")
+print("Velocity at Apogee:", Va*3.6, "km/h")
 
 # Create a new figure with a map projection
 fig = plt.figure()
