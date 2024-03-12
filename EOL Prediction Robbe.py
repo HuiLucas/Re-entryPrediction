@@ -13,6 +13,9 @@ from tudatpy.kernel.astro import element_conversion
 from tudatpy.kernel import constants
 from tudatpy.util import result2array
 
+# Load tle data function
+from 
+
 # Load spice kernels
 spice.load_standard_kernels()
 
@@ -101,6 +104,8 @@ acceleration_models = propagation_setup.create_acceleration_models(
 # Set initial conditions for the satellite that will be
 # propagated in this simulation. The initial conditions are given in
 # Keplerian elements and later on converted to Cartesian elements
+
+
 earth_gravitational_parameter = bodies.get("Earth").gravitational_parameter
 initial_state = element_conversion.keplerian_to_cartesian_elementwise(
     gravitational_parameter=earth_gravitational_parameter,
