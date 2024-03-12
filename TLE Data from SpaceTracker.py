@@ -57,8 +57,8 @@ for line in lines:
         line2 = re.findall(r'\d+\.\d+|\d+', line)  # Find all numeric characters and decimal points
 
 # Print the assigned values
-#print("Line 1:", line1)
-#print("Line 2:", line2)
+print("Line 1:", line1)
+print("Line 2:", line2)
 
 Sat_num = line1[1]
 Int_Des_Year=line1[2][:2]
@@ -66,7 +66,7 @@ Int_Des = line1[2][2:]
 Epoch_Year = line1[3][:2]
 Epoch_Day = line1[3][2:]
 B = int(line1[4])*10**(-8)
-Second_Der_Mean_Motion = line1[5] * 10**int(line1[6])
+Second_Der_Mean_Motion = (float(line1[5])/100000) * 10**(-int(line1[6]))
 BSTAR = int(line1[7])*10**(-5) * 10**(-int(line1[8]))
 Ephemeris = line1[9]
 Element_Number = line1[10][:3]
@@ -201,5 +201,5 @@ ax.plot(lon, lat, transform=ccrs.Geodetic())
 ax.set_extent([-180, 180, -90, 90], crs=ccrs.PlateCarree())
 
 # Show the plot
-plt.show()
+#plt.show()
 
