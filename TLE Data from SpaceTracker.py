@@ -299,7 +299,8 @@ def get_tle_data(norad_cat_id, dates):
             converged = True
         E_old = E_new
     eccentric_anomaly = E_old
-    true_anomaly = math.acos((math.cos(eccentric_anomaly)-Eccentricity_rad) / (1 - Eccentricity_rad * math.cos(eccentric_anomaly)))
+    true_anomaly_rad = math.acos((math.cos(eccentric_anomaly)-Eccentricity_rad) / (1 - Eccentricity_rad * math.cos(eccentric_anomaly)))
+    true_anomaly = true_anomaly_rad * 180 / math.pi
 
     return semi_major_axis, Eccentricity, Inclination, Arg_Perigee, RAAN, true_anomaly
 
