@@ -277,6 +277,7 @@ def get_tle_data(norad_cat_id, dates):
     Eccentricity = int(line2[4])*10**(-7)
     Arg_Perigee = line2[5]
     Mean_Anomaly = line2[6]
+    print(Mean_Anomaly)
     Mean_Motion = line2[7][:11]
     Rev_Num = line2[7][11:16]
     Check_Sum_2 = line2[7][16:]

@@ -13,8 +13,113 @@ from tudatpy.kernel.astro import element_conversion
 from tudatpy.kernel import constants
 from tudatpy.util import result2array
 
-# Load tle data function
-from 
+def get_tle_data(norad_cat_id, dates):
+    # Function to implement with eol prediction
+    # INPUTS: norad_cat_id = int, date = str
+    # OUTPUTS: semi major axis[km], eccentricity[/], inclination[deg], argument of periapsis[deg], 
+    #          right ascension of the ascending node[deg], true anomaly[deg]
+    # EXAMPLE: get_tle_data(51074, "2022-09-06--2022-09-07")
+    import requests
+    import re
+    import math
+
+    # Define the login data
+    login_data = {
+        'identity': 'wschaerlaecken@gmail.com',
+        'password': 'groupd03123456789'}
+
+    NORAD_CAT_ID = norad_cat_id
+    DATE = dates
+    # Create a session
+    with requests.Session() as session:
+        # Post the login data
+        post_response = session.post('https://www.space-track.org/ajaxauth/login', data=login_data)
+
+        # Check if login was successful
+        if post_response.status_code == 200:
+            # If login is successful, make the GET request
+            url = f"https://www.space-track.org/basicspacedata/query/class/gp_history/NORAD_CAT_ID/{NORAD_CAT_ID}/orderby/TLE_LINE1%20ASC/EPOCH/{DATE}/format/tle"
+            print(url)
+            get_response = session.get(url)
+
+            if get_response.status_code == 200:
+                data = get_response.text
+                print(data)
+            else:
+                print("Failed to retrieve data. Status code:", get_response.status_code)
+                print("Response text:", get_response.text)
+        else:
+            print("Failed to log in. Status code:", post_response.status_code)
+            print("Response text:", post_response.text)
+
+            # Split the data into individual lines
+        lines = data.split('\n')
+
+            # Iterate over each line and assign the values to variables
+    for line in lines:
+        if line.startswith('1 '):
+            line1 = line.split(' ')
+        elif line.startswith('2 '):
+            line2 = line.split(' ')
+
+    for line in lines:
+        if line.startswith('1 '):
+            line1 = re.findall(r'\d+\.\d+|\d+', line)  # Find all numeric characters and decimal points
+        elif line.startswith('2 '):
+            line2 = re.findall(r'\d+\.\d+|\d+', line)  # Find all numeric characters and decimal points
+
+    Sat_num = line1[1]
+    Int_Des_Year=line1[2][:2]
+    Int_Des = line1[2][2:]
+    Epoch_Year = line1[3][:2]
+    Epoch_Day = line1[3][2:]
+    B = int(line1[4])*10**(-8)
+    Second_Der_Mean_Motion = (float(line1[5])/100000) * 10**(-int(line1[6]))
+    BSTAR = int(line1[7])*10**(-5) * 10**(-int(line1[8]))
+    Ephemeris = line1[9]
+    Element_Number = line1[10][:3]
+    Check_Sum_1 = line1[10][3]
+
+    Inclination = line2[2]
+    RAAN = line2[3]
+    Eccentricity = int(line2[4])*10**(-7)
+    Arg_Perigee = line2[5]
+    Mean_Anomaly = line2[6]
+    Mean_Motion = line2[7][:11]
+    Rev_Num = line2[7][11:16]
+    Check_Sum_2 = line2[7][16:]
+
+
+    # Calculate the period and semi-major axis
+    Period = (1*24*3600)/(float(Mean_Motion))
+    semi_major_axis = (Period**2 * 3.9860044188*10**14/((2*math.pi)**2))**(1/3)
+    rp = semi_major_axis*(1-Eccentricity)
+    ra = semi_major_axis*(1+Eccentricity)
+
+    # Calculate eccentric anomaly
+    mean_anomaly_rad = float(Mean_Anomaly) * math.pi / 180
+    Eccentricity_rad = float(Eccentricity) * math.pi / 180
+    converged = False
+    E_old = mean_anomaly_rad
+    while converged == False:
+        E_new = mean_anomaly_rad + Eccentricity * math.sin(E_old)
+        if math.abs((E_new - E_old)/E_new) < 0.01:
+            converged = True
+        E_old = E_new
+    eccentric_anomaly = E_old
+    true_anomaly_rad = math.acos((math.cos(eccentric_anomaly)-Eccentricity_rad) / (1 - Eccentricity_rad * math.cos(eccentric_anomaly)))
+    true_anomaly = true_anomaly_rad * 180 / math.pi
+
+    return semi_major_axis, Eccentricity, Inclination, Arg_Perigee, RAAN, true_anomaly
+
+"""
+semi_major_axis=7500.0e3,
+eccentricity=0.1,
+inclination=np.deg2rad(85.3),
+argument_of_periapsis=np.deg2rad(235.7),
+longitude_of_ascending_node=np.deg2rad(23.4),
+true_anomaly=np.deg2rad(139.87)
+"""
 
 # Load spice kernels
 spice.load_standard_kernels()
@@ -41,6 +146,9 @@ bodies = environment_setup.create_system_of_bodies(body_settings)
 
 # Create vehicle objects.
 satellite = "Delfi-C3"
+satellite_norad_cat_id = 32789
+satellite_dates = "2008-04-27--2008-04-29"
+
 bodies.create_empty_body(satellite)
 
 bodies.get(satellite).mass = 1.2
@@ -104,17 +212,17 @@ acceleration_models = propagation_setup.create_acceleration_models(
 # Set initial conditions for the satellite that will be
 # propagated in this simulation. The initial conditions are given in
 # Keplerian elements and later on converted to Cartesian elements
-
+Semi_major_axis, Eccentricity, Inclination, Argument_of_periapsis, RAAN, True_anomaly = get_tle_data(satellite_norad_cat_id, satellite_dates)
 
 earth_gravitational_parameter = bodies.get("Earth").gravitational_parameter
 initial_state = element_conversion.keplerian_to_cartesian_elementwise(
     gravitational_parameter=earth_gravitational_parameter,
-    semi_major_axis=7500.0e3,
-    eccentricity=0.1,
-    inclination=np.deg2rad(85.3),
-    argument_of_periapsis=np.deg2rad(235.7),
-    longitude_of_ascending_node=np.deg2rad(23.4),
-    true_anomaly=np.deg2rad(139.87),
+    semi_major_axis=Semi_major_axis,
+    eccentricity=Eccentricity,
+    inclination=np.deg2rad(Inclination),
+    argument_of_periapsis=np.deg2rad(Argument_of_periapsis),
+    longitude_of_ascending_node=np.deg2rad(RAAN),
+    true_anomaly=np.deg2rad(True_anomaly),
 )
 
 # Define list of dependent variables to save
