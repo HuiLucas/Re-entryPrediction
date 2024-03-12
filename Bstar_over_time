@@ -5,6 +5,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import re
 import requests
+import time
+import pandas as pd
 
 # Define the login data
 login_data = {
@@ -12,9 +14,18 @@ login_data = {
     'password': 'groupd03123456789'}
 
 NORAD_CAT_ID = 39428 #Delfi N3XT
-Start_date = '2013-12-01'
-End_date = '2024-03-11'
-# Create a session
+import datetime
+
+# Define the total date range and the range for ech request
+start_date = datetime.date(2013, 12, 1)
+end_date = datetime.date(2024,3, 10)
+delta = datetime.timedelta(days=21)  # One week
+
+# Initialize the current date to the start date
+current_date = start_date
+
+data_list = []
+
 with requests.Session() as session:
     # Post the login data
     post_response = session.post('https://www.space-track.org/ajaxauth/login', data=login_data)
@@ -22,16 +33,75 @@ with requests.Session() as session:
     # Check if login was successful
     if post_response.status_code == 200:
         # If login is successful, make the GET request
-        url = f"https://www.space-track.org/basicspacedata/query/class/gp_history/NORAD_CAT_ID/{NORAD_CAT_ID}/orderby/TLE_LINE1%20ASC/EPOCH/{Start_date}--{End_date}/format/tle"
-        get_response = session.get(url)
+        while current_date <= end_date:
+            next_date = min(current_date + delta, end_date)
+            url = f"https://www.space-track.org/basicspacedata/query/class/gp_history/NORAD_CAT_ID/{NORAD_CAT_ID}/orderby/TLE_LINE1%20ASC/EPOCH/{current_date}--{next_date}/format/tle"
+            get_response = session.get(url)
 
-        if get_response.status_code == 200:
-            data = get_response.text
-            print(data)
-        else:
-            print("Failed to retrieve data. Status code:", get_response.status_code)
-            print("Response text:", get_response.text)
+            try:
+                get_get_response = session.get(url)
+                get_response.raise_for_status()
+            except requests.exceptions.RequestException as e:
+                print("failed to retrieve data. Error:", e)
+                continue
+            
+            if get_response.status_code == 200:
+                data = get_response.text
+                lines = data.split('\n')
+                for line in lines:
+                    if line.startswith('1 '):
+                        line1 = line.split(' ')
+                    elif line.startswith('2 '):
+                        line2 = line.split(' ')
+
+                for line in lines:
+                    if line.startswith('1 '):
+                        line1 = re.findall(r'\d+\.\d+|\d+', line)  # Find all numeric characters and decimal points
+                    elif line.startswith('2 '):
+                        line2 = re.findall(r'\d+\.\d+|\d+', line)  # Find all numeric characters and decimal points
+
+                # Print the assigned values
+                print("Line 1:", line1)
+                print("Line 2:", line2)
+
+                Sat_num = line1[1]
+                Int_Des_Year=line1[2][:2]
+                Int_Des = line1[2][2:]
+                Epoch_Year = line1[3][:2]
+                Epoch_Day = line1[3][2:]
+                B = int(line1[4])*10**(-8)
+                Second_Der_Mean_Motion = (float(line1[5])/100000) * 10**(-int(line1[6]))
+                BSTAR = int(line1[7])*10**(-5) * 10**(-int(line1[8]))
+                Ephemeris = line1[9]
+                Element_Number = line1[10][:3]
+                Check_Sum_1 = line1[10][3]
+
+                Inclination = line2[2]
+                RAAN = line2[3]
+                Eccentricity = int(line2[4])*10**(-7)
+                Arg_Perigee = line2[5]
+                Mean_Anomaly = line2[6]
+                Mean_Motion = line2[7][:11]
+                Rev_Num = line2[7][11:16]
+                Check_Sum_2 = line2[7][16:]
+
+            else:
+                print("Failed to retrieve data. Status code:", get_response.status_code)
+
+            # Move to the next date range
+            current_date = next_date + datetime.timedelta(days=1)
+
+            # Add a delay between requests
+            time.sleep(1)  # Wait for 1 second
     else:
         print("Failed to log in. Status code:", post_response.status_code)
-        print("Response text:", post_response.text)
+
+# Convert the list to a DataFrame
+df = pd.DataFrame(data_list, columns=[
+    'Sat_num', 'Int_Des_Year', 'Int_Des', 'Epoch_Year', 'Epoch_Day', 'B', 'Second_Der_Mean_Motion', 'BSTAR', 'Ephemeris', 'Element_Number', 'Check_Sum_1', 
+    'Inclination', 'RAAN', 'Eccentricity', 'Arg_Perigee', 'Mean_Anomaly', 'Mean_Motion', 'Rev_Num', 'Check_Sum_2'
+])
+
+# Write the DataFrame to an Excel file
+df.to_excel("data.xlsx", index=False)
 
