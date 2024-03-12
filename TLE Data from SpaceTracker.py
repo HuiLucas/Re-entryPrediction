@@ -199,5 +199,5 @@ ax.plot(lon, lat, transform=ccrs.Geodetic())
 ax.set_extent([-180, 180, -90, 90], crs=ccrs.PlateCarree())
 
 # Show the plot
-plt.show()
+#plt.show()
 
