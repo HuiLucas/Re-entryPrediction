@@ -16,7 +16,7 @@ login_data = {
     'identity': 'wschaerlaecken@gmail.com',
     'password': 'groupd03123456789'}
 
-NORAD_CAT_ID = 32789 #Delfi N3XT
+NORAD_CAT_ID = 39428 #Delfi N3XT
 # Create a session
 with requests.Session() as session:
     # Post the login data

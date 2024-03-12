@@ -3,3 +3,35 @@
 import math
 import numpy as np
 import matplotlib.pyplot as plt
+import re
+import requests
+
+# Define the login data
+login_data = {
+    'identity': 'wschaerlaecken@gmail.com',
+    'password': 'groupd03123456789'}
+
+NORAD_CAT_ID = 39428 #Delfi N3XT
+Start_date = '2013-12-01'
+End_date = '2024-03-11'
+# Create a session
+with requests.Session() as session:
+    # Post the login data
+    post_response = session.post('https://www.space-track.org/ajaxauth/login', data=login_data)
+
+    # Check if login was successful
+    if post_response.status_code == 200:
+        # If login is successful, make the GET request
+        url = f"https://www.space-track.org/basicspacedata/query/class/gp_history/NORAD_CAT_ID/{NORAD_CAT_ID}/orderby/TLE_LINE1%20ASC/EPOCH/{Start_date}--{End_date}/format/tle"
+        get_response = session.get(url)
+
+        if get_response.status_code == 200:
+            data = get_response.text
+            print(data)
+        else:
+            print("Failed to retrieve data. Status code:", get_response.status_code)
+            print("Response text:", get_response.text)
+    else:
+        print("Failed to log in. Status code:", post_response.status_code)
+        print("Response text:", post_response.text)
+
