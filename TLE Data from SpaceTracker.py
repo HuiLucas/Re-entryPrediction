@@ -65,6 +65,8 @@ Epoch_Year = line1[3][:2]
 Epoch_Day = line1[3][2:]
 B = int(line1[4])*10**(-8)
 Second_Der_Mean_Motion = line1[5] * 10**int(line1[6])
+if Second_Der_Mean_Motion > 10**10:
+    Second_Der_Mean_Motion = 0
 BSTAR = int(line1[7])*10**(-5) * 10**(-int(line1[8]))
 Ephemeris = line1[9]
 Element_Number = line1[10][:3]

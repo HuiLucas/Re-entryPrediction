@@ -1,0 +1,5 @@
+#Plots the variation of Bstar over the lifetime of the satellite using TLE-Data
+
+import math
+import numpy as np
+import matplotlib.pyplot as plt
