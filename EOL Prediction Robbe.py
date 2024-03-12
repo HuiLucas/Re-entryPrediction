@@ -40,7 +40,7 @@ bodies = environment_setup.create_system_of_bodies(body_settings)
 satellite = "Delfi-C3"
 bodies.create_empty_body(satellite)
 
-bodies.get(satellite).mass = 400.0
+bodies.get(satellite).mass = 1.2
 
 # Create aerodynamic coefficient interface settings, and add to vehicle
 reference_area = 4.0
