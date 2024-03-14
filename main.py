@@ -28,10 +28,11 @@ from tudatpy.interface import spice
 from tudatpy import numerical_simulation
 from tudatpy.numerical_simulation import environment
 from tudatpy.numerical_simulation import environment_setup, propagation_setup
-from tudatpy.astro import element_conversion
+from tudatpy.astro import element_conversion, time_conversion
 from tudatpy import constants
 from tudatpy.util import result2array
 from tudatpy.astro.time_conversion import DateTime
+import datetime
 
 
 # ## Configuration
@@ -294,14 +295,16 @@ dep_vars_array = result2array(dep_vars)
 
 
 # Plot total acceleration as function of time
-time_hours = dep_vars_array[:,0]/3600
+start_time=(time_conversion.calendar_date_to_julian_day(datetime.datetime(2022, 9, 6, 0, 27, 0, 970272))-time_conversion.calendar_date_to_julian_day(datetime.datetime(2000, 1, 1, 0, 0, 0, 0)))
+print(dep_vars_array[:,0]/(3600*24))
+time_days = dep_vars_array[:,0]/(3600*24) - start_time
 total_acceleration_norm = np.linalg.norm(dep_vars_array[:,1:4], axis=1)
 plt.figure(figsize=(9, 5))
 plt.title("Total acceleration norm on Delfi-C3 over the course of propagation.")
-plt.plot(time_hours, total_acceleration_norm)
-plt.xlabel('Time [hr]')
+plt.plot(time_days, total_acceleration_norm)
+plt.xlabel('Time [days]')
 plt.ylabel('Total Acceleration [m/s$^2$]')
-plt.xlim([min(time_hours), max(time_hours)])
+plt.xlim([min(time_days), max(time_days)])
 plt.grid()
 plt.tight_layout()
 # plt.show()
@@ -314,7 +317,7 @@ plt.tight_layout()
 latitude = dep_vars_array[:,10]
 longitude = dep_vars_array[:,11]
 hours = 3
-subset = int(len(time_hours) / 24 * hours)
+subset = int(len(time_days) / 24 * hours)
 latitude = np.rad2deg(latitude[0: subset])
 longitude = np.rad2deg(longitude[0: subset])
 plt.figure(figsize=(9, 5))
@@ -339,38 +342,38 @@ fig.suptitle('Evolution of Kepler elements over the course of the propagation.')
 
 # Semi-major Axis
 semi_major_axis = kepler_elements[:,0] / 1e3
-ax1.plot(time_hours, semi_major_axis)
+ax1.plot(time_days, semi_major_axis)
 ax1.set_ylabel('Semi-major axis [km]')
 
 # Eccentricity
 eccentricity = kepler_elements[:,1]
-ax2.plot(time_hours, eccentricity)
+ax2.plot(time_days, eccentricity)
 ax2.set_ylabel('Eccentricity [-]')
 
 # Inclination
 inclination = np.rad2deg(kepler_elements[:,2])
-ax3.plot(time_hours, inclination)
+ax3.plot(time_days, inclination)
 ax3.set_ylabel('Inclination [deg]')
 
 # Argument of Periapsis
 argument_of_periapsis = np.rad2deg(kepler_elements[:,3])
-ax4.plot(time_hours, argument_of_periapsis)
+ax4.plot(time_days, argument_of_periapsis)
 ax4.set_ylabel('Argument of Periapsis [deg]')
 
 # Right Ascension of the Ascending Node
 raan = np.rad2deg(kepler_elements[:,4])
-ax5.plot(time_hours, raan)
+ax5.plot(time_days, raan)
 ax5.set_ylabel('RAAN [deg]')
 
 # True Anomaly
 true_anomaly = np.rad2deg(kepler_elements[:,5])
-ax6.scatter(time_hours, true_anomaly, s=1)
+ax6.scatter(time_days, true_anomaly, s=1)
 ax6.set_ylabel('True Anomaly [deg]')
 ax6.set_yticks(np.arange(0, 361, step=60))
 
 for ax in fig.get_axes():
-    ax.set_xlabel('Time [hr]')
-    ax.set_xlim([min(time_hours), max(time_hours)])
+    ax.set_xlabel('Time [days]')
+    ax.set_xlim([min(time_days), max(time_days)])
     ax.grid()
 plt.tight_layout()
 plt.show()
@@ -383,34 +386,34 @@ plt.figure(figsize=(9, 5))
 
 # Point Mass Gravity Acceleration Sun
 acceleration_norm_pm_sun = dep_vars_array[:,12]
-plt.plot(time_hours, acceleration_norm_pm_sun, label='PM Sun')
+plt.plot(time_days, acceleration_norm_pm_sun, label='PM Sun')
 
 # Point Mass Gravity Acceleration Moon
 acceleration_norm_pm_moon = dep_vars_array[:,13]
-plt.plot(time_hours, acceleration_norm_pm_moon, label='PM Moon')
+plt.plot(time_days, acceleration_norm_pm_moon, label='PM Moon')
 
 # Point Mass Gravity Acceleration Mars
 acceleration_norm_pm_mars = dep_vars_array[:,14]
-plt.plot(time_hours, acceleration_norm_pm_mars, label='PM Mars')
+plt.plot(time_days, acceleration_norm_pm_mars, label='PM Mars')
 
 # Point Mass Gravity Acceleration Venus
 acceleration_norm_pm_venus = dep_vars_array[:,15]
-plt.plot(time_hours, acceleration_norm_pm_venus, label='PM Venus')
+plt.plot(time_days, acceleration_norm_pm_venus, label='PM Venus')
 
 # Spherical Harmonic Gravity Acceleration Earth
 acceleration_norm_sh_earth = dep_vars_array[:,16]
-plt.plot(time_hours, acceleration_norm_sh_earth, label='SH Earth')
+plt.plot(time_days, acceleration_norm_sh_earth, label='SH Earth')
 
 # Aerodynamic Acceleration Earth
 acceleration_norm_aero_earth = dep_vars_array[:,17]
-plt.plot(time_hours, acceleration_norm_aero_earth, label='Aerodynamic Earth')
+plt.plot(time_days, acceleration_norm_aero_earth, label='Aerodynamic Earth')
 
 # Cannonball Radiation Pressure Acceleration Sun
 acceleration_norm_rp_sun = dep_vars_array[:,18]
-plt.plot(time_hours, acceleration_norm_rp_sun, label='Radiation Pressure Sun')
+plt.plot(time_days, acceleration_norm_rp_sun, label='Radiation Pressure Sun')
 
-plt.xlim([min(time_hours), max(time_hours)])
-plt.xlabel('Time [hr]')
+plt.xlim([min(time_days), max(time_days)])
+plt.xlabel('Time [days]')
 plt.ylabel('Acceleration Norm [m/s$^2$]')
 
 plt.legend(bbox_to_anchor=(1.005, 1))
