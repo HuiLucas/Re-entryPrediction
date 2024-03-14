@@ -16,7 +16,7 @@ login_data = {
     'identity': 'wschaerlaecken@gmail.com',
     'password': 'groupd03123456789'}
 
-NORAD_CAT_ID = 51074 #Delfi N3XT
+NORAD_CAT_ID = 32789 #Delfi C3
 DATE = "2022-09-06--2022-09-07"
 # Create a session
 with requests.Session() as session:
@@ -132,6 +132,7 @@ print("Mean Anomaly:", Mean_Anomaly)
 print("Mean Motion:", Mean_Motion)
 print("Rev Num:", Rev_Num)
 print("Check Sum 2:", Check_Sum_2)
+
 
 print("Actual date and time:", actual_date)
 print("Period:", Period/60, "Minutes")

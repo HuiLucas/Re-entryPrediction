@@ -45,8 +45,11 @@ from tudatpy.astro.time_conversion import DateTime
 spice.load_standard_kernels()
 
 # Set simulation start and end epochs
-simulation_start_epoch = DateTime(2022, 9, 6, 0, 27, 00.970272).epoch()
-simulation_end_epoch   = DateTime(2030, 1, 2).epoch()
+# simulation_start_epoch = DateTime(2022, 9, 6, 4, 19, 31.991).epoch()
+# simulation_end_epoch   = DateTime(2030, 1, 2).epoch()
+
+simulation_start_epoch = DateTime(2000, 1, 1).epoch()
+simulation_end_epoch   = DateTime(2000, 1, 2).epoch()
 
 
 # ## Environment setup
@@ -86,7 +89,7 @@ bodies = environment_setup.create_system_of_bodies(body_settings)
 # Create vehicle objects.
 bodies.create_empty_body("Delfi-C3")
 
-bodies.get("Delfi-C3").mass = 2.2
+bodies.get("Delfi-C3").mass = 400.0  # kg
 
 # To account for the aerodynamic of the satellite, let's add an aerodynamic interface and add it to the environment setup, taking the followings into account:
 # - A constant drag coefficient of 1.2.
@@ -95,8 +98,8 @@ bodies.get("Delfi-C3").mass = 2.2
 # - No moment coefficient.
 
 # Create aerodynamic coefficient interface settings, and add to vehicle
-reference_area = 0.011  # Average projection area of a 3U CubeSat
-drag_coefficient = 2.20
+reference_area = 4.0  # Average projection area of a 3U CubeSat
+drag_coefficient = 1.2
 aero_coefficient_settings = environment_setup.aerodynamic_coefficients.constant(
     reference_area, [drag_coefficient, 0, 0]
 )
@@ -107,7 +110,7 @@ environment_setup.add_aerodynamic_coefficient_interface(
 
 
 # Create radiation pressure settings, and add to vehicle
-reference_area_radiation = 0.011  # Average projection area of a 3U CubeSat
+reference_area_radiation = 4.0  # Average projection area of a 3U CubeSat
 radiation_pressure_coefficient = 1.2
 occulting_bodies_dict = dict()
 occulting_bodies_dict[ "Sun" ] = [ "Earth" ]
@@ -182,15 +185,29 @@ acceleration_models = propagation_setup.create_acceleration_models(
 # Set initial conditions for the satellite that will be
 # propagated in this simulation. The initial conditions are given in
 # Keplerian elements and later on converted to Cartesian elements
+# earth_gravitational_parameter = bodies.get("Earth").gravitational_parameter
+# initial_state = element_conversion.keplerian_to_cartesian_elementwise(
+#     gravitational_parameter=earth_gravitational_parameter,
+#     semi_major_axis=7500.0e3,
+#     eccentricity=0.1,
+#     inclination=np.deg2rad(85.3),
+#     argument_of_periapsis=np.deg2rad(235.7),
+#     longitude_of_ascending_node=np.deg2rad(23.4),
+#     true_anomaly=np.deg2rad(139.87),
+# )
+
+# Set initial conditions for the satellite that will be
+# propagated in this simulation. The initial conditions are given in
+# Keplerian elements and later on converted to Cartesian elements
 earth_gravitational_parameter = bodies.get("Earth").gravitational_parameter
 initial_state = element_conversion.keplerian_to_cartesian_elementwise(
     gravitational_parameter=earth_gravitational_parameter,
-    semi_major_axis=7002.990555879878e3,
-    eccentricity= 0.001126,
-    inclination=np.deg2rad(97.3369),
-    argument_of_periapsis=np.deg2rad(53.4348),
-    longitude_of_ascending_node=np.deg2rad(272.4752),
-    true_anomaly=element_conversion.mean_to_true_anomaly(eccentricity=0.001126, mean_anomaly=np.deg2rad(306.7920)),
+    semi_major_axis=7500.0e3,
+    eccentricity=0.1,
+    inclination=np.deg2rad(85.3),
+    argument_of_periapsis=np.deg2rad(235.7),
+    longitude_of_ascending_node=np.deg2rad(23.4),
+    true_anomaly=np.deg2rad(139.87),
 )
 
 
@@ -243,7 +260,7 @@ dependent_variables_to_save = [
 termination_condition = propagation_setup.propagator.time_termination(simulation_end_epoch)
 
 # Create numerical integrator settings
-fixed_step_size = 50.0
+fixed_step_size = 10.0
 integrator_settings = propagation_setup.integrator.runge_kutta_4(fixed_step_size)
 
 # Create propagation settings
@@ -419,6 +436,7 @@ plt.yscale('log')
 plt.grid()
 plt.tight_layout()
 # plt.show()
+
 
 
 
