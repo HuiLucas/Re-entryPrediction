@@ -96,7 +96,7 @@ bodies.get("Delfi-C3").mass = 2.2
 
 # Create aerodynamic coefficient interface settings, and add to vehicle
 reference_area = 0.011  # Average projection area of a 3U CubeSat
-drag_coefficient = 2.2
+drag_coefficient = 2.20
 aero_coefficient_settings = environment_setup.aerodynamic_coefficients.constant(
     reference_area, [drag_coefficient, 0, 0]
 )
