@@ -47,7 +47,7 @@ spice.load_standard_kernels()
 
 # Set simulation start and end epochs
 simulation_start_epoch = DateTime(2022, 9, 6, 0, 27, 00.970272).epoch()
-simulation_end_epoch   = DateTime(2030, 1, 2).epoch()
+simulation_end_epoch   = DateTime(2035, 1, 2).epoch()
 
 
 # ## Environment setup
@@ -186,7 +186,7 @@ acceleration_models = propagation_setup.create_acceleration_models(
 earth_gravitational_parameter = bodies.get("Earth").gravitational_parameter
 initial_state = element_conversion.keplerian_to_cartesian_elementwise(
     gravitational_parameter=earth_gravitational_parameter,
-    semi_major_axis=7002.990555879878e3,
+    semi_major_axis= 7002.990555879878e3,
     eccentricity= 0.001126,
     inclination=np.deg2rad(97.3369),
     argument_of_periapsis=np.deg2rad(53.4348),
@@ -226,7 +226,8 @@ dependent_variables_to_save = [
     ),
     propagation_setup.dependent_variable.single_acceleration_norm(
         propagation_setup.acceleration.cannonball_radiation_pressure_type, "Delfi-C3", "Sun"
-    )
+    ),
+    propagation_setup.dependent_variable.altitude("Delfi-C3", "Earth"),
 ]
 
 
@@ -308,6 +309,18 @@ plt.xlim([min(time_days), max(time_days)])
 plt.grid()
 plt.tight_layout()
 # plt.show()
+
+# altitude over time
+altitude = dep_vars_array[:,12]
+plt.figure(figsize=(9, 5))
+plt.title("Altitude of Delfi-C3 over the course of propagation.")
+plt.plot(time_days, altitude)
+plt.xlabel('Time [days]')
+plt.ylabel('Altitude [m]')
+plt.xlim([min(time_days), max(time_days)])
+plt.grid()
+plt.tight_layout()
+plt.show()
 
 # ### Ground track
 # Let's then plot the ground track of the satellite in its first 3 hours. This makes use of the latitude and longitude dependent variables.
