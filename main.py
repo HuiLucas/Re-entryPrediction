@@ -230,7 +230,7 @@ dependent_variables_to_save = [
     propagation_setup.dependent_variable.altitude("Delfi-C3", "Earth"),
 ]
 
-
+print(propagation_setup.dependent_variable.PropagationDependentVariables(1))
 # ### Create the propagator settings
 # The propagator is finally setup.
 # 
@@ -242,10 +242,15 @@ dependent_variables_to_save = [
 
 
 # Create termination settings
-termination_condition = propagation_setup.propagator.time_termination(simulation_end_epoch)
+#termination_condition = propagation_setup.propagator.time_termination(simulation_end_epoch)
+termination_settings_list = [propagation_setup.propagator.time_termination(simulation_end_epoch), propagation_setup.propagator.dependent_variable_termination(
+  dependent_variable_settings = propagation_setup.dependent_variable.altitude( "Delfi-C3", "Earth" ),
+  limit_value = 62.0E3,
+  use_as_lower_limit = True)]
+termination_condition = propagation_setup.propagator.hybrid_termination(termination_settings_list, fulfill_single_condition = True)
 
 # Create numerical integrator settings
-fixed_step_size = 50.0
+fixed_step_size = 100.0
 integrator_settings = propagation_setup.integrator.runge_kutta_4(fixed_step_size)
 
 # Create propagation settings
@@ -310,8 +315,9 @@ plt.grid()
 plt.tight_layout()
 # plt.show()
 
+print(dep_vars_array[0,:])
 # altitude over time
-altitude = dep_vars_array[:,12]
+altitude = dep_vars_array[:,19]
 plt.figure(figsize=(9, 5))
 plt.title("Altitude of Delfi-C3 over the course of propagation.")
 plt.plot(time_days, altitude)
@@ -321,6 +327,7 @@ plt.xlim([min(time_days), max(time_days)])
 plt.grid()
 plt.tight_layout()
 plt.show()
+plt.savefig('altitude.png')
 
 # ### Ground track
 # Let's then plot the ground track of the satellite in its first 3 hours. This makes use of the latitude and longitude dependent variables.
