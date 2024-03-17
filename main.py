@@ -33,6 +33,7 @@ from tudatpy import constants
 from tudatpy.util import result2array
 from tudatpy.astro.time_conversion import DateTime
 import datetime
+# import inspect
 
 
 # ## Configuration
@@ -46,7 +47,8 @@ import datetime
 spice.load_standard_kernels()
 
 # Set simulation start and end epochs
-simulation_start_epoch = DateTime(2022, 9, 6, 0, 27, 00.970272).epoch()
+start_date = DateTime(2022, 9, 6, 0, 27, 00.970272)
+simulation_start_epoch = start_date.epoch()
 simulation_end_epoch   = DateTime(2035, 1, 2).epoch()
 
 
@@ -250,8 +252,12 @@ termination_settings_list = [propagation_setup.propagator.time_termination(simul
 termination_condition = propagation_setup.propagator.hybrid_termination(termination_settings_list, fulfill_single_condition = True)
 
 # Create numerical integrator settings
-fixed_step_size = 100.0
+fixed_step_size = 50.0
 integrator_settings = propagation_setup.integrator.runge_kutta_4(fixed_step_size)
+
+# processing_settings = propagation_setup.propagator.SingleArcPropagatorProcessingSettings()
+
+
 
 # Create propagation settings
 propagator_settings = propagation_setup.propagator.translational(
@@ -262,8 +268,12 @@ propagator_settings = propagation_setup.propagator.translational(
     simulation_start_epoch,
     integrator_settings,
     termination_condition,
-    output_variables=dependent_variables_to_save
+    output_variables=dependent_variables_to_save,
 )
+propagator_settings.print_settings.print_dependent_variable_indices = True
+propagator_settings.print_settings.print_state_indices = True
+propagator_settings.print_settings.results_print_frequency_in_seconds = 10.0
+print(propagator_settings.print_settings)
 
 
 # ## Propagate the orbit
@@ -283,8 +293,8 @@ propagator_settings = propagation_setup.propagator.translational(
 
 # Create simulation object and propagate the dynamics
 dynamics_simulator = numerical_simulation.create_dynamics_simulator(
-    bodies, propagator_settings
-)
+    bodies, propagator_settings)
+
 
 # Extract the resulting state and depedent variable history and convert it to an ndarray
 states = dynamics_simulator.state_history
@@ -318,12 +328,14 @@ plt.tight_layout()
 print(dep_vars_array[0,:])
 # altitude over time
 altitude = dep_vars_array[:,19]
+dates = [time_conversion.julian_day_to_calendar_date(start_date.julian_day()) + datetime.timedelta(days=int(day)) for day in time_days]
 plt.figure(figsize=(9, 5))
 plt.title("Altitude of Delfi-C3 over the course of propagation.")
-plt.plot(time_days, altitude)
+plt.plot(dates, altitude)
+plt.gcf().autofmt_xdate()
 plt.xlabel('Time [days]')
 plt.ylabel('Altitude [m]')
-plt.xlim([min(time_days), max(time_days)])
+plt.xlim([min(dates), max(dates)])
 plt.grid()
 plt.tight_layout()
 plt.show()
@@ -362,32 +374,32 @@ fig.suptitle('Evolution of Kepler elements over the course of the propagation.')
 
 # Semi-major Axis
 semi_major_axis = kepler_elements[:,0] / 1e3
-ax1.plot(time_days, semi_major_axis)
+ax1.plot(time_days, semi_major_axis, linewidth=1)
 ax1.set_ylabel('Semi-major axis [km]')
 
 # Eccentricity
 eccentricity = kepler_elements[:,1]
-ax2.plot(time_days, eccentricity)
+ax2.plot(time_days, eccentricity, linewidth=1)
 ax2.set_ylabel('Eccentricity [-]')
 
 # Inclination
 inclination = np.rad2deg(kepler_elements[:,2])
-ax3.plot(time_days, inclination)
+ax3.plot(time_days, inclination, linewidth=1)
 ax3.set_ylabel('Inclination [deg]')
 
 # Argument of Periapsis
 argument_of_periapsis = np.rad2deg(kepler_elements[:,3])
-ax4.plot(time_days, argument_of_periapsis)
+ax4.plot(time_days, argument_of_periapsis, linewidth=1)
 ax4.set_ylabel('Argument of Periapsis [deg]')
 
 # Right Ascension of the Ascending Node
 raan = np.rad2deg(kepler_elements[:,4])
-ax5.plot(time_days, raan)
+ax5.plot(time_days, raan, linewidth=1)
 ax5.set_ylabel('RAAN [deg]')
 
 # True Anomaly
 true_anomaly = np.rad2deg(kepler_elements[:,5])
-ax6.scatter(time_days, true_anomaly, s=1)
+ax6.scatter(time_days, true_anomaly, s=1, linewidths=1)
 ax6.set_ylabel('True Anomaly [deg]')
 ax6.set_yticks(np.arange(0, 361, step=60))
 
@@ -406,31 +418,31 @@ plt.figure(figsize=(9, 5))
 
 # Point Mass Gravity Acceleration Sun
 acceleration_norm_pm_sun = dep_vars_array[:,12]
-plt.plot(time_days, acceleration_norm_pm_sun, label='PM Sun')
+plt.plot(time_days, acceleration_norm_pm_sun, label='PM Sun', linewidth=1)
 
 # Point Mass Gravity Acceleration Moon
 acceleration_norm_pm_moon = dep_vars_array[:,13]
-plt.plot(time_days, acceleration_norm_pm_moon, label='PM Moon')
+plt.plot(time_days, acceleration_norm_pm_moon, label='PM Moon', linewidth=1)
 
 # Point Mass Gravity Acceleration Mars
 acceleration_norm_pm_mars = dep_vars_array[:,14]
-plt.plot(time_days, acceleration_norm_pm_mars, label='PM Mars')
+plt.plot(time_days, acceleration_norm_pm_mars, label='PM Mars', linewidth=1)
 
 # Point Mass Gravity Acceleration Venus
 acceleration_norm_pm_venus = dep_vars_array[:,15]
-plt.plot(time_days, acceleration_norm_pm_venus, label='PM Venus')
+plt.plot(time_days, acceleration_norm_pm_venus, label='PM Venus', linewidth=1)
 
 # Spherical Harmonic Gravity Acceleration Earth
 acceleration_norm_sh_earth = dep_vars_array[:,16]
-plt.plot(time_days, acceleration_norm_sh_earth, label='SH Earth')
+plt.plot(time_days, acceleration_norm_sh_earth, label='SH Earth', linewidth=1)
 
 # Aerodynamic Acceleration Earth
 acceleration_norm_aero_earth = dep_vars_array[:,17]
-plt.plot(time_days, acceleration_norm_aero_earth, label='Aerodynamic Earth')
+plt.plot(time_days, acceleration_norm_aero_earth, label='Aerodynamic Earth', linewidth=1)
 
 # Cannonball Radiation Pressure Acceleration Sun
 acceleration_norm_rp_sun = dep_vars_array[:,18]
-plt.plot(time_days, acceleration_norm_rp_sun, label='Radiation Pressure Sun')
+plt.plot(time_days, acceleration_norm_rp_sun, label='Radiation Pressure Sun', linewidth=1)
 
 plt.xlim([min(time_days), max(time_days)])
 plt.xlabel('Time [days]')
@@ -441,7 +453,7 @@ plt.suptitle("Accelerations norms on Delfi-C3, distinguished by type and origin,
 plt.yscale('log')
 plt.grid()
 plt.tight_layout()
-# plt.show()
+plt.show()
 
 
 
