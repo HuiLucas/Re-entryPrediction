@@ -247,7 +247,7 @@ print(propagation_setup.dependent_variable.PropagationDependentVariables(1))
 #termination_condition = propagation_setup.propagator.time_termination(simulation_end_epoch)
 termination_settings_list = [propagation_setup.propagator.time_termination(simulation_end_epoch), propagation_setup.propagator.dependent_variable_termination(
   dependent_variable_settings = propagation_setup.dependent_variable.altitude( "Delfi-C3", "Earth" ),
-  limit_value = 62.0E3,
+  limit_value = 100.0E3,
   use_as_lower_limit = True)]
 termination_condition = propagation_setup.propagator.hybrid_termination(termination_settings_list, fulfill_single_condition = True)
 
@@ -272,7 +272,8 @@ propagator_settings = propagation_setup.propagator.translational(
 )
 propagator_settings.print_settings.print_dependent_variable_indices = True
 propagator_settings.print_settings.print_state_indices = True
-propagator_settings.print_settings.results_print_frequency_in_seconds = 10.0
+# propagator_settings.print_settings.results_print_frequency_in_seconds = 0.5e7
+propagator_settings.print_settings.results_print_frequency_in_steps =100000
 print(propagator_settings.print_settings)
 
 
@@ -328,7 +329,7 @@ plt.tight_layout()
 print(dep_vars_array[0,:])
 # altitude over time
 altitude = dep_vars_array[:,19]
-dates = [time_conversion.julian_day_to_calendar_date(start_date.julian_day()) + datetime.timedelta(days=int(day)) for day in time_days]
+dates = [time_conversion.julian_day_to_calendar_date(start_date.julian_day()) + datetime.timedelta(days=day) for day in time_days]
 plt.figure(figsize=(9, 5))
 plt.title("Altitude of Delfi-C3 over the course of propagation.")
 plt.plot(dates, altitude)
