@@ -252,8 +252,14 @@ termination_settings_list = [propagation_setup.propagator.time_termination(simul
 termination_condition = propagation_setup.propagator.hybrid_termination(termination_settings_list, fulfill_single_condition = True)
 
 # Create numerical integrator settings
-fixed_step_size = 50.0
-integrator_settings = propagation_setup.integrator.runge_kutta_4(fixed_step_size)
+fixed_step_size = 200.0
+# integrator_settings = propagation_setup.integrator.runge_kutta_4(fixed_step_size)
+# integrator_settings = propagation_setup.integrator.adams_bashforth_moulton(fixed_step_size, 5.0, 150, minimum_order=6, maximum_order=11)
+integrator_settings = propagation_setup.integrator.bulirsch_stoer_variable_step(initial_time_step=fixed_step_size,extrapolation_sequence = propagation_setup.integrator.deufelhard_sequence, maximum_number_of_steps=7, 
+                                                                                step_size_control_settings =propagation_setup.integrator.step_size_control_elementwise_scalar_tolerance(1.0E-10, 1.0E-10, minimum_factor_increase=0.05),
+                                                                                step_size_validation_settings =propagation_setup.integrator.step_size_validation(0.1, 10000.0),
+                                                                                assess_termination_on_minor_steps = False)
+
 
 # processing_settings = propagation_setup.propagator.SingleArcPropagatorProcessingSettings()
 
