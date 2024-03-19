@@ -28,10 +28,12 @@ from tudatpy.interface import spice
 from tudatpy import numerical_simulation
 from tudatpy.numerical_simulation import environment
 from tudatpy.numerical_simulation import environment_setup, propagation_setup
-from tudatpy.astro import element_conversion
+from tudatpy.astro import element_conversion, time_conversion
 from tudatpy import constants
 from tudatpy.util import result2array
 from tudatpy.astro.time_conversion import DateTime
+import datetime
+# import inspect
 
 
 # ## Configuration
@@ -45,8 +47,9 @@ from tudatpy.astro.time_conversion import DateTime
 spice.load_standard_kernels()
 
 # Set simulation start and end epochs
-simulation_start_epoch = DateTime(2022, 9, 6, 0, 27, 00.970272).epoch()
-simulation_end_epoch   = DateTime(2030, 1, 2).epoch()
+start_date = DateTime(2022, 9, 6, 0, 27, 00.970272)
+simulation_start_epoch = start_date.epoch()
+simulation_end_epoch   = DateTime(2035, 1, 2).epoch()
 
 
 # ## Environment setup
@@ -185,7 +188,7 @@ acceleration_models = propagation_setup.create_acceleration_models(
 earth_gravitational_parameter = bodies.get("Earth").gravitational_parameter
 initial_state = element_conversion.keplerian_to_cartesian_elementwise(
     gravitational_parameter=earth_gravitational_parameter,
-    semi_major_axis=7002.990555879878e3,
+    semi_major_axis= 7002.990555879878e3,
     eccentricity= 0.001126,
     inclination=np.deg2rad(97.3369),
     argument_of_periapsis=np.deg2rad(53.4348),
@@ -225,10 +228,11 @@ dependent_variables_to_save = [
     ),
     propagation_setup.dependent_variable.single_acceleration_norm(
         propagation_setup.acceleration.cannonball_radiation_pressure_type, "Delfi-C3", "Sun"
-    )
+    ),
+    propagation_setup.dependent_variable.altitude("Delfi-C3", "Earth"),
 ]
 
-
+print(propagation_setup.dependent_variable.PropagationDependentVariables(1))
 # ### Create the propagator settings
 # The propagator is finally setup.
 # 
@@ -240,11 +244,26 @@ dependent_variables_to_save = [
 
 
 # Create termination settings
-termination_condition = propagation_setup.propagator.time_termination(simulation_end_epoch)
+#termination_condition = propagation_setup.propagator.time_termination(simulation_end_epoch)
+termination_settings_list = [propagation_setup.propagator.time_termination(simulation_end_epoch), propagation_setup.propagator.dependent_variable_termination(
+  dependent_variable_settings = propagation_setup.dependent_variable.altitude( "Delfi-C3", "Earth" ),
+  limit_value = 100.0E3,
+  use_as_lower_limit = True)]
+termination_condition = propagation_setup.propagator.hybrid_termination(termination_settings_list, fulfill_single_condition = True)
 
 # Create numerical integrator settings
-fixed_step_size = 50.0
-integrator_settings = propagation_setup.integrator.runge_kutta_4(fixed_step_size)
+fixed_step_size = 200.0
+# integrator_settings = propagation_setup.integrator.runge_kutta_4(fixed_step_size)
+# integrator_settings = propagation_setup.integrator.adams_bashforth_moulton(fixed_step_size, 5.0, 150, minimum_order=6, maximum_order=11)
+integrator_settings = propagation_setup.integrator.bulirsch_stoer_variable_step(initial_time_step=fixed_step_size,extrapolation_sequence = propagation_setup.integrator.deufelhard_sequence, maximum_number_of_steps=7, 
+                                                                                step_size_control_settings =propagation_setup.integrator.step_size_control_elementwise_scalar_tolerance(1.0E-10, 1.0E-10, minimum_factor_increase=0.05),
+                                                                                step_size_validation_settings =propagation_setup.integrator.step_size_validation(0.1, 10000.0),
+                                                                                assess_termination_on_minor_steps = False)
+
+
+# processing_settings = propagation_setup.propagator.SingleArcPropagatorProcessingSettings()
+
+
 
 # Create propagation settings
 propagator_settings = propagation_setup.propagator.translational(
@@ -255,8 +274,13 @@ propagator_settings = propagation_setup.propagator.translational(
     simulation_start_epoch,
     integrator_settings,
     termination_condition,
-    output_variables=dependent_variables_to_save
+    output_variables=dependent_variables_to_save,
 )
+propagator_settings.print_settings.print_dependent_variable_indices = True
+propagator_settings.print_settings.print_state_indices = True
+# propagator_settings.print_settings.results_print_frequency_in_seconds = 0.5e7
+propagator_settings.print_settings.results_print_frequency_in_steps =100000
+print(propagator_settings.print_settings)
 
 
 # ## Propagate the orbit
@@ -276,8 +300,8 @@ propagator_settings = propagation_setup.propagator.translational(
 
 # Create simulation object and propagate the dynamics
 dynamics_simulator = numerical_simulation.create_dynamics_simulator(
-    bodies, propagator_settings
-)
+    bodies, propagator_settings)
+
 
 # Extract the resulting state and depedent variable history and convert it to an ndarray
 states = dynamics_simulator.state_history
@@ -294,17 +318,35 @@ dep_vars_array = result2array(dep_vars)
 
 
 # Plot total acceleration as function of time
-time_hours = dep_vars_array[:,0]/3600
+start_time=(time_conversion.calendar_date_to_julian_day(datetime.datetime(2022, 9, 6, 0, 27, 0, 970272))-time_conversion.calendar_date_to_julian_day(datetime.datetime(2000, 1, 1, 0, 0, 0, 0)))
+print(dep_vars_array[:,0]/(3600*24))
+time_days = dep_vars_array[:,0]/(3600*24) - start_time
 total_acceleration_norm = np.linalg.norm(dep_vars_array[:,1:4], axis=1)
 plt.figure(figsize=(9, 5))
 plt.title("Total acceleration norm on Delfi-C3 over the course of propagation.")
-plt.plot(time_hours, total_acceleration_norm)
-plt.xlabel('Time [hr]')
+plt.plot(time_days, total_acceleration_norm)
+plt.xlabel('Time [days]')
 plt.ylabel('Total Acceleration [m/s$^2$]')
-plt.xlim([min(time_hours), max(time_hours)])
+plt.xlim([min(time_days), max(time_days)])
 plt.grid()
 plt.tight_layout()
 # plt.show()
+
+print(dep_vars_array[0,:])
+# altitude over time
+altitude = dep_vars_array[:,19]
+dates = [time_conversion.julian_day_to_calendar_date(start_date.julian_day()) + datetime.timedelta(days=day) for day in time_days]
+plt.figure(figsize=(9, 5))
+plt.title("Altitude of Delfi-C3 over the course of propagation.")
+plt.plot(dates, altitude)
+plt.gcf().autofmt_xdate()
+plt.xlabel('Time [days]')
+plt.ylabel('Altitude [m]')
+plt.xlim([min(dates), max(dates)])
+plt.grid()
+plt.tight_layout()
+plt.show()
+plt.savefig('altitude.png')
 
 # ### Ground track
 # Let's then plot the ground track of the satellite in its first 3 hours. This makes use of the latitude and longitude dependent variables.
@@ -314,7 +356,7 @@ plt.tight_layout()
 latitude = dep_vars_array[:,10]
 longitude = dep_vars_array[:,11]
 hours = 3
-subset = int(len(time_hours) / 24 * hours)
+subset = int(len(time_days) / 24 * hours)
 latitude = np.rad2deg(latitude[0: subset])
 longitude = np.rad2deg(longitude[0: subset])
 plt.figure(figsize=(9, 5))
@@ -339,38 +381,38 @@ fig.suptitle('Evolution of Kepler elements over the course of the propagation.')
 
 # Semi-major Axis
 semi_major_axis = kepler_elements[:,0] / 1e3
-ax1.plot(time_hours, semi_major_axis)
+ax1.plot(time_days, semi_major_axis, linewidth=1)
 ax1.set_ylabel('Semi-major axis [km]')
 
 # Eccentricity
 eccentricity = kepler_elements[:,1]
-ax2.plot(time_hours, eccentricity)
+ax2.plot(time_days, eccentricity, linewidth=1)
 ax2.set_ylabel('Eccentricity [-]')
 
 # Inclination
 inclination = np.rad2deg(kepler_elements[:,2])
-ax3.plot(time_hours, inclination)
+ax3.plot(time_days, inclination, linewidth=1)
 ax3.set_ylabel('Inclination [deg]')
 
 # Argument of Periapsis
 argument_of_periapsis = np.rad2deg(kepler_elements[:,3])
-ax4.plot(time_hours, argument_of_periapsis)
+ax4.plot(time_days, argument_of_periapsis, linewidth=1)
 ax4.set_ylabel('Argument of Periapsis [deg]')
 
 # Right Ascension of the Ascending Node
 raan = np.rad2deg(kepler_elements[:,4])
-ax5.plot(time_hours, raan)
+ax5.plot(time_days, raan, linewidth=1)
 ax5.set_ylabel('RAAN [deg]')
 
 # True Anomaly
 true_anomaly = np.rad2deg(kepler_elements[:,5])
-ax6.scatter(time_hours, true_anomaly, s=1)
+ax6.scatter(time_days, true_anomaly, s=1, linewidths=1)
 ax6.set_ylabel('True Anomaly [deg]')
 ax6.set_yticks(np.arange(0, 361, step=60))
 
 for ax in fig.get_axes():
-    ax.set_xlabel('Time [hr]')
-    ax.set_xlim([min(time_hours), max(time_hours)])
+    ax.set_xlabel('Time [days]')
+    ax.set_xlim([min(time_days), max(time_days)])
     ax.grid()
 plt.tight_layout()
 plt.show()
@@ -383,34 +425,34 @@ plt.figure(figsize=(9, 5))
 
 # Point Mass Gravity Acceleration Sun
 acceleration_norm_pm_sun = dep_vars_array[:,12]
-plt.plot(time_hours, acceleration_norm_pm_sun, label='PM Sun')
+plt.plot(time_days, acceleration_norm_pm_sun, label='PM Sun', linewidth=1)
 
 # Point Mass Gravity Acceleration Moon
 acceleration_norm_pm_moon = dep_vars_array[:,13]
-plt.plot(time_hours, acceleration_norm_pm_moon, label='PM Moon')
+plt.plot(time_days, acceleration_norm_pm_moon, label='PM Moon', linewidth=1)
 
 # Point Mass Gravity Acceleration Mars
 acceleration_norm_pm_mars = dep_vars_array[:,14]
-plt.plot(time_hours, acceleration_norm_pm_mars, label='PM Mars')
+plt.plot(time_days, acceleration_norm_pm_mars, label='PM Mars', linewidth=1)
 
 # Point Mass Gravity Acceleration Venus
 acceleration_norm_pm_venus = dep_vars_array[:,15]
-plt.plot(time_hours, acceleration_norm_pm_venus, label='PM Venus')
+plt.plot(time_days, acceleration_norm_pm_venus, label='PM Venus', linewidth=1)
 
 # Spherical Harmonic Gravity Acceleration Earth
 acceleration_norm_sh_earth = dep_vars_array[:,16]
-plt.plot(time_hours, acceleration_norm_sh_earth, label='SH Earth')
+plt.plot(time_days, acceleration_norm_sh_earth, label='SH Earth', linewidth=1)
 
 # Aerodynamic Acceleration Earth
 acceleration_norm_aero_earth = dep_vars_array[:,17]
-plt.plot(time_hours, acceleration_norm_aero_earth, label='Aerodynamic Earth')
+plt.plot(time_days, acceleration_norm_aero_earth, label='Aerodynamic Earth', linewidth=1)
 
 # Cannonball Radiation Pressure Acceleration Sun
 acceleration_norm_rp_sun = dep_vars_array[:,18]
-plt.plot(time_hours, acceleration_norm_rp_sun, label='Radiation Pressure Sun')
+plt.plot(time_days, acceleration_norm_rp_sun, label='Radiation Pressure Sun', linewidth=1)
 
-plt.xlim([min(time_hours), max(time_hours)])
-plt.xlabel('Time [hr]')
+plt.xlim([min(time_days), max(time_days)])
+plt.xlabel('Time [days]')
 plt.ylabel('Acceleration Norm [m/s$^2$]')
 
 plt.legend(bbox_to_anchor=(1.005, 1))
@@ -418,7 +460,7 @@ plt.suptitle("Accelerations norms on Delfi-C3, distinguished by type and origin,
 plt.yscale('log')
 plt.grid()
 plt.tight_layout()
-# plt.show()
+plt.show()
 
 
 
