@@ -25,7 +25,7 @@ simulation_start_epoch = DateTime(2000, 1, 1).epoch()
 simulation_end_epoch   = DateTime(2000, 1, 5).epoch()
 
 # Create default body settings for "Sun", "Earth", "Moon", "Mars", and "Venus"
-bodies_to_create = ["Sun", "Earth", "Moon", "Mars", "Venus"]
+bodies_to_create = ["Sun", "Earth", "Moon", "Mars", "Venus", "Jupiter"]
 
 # Create default body settings for bodies_to_create, with "Earth"/"J2000" as the global frame origin and orientation
 global_frame_origin = "Earth"
@@ -79,6 +79,9 @@ accelerations_settings_delfi_c3 = dict(
         propagation_setup.acceleration.point_mass_gravity()
     ],
     Moon=[
+        propagation_setup.acceleration.point_mass_gravity()
+    ],
+    Jupiter=[
         propagation_setup.acceleration.point_mass_gravity()
     ],
     Earth=[
