@@ -78,6 +78,8 @@ body_settings = environment_setup.get_default_body_settings(
     global_frame_origin,
     global_frame_orientation)
 
+body_settings.get("Earth").atmosphere_settings = environment_setup.atmosphere.nrlmsise00()
+
 # Create system of selected celestial bodies
 bodies = environment_setup.create_system_of_bodies(body_settings)
 
@@ -98,7 +100,7 @@ bodies.get("Delfi-C3").mass = 2.2
 # - No moment coefficient.
 
 # Create aerodynamic coefficient interface settings, and add to vehicle
-reference_area = 0.011  # Average projection area of a 3U CubeSat
+reference_area = 0.08  # Average projection area of a 3U CubeSat
 drag_coefficient = 2.20
 aero_coefficient_settings = environment_setup.aerodynamic_coefficients.constant(
     reference_area, [drag_coefficient, 0, 0]
@@ -106,11 +108,12 @@ aero_coefficient_settings = environment_setup.aerodynamic_coefficients.constant(
 environment_setup.add_aerodynamic_coefficient_interface(
     bodies, "Delfi-C3", aero_coefficient_settings)
 
+
 # To account for the pressure of the solar radiation on the satellite, let's add another interface. This takes a radiation pressure coefficient of 1.2, and a radiation area of 4m$^2$. This interface also accounts for the variation in pressure cause by the shadow of Earth.
 
 
 # Create radiation pressure settings, and add to vehicle
-reference_area_radiation = 0.011  # Average projection area of a 3U CubeSat
+reference_area_radiation = 0.08  # Average projection area of a 3U CubeSat
 radiation_pressure_coefficient = 1.2
 occulting_bodies_dict = dict()
 occulting_bodies_dict[ "Sun" ] = [ "Earth" ]
@@ -252,15 +255,14 @@ termination_settings_list = [propagation_setup.propagator.time_termination(simul
 termination_condition = propagation_setup.propagator.hybrid_termination(termination_settings_list, fulfill_single_condition = True)
 
 # Create numerical integrator settings
-fixed_step_size = 200.0
+fixed_step_size = 100.0
 # integrator_settings = propagation_setup.integrator.runge_kutta_4(fixed_step_size)
 # integrator_settings = propagation_setup.integrator.adams_bashforth_moulton(fixed_step_size, 5.0, 150, minimum_order=6, maximum_order=11)
-integrator_settings = propagation_setup.integrator.bulirsch_stoer_variable_step(initial_time_step=fixed_step_size,extrapolation_sequence = propagation_setup.integrator.deufelhard_sequence, maximum_number_of_steps=7, 
-                                                                                step_size_control_settings =propagation_setup.integrator.step_size_control_elementwise_scalar_tolerance(1.0E-10, 1.0E-10, minimum_factor_increase=0.05),
-                                                                                step_size_validation_settings =propagation_setup.integrator.step_size_validation(0.1, 10000.0),
-                                                                                assess_termination_on_minor_steps = False)
-
-
+# integrator_settings = propagation_setup.integrator.bulirsch_stoer_variable_step(initial_time_step=fixed_step_size,extrapolation_sequence = propagation_setup.integrator.deufelhard_sequence, maximum_number_of_steps=7, 
+#                                                                                 step_size_control_settings =propagation_setup.integrator.step_size_control_elementwise_scalar_tolerance(1.0E-10, 1.0E-10, minimum_factor_increase=0.05),
+#                                                                                 step_size_validation_settings =propagation_setup.integrator.step_size_validation(0.1, 10000.0),
+#                                                                                 assess_termination_on_minor_steps = False)
+integrator_settings = propagation_setup.integrator.runge_kutta_fixed_step(time_step=fixed_step_size, coefficient_set=propagation_setup.integrator.rkf_78)
 # processing_settings = propagation_setup.propagator.SingleArcPropagatorProcessingSettings()
 
 
