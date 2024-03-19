@@ -91,7 +91,7 @@ bodies = environment_setup.create_system_of_bodies(body_settings)
 # Create vehicle objects.
 bodies.create_empty_body("Delfi-C3")
 
-bodies.get("Delfi-C3").mass = 2.2
+bodies.get("Delfi-C3").mass =  2.2
 
 # To account for the aerodynamic of the satellite, let's add an aerodynamic interface and add it to the environment setup, taking the followings into account:
 # - A constant drag coefficient of 1.2.
@@ -255,7 +255,7 @@ termination_settings_list = [propagation_setup.propagator.time_termination(simul
 termination_condition = propagation_setup.propagator.hybrid_termination(termination_settings_list, fulfill_single_condition = True)
 
 # Create numerical integrator settings
-fixed_step_size = 100.00
+fixed_step_size = 150.00
 # integrator_settings = propagation_setup.integrator.runge_kutta_4(fixed_step_size) 
 # integrator_settings = propagation_setup.integrator.adams_bashforth_moulton(fixed_step_size, 5.0, 150, minimum_order=6, maximum_order=11)
 # integrator_settings = propagation_setup.integrator.bulirsch_stoer_variable_step(initial_time_step=fixed_step_size,extrapolation_sequence = propagation_setup.integrator.deufelhard_sequence, maximum_number_of_steps=7, 
