@@ -1,7 +1,13 @@
+# Load basic modules
 import numpy as np
-
+import datetime
+import pandas as pd
+import re
+from datetime import datetime, timedelta
+import math
 import matplotlib
 from matplotlib import pyplot as plt
+
 
 # Load tudatpy modules
 from tudatpy.interface import spice
@@ -12,8 +18,113 @@ from tudatpy.astro import element_conversion, time_conversion
 from tudatpy import constants
 from tudatpy.util import result2array
 from tudatpy.astro.time_conversion import DateTime
-import datetime
-# import inspect
+
+
+# Open the file
+with open('/workspaces/Re-entryPrediction/TLE-Data_C3.txt', 'r') as file:
+    # Read lines two at a time
+    lines = file.readlines()
+    TLE_sets = [(lines[i], lines[i + 1]) for i in range(0, len(lines), 2)]
+
+# Create lists to store the split lines
+split_TLE_sets = []
+
+# Loop over each TLE set
+for TLE_set in TLE_sets:
+    # Split each line and extract the numeric values
+    line1 = re.findall(r'\d+\.\d+|\d+', TLE_set[0])  # Find all numeric characters and decimal points
+    line2 = re.findall(r'\d+\.\d+|\d+', TLE_set[1])  # Find all numeric characters and decimal points
+
+    # Add the split lines to the list
+    split_TLE_sets.append((line1, line2))
+
+# Now split_TLE_sets is a list of tuples, where each tuple is a pair of split lines (a TLE set)
+# You can access the first split TLE set like this:
+TLE_1 = split_TLE_sets[0]
+TLE_2 = split_TLE_sets[4000]
+
+def parse_TLE(TLE):
+    TLE_line1 = TLE[0]
+    TLE_line2 = TLE[1]
+
+    Int_Des_Year = TLE_line1[2][:2]
+    Int_Des = TLE_line1[2][2:]
+    Epoch_Year = TLE_line1[3][:2]
+    Epoch_Day = TLE_line1[3][2:]
+    Inclination = TLE_line2[2]
+    RAAN = TLE_line2[3]
+    Eccentricity = int(TLE_line2[4])*10**(-7)
+    Arg_Perigee = TLE_line2[5]
+    Mean_Anomaly = TLE_line2[6]
+    Mean_Motion = TLE_line2[7][:11]
+    Rev_Num = TLE_line2[7][11:16]
+
+    # Calculate the launch year
+    if int(Int_Des_Year) < 57:
+        launch_year = int(Int_Des_Year)+2000
+    else:
+        launch_year = int(Int_Des_Year)+1900
+
+    # Calculate the period and semi-major axis
+    Period = (1*24*3600)/(float(Mean_Motion))
+    semi_major_axis = (Period**2 * 3.9860044188*10**14/((2*math.pi)**2))**(1/3)
+    rp = semi_major_axis*(1-Eccentricity)
+    ra = semi_major_axis*(1+Eccentricity)
+
+    Height_apo = ra/1000 - 6371
+    Height_peri = rp/1000 - 6371
+
+    # Calculating the velocity
+    Vp = math.sqrt((3.9860044188*10**14*2*ra)/(rp*(ra+rp)))
+    Va = math.sqrt((3.9860044188*10**14*2*rp)/(ra*(ra+rp)))
+
+    # Convert the epoch year and day to an actual date and time
+    if int(Epoch_Year) < 30:
+        epoch_year = int(Epoch_Year) + 2000  # Add 2000 to get the full year
+    else:
+        epoch_year = int(Epoch_Year) + 1900  
+    start_of_year = datetime(epoch_year, 1, 1)  # January 1 of the epoch year
+    epoch_day = float(Epoch_Day)  # Convert to float to handle fractional days
+
+    epoch_date = start_of_year + timedelta(days=epoch_day)
+
+    parsed_values = {
+        'Int_Des_Year': Int_Des_Year,
+        'Int_Des': Int_Des,
+        'Epoch_Year': Epoch_Year,
+        'Epoch_Day': Epoch_Day,
+        'Inclination': Inclination,
+        'RAAN': RAAN,
+        'Eccentricity': Eccentricity,
+        'Arg_Perigee': Arg_Perigee,
+        'Mean_Anomaly': Mean_Anomaly,
+        'Mean_Motion': Mean_Motion,
+        'Rev_Num': Rev_Num,
+        'Launch_Year': launch_year,
+        'Period': Period,
+        'Semi_Major_Axis': semi_major_axis,
+        'Height_Apo': Height_apo,
+        'Height_Peri': Height_peri,
+        'Vp': Vp,
+        'Va': Va,
+        'Epoch_Year_Actual': epoch_year,
+        'Start_of_Year': start_of_year,
+        'Epoch_Day_Float': epoch_day,
+        'Epoch_Date': epoch_date,
+
+    }
+
+    return parsed_values
+
+# Now you can parse each TLE set like this:
+parsed_TLE1 = parse_TLE(TLE_1)
+parsed_TLE2 = parse_TLE(TLE_2)
+
+# And access the values like this:
+print(parsed_TLE1['Epoch_Year_Actual'])
+print(parsed_TLE1['Epoch_Day_Float'])
+print(parsed_TLE1['Start_of_Year'])
+print(parsed_TLE2['Epoch_Year_Actual'])
 
 
 # ## Configuration
@@ -22,12 +133,11 @@ import datetime
 # Then, the start and end simulation epochs are setups. In this case, the start epoch is set to `0`, corresponding to the 1st of January 2000. The times should be specified in seconds since J2000.
 # Please refer to the API documentation of the `time_conversion module` [here](https://tudatpy.readthedocs.io/en/latest/time_conversion.html) for more information on this.
 
-
 # Load spice kernels
 spice.load_standard_kernels()
 
 # Set simulation start and end epochs
-start_date = DateTime(2022, 9, 6, 0, 27, 00.970272)
+start_date = DateTime(2023, 9, 6, 0, 27, 00.970272)
 simulation_start_epoch = start_date.epoch()
 simulation_end_epoch   = DateTime(2022, 10, 6).epoch()
 
@@ -223,7 +333,8 @@ termination_settings_list = [propagation_setup.propagator.time_termination(simul
 termination_condition = propagation_setup.propagator.hybrid_termination(termination_settings_list, fulfill_single_condition = True)
 
 # Create numerical integrator settings
-fixed_step_size = 200.0
+fixed_step_size = 500.0 
+"""Change to a lower step size when the code works"""
 # integrator_settings = propagation_setup.integrator.runge_kutta_4(fixed_step_size)
 # integrator_settings = propagation_setup.integrator.adams_bashforth_moulton(fixed_step_size, 5.0, 150, minimum_order=6, maximum_order=11)
 integrator_settings = propagation_setup.integrator.bulirsch_stoer_variable_step(initial_time_step=fixed_step_size,extrapolation_sequence = propagation_setup.integrator.deufelhard_sequence, maximum_number_of_steps=7, 
@@ -282,8 +393,8 @@ for i in range(5):
         termination_condition,
         output_variables=dependent_variables_to_save,
     )
-    propagator_settings.print_settings.print_dependent_variable_indices = True
-    propagator_settings.print_settings.print_state_indices = True
+    propagator_settings.print_settings.print_dependent_variable_indices = False
+    propagator_settings.print_settings.print_state_indices = False
     # propagator_settings.print_settings.results_print_frequency_in_seconds = 0.5e7
     propagator_settings.print_settings.results_print_frequency_in_steps =100000
 
@@ -477,3 +588,6 @@ plt.grid()
 plt.tight_layout()
 plt.show()
 plt.savefig('test2.png')"""
+
+
+
