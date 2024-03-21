@@ -18,8 +18,33 @@ from tudatpy.astro import element_conversion, time_conversion
 from tudatpy import constants
 from tudatpy.util import result2array
 from tudatpy.astro.time_conversion import DateTime
+import sys
 
 
+"""Inputs"""
+TLE1_number = 0
+TLE2_number = 200
+
+Mass = 2.2
+
+reference_area = 0.011  # Average projection area of a 3U CubeSat
+drag_coefficient = 1.5
+
+
+def convert_epoch_day_to_date(epoch_year, epoch_day):
+    # Create a datetime object for the start of the epoch year
+    start_of_year = datetime(int(epoch_year), 1, 1)
+
+    # Add the epoch day to the start of the year, subtracting one because
+    # datetime's day count starts at 1, not 0
+    epoch_date = start_of_year + timedelta(days=float(epoch_day) - 1)
+
+    # Extract the month, day, and hour
+    month = epoch_date.month
+    day = epoch_date.day
+    hour = epoch_date.hour
+
+    return month, day, hour
 # Open the file
 with open('/workspaces/Re-entryPrediction/TLE-Data_C3.txt', 'r') as file:
     # Read lines two at a time
@@ -40,8 +65,8 @@ for TLE_set in TLE_sets:
 
 # Now split_TLE_sets is a list of tuples, where each tuple is a pair of split lines (a TLE set)
 # You can access the first split TLE set like this:
-TLE_1 = split_TLE_sets[0]
-TLE_2 = split_TLE_sets[4000]
+TLE_1 = split_TLE_sets[TLE1_number]
+TLE_2 = split_TLE_sets[TLE2_number]
 
 def parse_TLE(TLE):
     TLE_line1 = TLE[0]
@@ -88,6 +113,8 @@ def parse_TLE(TLE):
 
     epoch_date = start_of_year + timedelta(days=epoch_day)
 
+    month, day, hour = convert_epoch_day_to_date(epoch_year, epoch_day)
+
     parsed_values = {
         'Int_Des_Year': Int_Des_Year,
         'Int_Des': Int_Des,
@@ -109,9 +136,11 @@ def parse_TLE(TLE):
         'Va': Va,
         'Epoch_Year_Actual': epoch_year,
         'Start_of_Year': start_of_year,
-        'Epoch_Day_Float': epoch_day,
-        'Epoch_Date': epoch_date,
-
+        'Day_Float': epoch_day,
+        'Date': epoch_date,
+        'Month': month,
+        'Day': day,
+        'Hour': hour
     }
 
     return parsed_values
@@ -120,12 +149,16 @@ def parse_TLE(TLE):
 parsed_TLE1 = parse_TLE(TLE_1)
 parsed_TLE2 = parse_TLE(TLE_2)
 
-# And access the values like this:
-print(parsed_TLE1['Epoch_Year_Actual'])
-print(parsed_TLE1['Epoch_Day_Float'])
-print(parsed_TLE1['Start_of_Year'])
-print(parsed_TLE2['Epoch_Year_Actual'])
+print("The code will run from", parsed_TLE1['Date'], "to", parsed_TLE2['Date'])
+input("Press enter to continue...")
 
+# Stop the code if enter is not pressed
+if sys.stdin.read(1) != '\n':
+    sys.exit()
+
+    
+# And access the values like this:
+"""print(parsed_TLE1['Epoch_Year_Actual'])"""
 
 # ## Configuration
 # NAIF's `SPICE` kernels are first loaded, so that the position of various bodies such as the Earth can be make known to `tudatpy`.
@@ -137,9 +170,9 @@ print(parsed_TLE2['Epoch_Year_Actual'])
 spice.load_standard_kernels()
 
 # Set simulation start and end epochs
-start_date = DateTime(2023, 9, 6, 0, 27, 00.970272)
+start_date = DateTime(parsed_TLE1['Year_Actual'], parsed_TLE1['Month'], parsed_TLE1['Day'], parsed_TLE1['Hour'])
 simulation_start_epoch = start_date.epoch()
-simulation_end_epoch   = DateTime(2022, 10, 6).epoch()
+simulation_end_epoch   = DateTime(parsed_TLE2['Year_actual'], parsed_TLE2['Month'], parsed_TLE2['Day'], parsed_TLE2['Hour']).epoch()
 
 
 # ## Environment setup
@@ -179,17 +212,7 @@ bodies = environment_setup.create_system_of_bodies(body_settings)
 # Create vehicle objects.
 bodies.create_empty_body("Delfi-C3")
 
-bodies.get("Delfi-C3").mass = 2.2
-
-# To account for the aerodynamic of the satellite, let's add an aerodynamic interface and add it to the environment setup, taking the followings into account:
-# - A constant drag coefficient of 1.2.
-# - A reference area of 0.035m$^2$.
-# - No sideslip or lift coefficient (equal to 0).
-# - No moment coefficient.
-
-# Create aerodynamic coefficient interface settings, and add to vehicle
-reference_area = 0.011  # Average projection area of a 3U CubeSat
-drag_coefficient = 1.5
+bodies.get("Delfi-C3").mass = Mass
 
 
 # To account for the pressure of the solar radiation on the satellite, let's add another interface. This takes a radiation pressure coefficient of 1.2, and a radiation area of 4m$^2$. This interface also accounts for the variation in pressure cause by the shadow of Earth.
@@ -588,6 +611,3 @@ plt.grid()
 plt.tight_layout()
 plt.show()
 plt.savefig('test2.png')"""
-
-
-
