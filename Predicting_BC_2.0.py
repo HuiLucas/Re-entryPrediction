@@ -21,17 +21,20 @@ import sys
 
 """-------------------------------"""
 """Inputs"""
-TLE1_number = 0
-TLE2_number = 100
+TLE1_number = 7000
+TLE2_number = 7200
 
-Mass = 2.2
+Mass = 2
 
 reference_area = 0.011  # Average projection area of a 3U CubeSat
-drag_coefficient = 1.5
+drag_coefficient = 0.7
+step_size_Cd = 0.1
+
+itterations = 10
 
 radiation_pressure_coefficient = 1.2
 
-fixed_step_size = 500.0 
+fixed_step_size = 200.0 
 """Change to a lower step size when the code works"""
 
 """-------------------------------"""
@@ -157,12 +160,14 @@ def parse_TLE(TLE):
 parsed_TLE1 = parse_TLE(TLE_1)
 parsed_TLE2 = parse_TLE(TLE_2)
 
-print("The code will run from", parsed_TLE1['Date'], "to", parsed_TLE2['Date'])
-response = input("Press Enter to continue, or any other key followed by Enter to stop...")
 
-if response:
-    print("Non-enter key pressed, stopping...")
-    quit()
+print('\n')
+print('\n')
+print("The code will run from", parsed_TLE1['Date'], "to", parsed_TLE2['Date'])
+print('\n')
+print('Grab yourself some coffee, this might take a while...')
+print('\n')
+
 
     
 # And access the values like this:
@@ -299,12 +304,12 @@ acceleration_settings = {"Delfi-C3": accelerations_settings_delfi_c3}
 earth_gravitational_parameter = bodies.get("Earth").gravitational_parameter
 initial_state = element_conversion.keplerian_to_cartesian_elementwise(
     gravitational_parameter=earth_gravitational_parameter,
-    semi_major_axis= 7002.990555879878e3,
-    eccentricity= 0.001126,
-    inclination=np.deg2rad(97.3369),
-    argument_of_periapsis=np.deg2rad(53.4348),
-    longitude_of_ascending_node=np.deg2rad(272.4752),
-    true_anomaly=element_conversion.mean_to_true_anomaly(eccentricity=0.001126, mean_anomaly=np.deg2rad(306.7920)),
+    semi_major_axis= float(parsed_TLE1['Semi_Major_Axis']),
+    eccentricity= float(parsed_TLE1['Eccentricity']),
+    inclination=np.deg2rad(float(parsed_TLE1['Inclination'])),
+    argument_of_periapsis=np.deg2rad(float(parsed_TLE1['Arg_Perigee'])),
+    longitude_of_ascending_node=np.deg2rad(float(parsed_TLE1['RAAN'])),
+    true_anomaly=element_conversion.mean_to_true_anomaly(eccentricity=float(parsed_TLE1['Eccentricity']), mean_anomaly=np.deg2rad(float(parsed_TLE1['Mean_Anomaly']))),
 )
 
 
@@ -398,8 +403,8 @@ integrator_settings = propagation_setup.integrator.bulirsch_stoer_variable_step(
 Error = []
 DC = []
 FA= []
-for i in range(5):
-    drag_coefficient = drag_coefficient + 0.5
+for i in range(itterations):
+    drag_coefficient = drag_coefficient + step_size_Cd
 
     aero_coefficient_settings = environment_setup.aerodynamic_coefficients.constant(
     reference_area, [drag_coefficient, 0, 0]
@@ -450,7 +455,16 @@ for i in range(5):
     raan = np.rad2deg(kepler_elements[:,4])
     true_anomaly = np.rad2deg(kepler_elements[:,5])
 
-
+    print(parsed_TLE2['Eccentricity'])
+    print(eccentricity[-1])
+    print(parsed_TLE2['Inclination'])
+    print(inclination[-1])
+    print(parsed_TLE2['Arg_Perigee'])
+    print(argument_of_periapsis[-1])
+    print(parsed_TLE2['RAAN'])
+    print(raan[-1])
+    print(parsed_TLE2['Mean_Anomaly'])
+    print(true_anomaly[-1])
 
     MSE = (1/6) * ((float(parsed_TLE2['Eccentricity']) - eccentricity[-1])**2 + (float(parsed_TLE2['Inclination']) - inclination[-1])**2 + (float(parsed_TLE2['Arg_Perigee']) - argument_of_periapsis[-1])**2 + (float(parsed_TLE2['RAAN']) - raan[-1])**2 + (float(parsed_TLE2['Mean_Anomaly']) - true_anomaly[-1])**2 + (float(parsed_TLE2['Mean_Motion']) - dep_vars_array[-1,8])**2)
     print(MSE)
@@ -460,10 +474,6 @@ for i in range(5):
 print(DC)
 print(FA)
 print(Error)
-
-
-
-
 
 # ## Post-process the propagation results
 # The results of the propagation are then processed to a more user-friendly form.
@@ -513,6 +523,16 @@ plt.grid()
 plt.tight_layout()
 plt.show()
 plt.savefig('altitude vs DC.png')
+
+plt.figure(figsize=(9, 5))
+plt.title("DC vs Error.")
+plt.plot(DC, Error)
+plt.xlabel('DC')
+plt.ylabel('Error')
+plt.grid()
+plt.tight_layout()
+plt.show()
+plt.savefig('Error vs DC.png')
 
 
 # ### Ground track
