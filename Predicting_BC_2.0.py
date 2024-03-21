@@ -8,7 +8,6 @@ import math
 import matplotlib
 from matplotlib import pyplot as plt
 
-
 # Load tudatpy modules
 from tudatpy.interface import spice
 from tudatpy import numerical_simulation
@@ -20,15 +19,24 @@ from tudatpy.util import result2array
 from tudatpy.astro.time_conversion import DateTime
 import sys
 
-
+"""-------------------------------"""
 """Inputs"""
 TLE1_number = 0
-TLE2_number = 200
+TLE2_number = 100
 
 Mass = 2.2
 
 reference_area = 0.011  # Average projection area of a 3U CubeSat
 drag_coefficient = 1.5
+
+radiation_pressure_coefficient = 1.2
+
+fixed_step_size = 500.0 
+"""Change to a lower step size when the code works"""
+
+"""-------------------------------"""
+
+
 
 
 def convert_epoch_day_to_date(epoch_year, epoch_day):
@@ -134,7 +142,7 @@ def parse_TLE(TLE):
         'Height_Peri': Height_peri,
         'Vp': Vp,
         'Va': Va,
-        'Epoch_Year_Actual': epoch_year,
+        'Year_Actual': epoch_year,
         'Start_of_Year': start_of_year,
         'Day_Float': epoch_day,
         'Date': epoch_date,
@@ -150,11 +158,11 @@ parsed_TLE1 = parse_TLE(TLE_1)
 parsed_TLE2 = parse_TLE(TLE_2)
 
 print("The code will run from", parsed_TLE1['Date'], "to", parsed_TLE2['Date'])
-input("Press enter to continue...")
+response = input("Press Enter to continue, or any other key followed by Enter to stop...")
 
-# Stop the code if enter is not pressed
-if sys.stdin.read(1) != '\n':
-    sys.exit()
+if response:
+    print("Non-enter key pressed, stopping...")
+    quit()
 
     
 # And access the values like this:
@@ -172,7 +180,7 @@ spice.load_standard_kernels()
 # Set simulation start and end epochs
 start_date = DateTime(parsed_TLE1['Year_Actual'], parsed_TLE1['Month'], parsed_TLE1['Day'], parsed_TLE1['Hour'])
 simulation_start_epoch = start_date.epoch()
-simulation_end_epoch   = DateTime(parsed_TLE2['Year_actual'], parsed_TLE2['Month'], parsed_TLE2['Day'], parsed_TLE2['Hour']).epoch()
+simulation_end_epoch   = DateTime(parsed_TLE2['Year_Actual'], parsed_TLE2['Month'], parsed_TLE2['Day'], parsed_TLE2['Hour']).epoch()
 
 
 # ## Environment setup
@@ -219,8 +227,7 @@ bodies.get("Delfi-C3").mass = Mass
 
 
 # Create radiation pressure settings, and add to vehicle
-reference_area_radiation = 0.011  # Average projection area of a 3U CubeSat
-radiation_pressure_coefficient = 1.2
+reference_area_radiation = reference_area  # Average projection area of a 3U CubeSat
 occulting_bodies_dict = dict()
 occulting_bodies_dict[ "Sun" ] = [ "Earth" ]
 vehicle_target_settings = environment_setup.radiation_pressure.cannonball_radiation_target(
@@ -356,8 +363,7 @@ termination_settings_list = [propagation_setup.propagator.time_termination(simul
 termination_condition = propagation_setup.propagator.hybrid_termination(termination_settings_list, fulfill_single_condition = True)
 
 # Create numerical integrator settings
-fixed_step_size = 500.0 
-"""Change to a lower step size when the code works"""
+
 # integrator_settings = propagation_setup.integrator.runge_kutta_4(fixed_step_size)
 # integrator_settings = propagation_setup.integrator.adams_bashforth_moulton(fixed_step_size, 5.0, 150, minimum_order=6, maximum_order=11)
 integrator_settings = propagation_setup.integrator.bulirsch_stoer_variable_step(initial_time_step=fixed_step_size,extrapolation_sequence = propagation_setup.integrator.deufelhard_sequence, maximum_number_of_steps=7, 
@@ -389,7 +395,7 @@ integrator_settings = propagation_setup.integrator.bulirsch_stoer_variable_step(
 # 
 # The same is done with the dependent variable history. The column indexes corresponding to a given dependent variable in the `dep_vars` variable are printed when the simulation is run, when `create_dynamics_simulator()` is called.
 # Do mind that converting to an ndarray using the `result2array()` utility will shift these indexes, since the first column (index 0) will then be the times.
-
+Error = []
 DC = []
 FA= []
 for i in range(5):
@@ -423,6 +429,7 @@ for i in range(5):
 
    
     DC.append(drag_coefficient)
+    
 
 # Create simulation object and propagate the dynamics
     dynamics_simulator = numerical_simulation.create_dynamics_simulator(
@@ -436,10 +443,23 @@ for i in range(5):
     dep_vars_array = result2array(dep_vars)
 
     Final_altitude = dep_vars_array[-1,19]
+    kepler_elements = dep_vars_array[:,4:10]
+    eccentricity = kepler_elements[:,1]
+    inclination = np.rad2deg(kepler_elements[:,2])
+    argument_of_periapsis = np.rad2deg(kepler_elements[:,3])
+    raan = np.rad2deg(kepler_elements[:,4])
+    true_anomaly = np.rad2deg(kepler_elements[:,5])
+
+
+
+    MSE = (1/6) * ((float(parsed_TLE2['Eccentricity']) - eccentricity[-1])**2 + (float(parsed_TLE2['Inclination']) - inclination[-1])**2 + (float(parsed_TLE2['Arg_Perigee']) - argument_of_periapsis[-1])**2 + (float(parsed_TLE2['RAAN']) - raan[-1])**2 + (float(parsed_TLE2['Mean_Anomaly']) - true_anomaly[-1])**2 + (float(parsed_TLE2['Mean_Motion']) - dep_vars_array[-1,8])**2)
+    print(MSE)
+    Error.append(MSE)
     FA.append(Final_altitude)
 
 print(DC)
 print(FA)
+print(Error)
 
 
 
@@ -453,11 +473,11 @@ print(FA)
 
 
 # Plot total acceleration as function of time
-start_time=(time_conversion.calendar_date_to_julian_day(datetime.datetime(2022, 9, 6, 0, 27, 0, 970272))-time_conversion.calendar_date_to_julian_day(datetime.datetime(2000, 1, 1, 0, 0, 0, 0)))
+"""start_time=(time_conversion.calendar_date_to_julian_day(datetime.datetime(2022, 9, 6, 0, 27, 0, 970272))-time_conversion.calendar_date_to_julian_day(datetime.datetime(2000, 1, 1, 0, 0, 0, 0)))
 print(dep_vars_array[:,0]/(3600*24))
 time_days = dep_vars_array[:,0]/(3600*24) - start_time
 total_acceleration_norm = np.linalg.norm(dep_vars_array[:,1:4], axis=1)
-"""plt.figure(figsize=(9, 5))
+plt.figure(figsize=(9, 5))
 plt.title("Total acceleration norm on Delfi-C3 over the course of propagation.")
 plt.plot(time_days, total_acceleration_norm)
 plt.xlabel('Time [days]')
@@ -469,9 +489,9 @@ plt.show()"""
 
 #print(dep_vars_array[0,:])
 # altitude over time
-altitude = dep_vars_array[:,19]
+"""altitude = dep_vars_array[:,19]
 dates = [time_conversion.julian_day_to_calendar_date(start_date.julian_day()) + datetime.timedelta(days=day) for day in time_days]
-"""plt.figure(figsize=(9, 5))
+plt.figure(figsize=(9, 5))
 plt.title("Altitude of Delfi-C3 over the course of propagation.")
 plt.plot(dates, altitude)
 plt.gcf().autofmt_xdate()
@@ -500,13 +520,13 @@ plt.savefig('altitude vs DC.png')
 
 
 # Plot ground track for a period of 3 hours
-latitude = dep_vars_array[:,10]
+"""latitude = dep_vars_array[:,10]
 longitude = dep_vars_array[:,11]
 hours = 3
 subset = int(len(time_days) / 24 * hours)
 latitude = np.rad2deg(latitude[0: subset])
 longitude = np.rad2deg(longitude[0: subset])
-"""plt.figure(figsize=(9, 5))
+plt.figure(figsize=(9, 5))
 plt.title("3 hour ground track of Delfi-C3")
 plt.scatter(longitude, latitude, s=1)
 plt.xlabel('Longitude [deg]')
