@@ -22,15 +22,16 @@ import sys
 """-------------------------------"""
 """Inputs"""
 TLE1_number = 7000
-TLE2_number = 7200
+TLE2_number = 7300
 
 Mass = 2.2
 
-reference_area = 0.011  # Average projection area of a 3U CubeSat
-drag_coefficient = 0.5
-step_size_Cd = 0.25
+reference_area = 0.08  # Average projection area of a 3U CubeSat
+drag_coefficient_lower = 1
+drag_coefficient_upper = 3
 
-itterations = 5
+
+itterations = 20
 
 radiation_pressure_coefficient = 1.2
 
@@ -40,7 +41,7 @@ fixed_step_size = 200.0
 """-------------------------------"""
 
 
-
+step_size  = (drag_coefficient_upper - drag_coefficient_lower)/itterations
 
 def convert_epoch_day_to_date(epoch_year, epoch_day):
     # Create a datetime object for the start of the epoch year
@@ -164,6 +165,7 @@ parsed_TLE2 = parse_TLE(TLE_2)
 print('\n')
 print('\n')
 print("The code will run from", parsed_TLE1['Date'], "to", parsed_TLE2['Date'])
+print('It will run for a drag coefficient between', drag_coefficient_lower, 'and', drag_coefficient_upper,'with a step size of', step_size)
 print('\n')
 print('Grab yourself some coffee, this might take a while...')
 print('\n')
@@ -406,7 +408,7 @@ Error = []
 DC = []
 FA= []
 for i in range(itterations):
-    drag_coefficient = drag_coefficient + step_size_Cd
+    drag_coefficient = drag_coefficient_lower + i*step_size
 
     aero_coefficient_settings = environment_setup.aerodynamic_coefficients.constant(
     reference_area, [drag_coefficient, 0, 0]
@@ -449,7 +451,7 @@ for i in range(itterations):
     dep_vars = dynamics_simulator.dependent_variable_history
     dep_vars_array = result2array(dep_vars)
 
-    Final_altitude = dep_vars_array[-1,19]
+    #Final_altitude = dep_vars_array[-1,19]
     kepler_elements = dep_vars_array[:,4:10]
     Semi_major_axis = kepler_elements[:,0]
     eccentricity = kepler_elements[:,1]
@@ -467,7 +469,7 @@ for i in range(itterations):
     # Calculating the velocity
     Vp = math.sqrt((3.9860044188*10**14*2*Ra[-1])/(Rp[-1]*(Ra[-1]+Rp[-1])))
     Va = math.sqrt((3.9860044188*10**14*2*Rp[-1])/(Ra[-1]*(Ra[-1]+Rp[-1])))
-
+    print('For a drag coefficient of',round(drag_coefficient,2),'the TLE data versus the simulation data is as follows:')
     print(parsed_TLE2['Height_Apo'], Height_apo[-1])
     print(parsed_TLE2['Height_Peri'], Height_peri[-1])
     print(parsed_TLE2['Vp'], Vp)
@@ -479,7 +481,7 @@ for i in range(itterations):
     MSE = (1/4) * ((Height_apo[-1] - parsed_TLE2['Height_Apo'])**2 + (Height_peri[-1] - parsed_TLE2['Height_Peri'])**2 + (Vp - parsed_TLE2['Vp'])**2 + (Va - parsed_TLE2['Va'])**2)
     print(MSE)
     Error.append(MSE)
-    FA.append(Final_altitude)
+    FA.append(Height_apo[-1])
 
 print(DC)
 print(FA)
@@ -532,7 +534,7 @@ plt.ylabel('Altitude [m]')
 plt.grid()
 plt.tight_layout()
 plt.show()
-plt.savefig('altitude vs DC.png')
+plt.savefig('apoapsis vs DC.png')
 
 plt.figure(figsize=(9, 5))
 plt.title("DC vs Error.")
