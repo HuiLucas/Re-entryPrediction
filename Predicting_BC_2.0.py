@@ -43,6 +43,21 @@ fixed_step_size = 200.0
 
 step_size  = (drag_coefficient_upper - drag_coefficient_lower)/itterations
 
+
+# Open the file
+with open('/workspaces/Re-entryPrediction/TLE-Data_C3.txt', 'r') as file:
+    # Read lines two at a time
+    lines = file.readlines()
+    TLE_sets = [(lines[i].strip(), lines[i + 1].strip()) for i in range(0, len(lines), 2)]
+
+initTLE = []
+# Now you can use the TLE_sets in your code like this:
+for TLE_set in TLE_sets:
+    initTLE.append(environment.Tle(TLE_set[0], TLE_set[1]))
+
+
+print(TLE_set[0], TLE_set[1])
+
 def convert_epoch_day_to_date(epoch_year, epoch_day):
     # Create a datetime object for the start of the epoch year
     start_of_year = datetime(int(epoch_year), 1, 1)
@@ -317,6 +332,9 @@ initial_state = element_conversion.keplerian_to_cartesian_elementwise(
 )
 
 
+ephemerisdef = environment.TleEphemeris( "Earth", "J2000", initTLE[0], False )
+state = ephemerisdef.cartesian_state(simulation_start_epoch)
+print(element_conversion.cartesian_to_keplerian(state, bodies.get("Earth").gravitational_parameter))
 # ### Define dependent variables to save
 # In this example, we are interested in saving not only the propagated state of the satellite over time, but also a set of so-called dependent variables, that are to be computed (or extracted and saved) at each integration step.
 # 
