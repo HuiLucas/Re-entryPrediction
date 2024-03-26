@@ -24,13 +24,13 @@ import sys
 TLE1_number = 7000
 TLE2_number = 7200
 
-Mass = 2
+Mass = 2.2
 
 reference_area = 0.011  # Average projection area of a 3U CubeSat
-drag_coefficient = 0.7
-step_size_Cd = 0.1
+drag_coefficient = 0.5
+step_size_Cd = 0.25
 
-itterations = 10
+itterations = 5
 
 radiation_pressure_coefficient = 1.2
 
@@ -213,6 +213,8 @@ body_settings = environment_setup.get_default_body_settings(
     bodies_to_create,
     global_frame_origin,
     global_frame_orientation)
+
+body_settings.get("Earth").atmosphere_settings = environment_setup.atmosphere.nrlmsise00()
 
 # Create system of selected celestial bodies
 bodies = environment_setup.create_system_of_bodies(body_settings)
@@ -449,24 +451,32 @@ for i in range(itterations):
 
     Final_altitude = dep_vars_array[-1,19]
     kepler_elements = dep_vars_array[:,4:10]
+    Semi_major_axis = kepler_elements[:,0]
     eccentricity = kepler_elements[:,1]
     inclination = np.rad2deg(kepler_elements[:,2])
     argument_of_periapsis = np.rad2deg(kepler_elements[:,3])
     raan = np.rad2deg(kepler_elements[:,4])
     true_anomaly = np.rad2deg(kepler_elements[:,5])
 
-    print(parsed_TLE2['Eccentricity'])
-    print(eccentricity[-1])
-    print(parsed_TLE2['Inclination'])
-    print(inclination[-1])
-    print(parsed_TLE2['Arg_Perigee'])
-    print(argument_of_periapsis[-1])
-    print(parsed_TLE2['RAAN'])
-    print(raan[-1])
-    print(parsed_TLE2['Mean_Anomaly'])
-    print(true_anomaly[-1])
+    Rp = Semi_major_axis*(1-eccentricity[-1])
+    Ra = Semi_major_axis*(1+eccentricity[-1])
 
-    MSE = (1/6) * ((float(parsed_TLE2['Eccentricity']) - eccentricity[-1])**2 + (float(parsed_TLE2['Inclination']) - inclination[-1])**2 + (float(parsed_TLE2['Arg_Perigee']) - argument_of_periapsis[-1])**2 + (float(parsed_TLE2['RAAN']) - raan[-1])**2 + (float(parsed_TLE2['Mean_Anomaly']) - true_anomaly[-1])**2 + (float(parsed_TLE2['Mean_Motion']) - dep_vars_array[-1,8])**2)
+    Height_apo = Ra/1000 - 6371
+    Height_peri = Rp/1000 - 6371
+
+    # Calculating the velocity
+    Vp = math.sqrt((3.9860044188*10**14*2*Ra[-1])/(Rp[-1]*(Ra[-1]+Rp[-1])))
+    Va = math.sqrt((3.9860044188*10**14*2*Rp[-1])/(Ra[-1]*(Ra[-1]+Rp[-1])))
+
+    print(parsed_TLE2['Height_Apo'], Height_apo[-1])
+    print(parsed_TLE2['Height_Peri'], Height_peri[-1])
+    print(parsed_TLE2['Vp'], Vp)
+    print(parsed_TLE2['Va'], Va)
+
+
+
+
+    MSE = (1/4) * ((Height_apo[-1] - parsed_TLE2['Height_Apo'])**2 + (Height_peri[-1] - parsed_TLE2['Height_Peri'])**2 + (Vp - parsed_TLE2['Vp'])**2 + (Va - parsed_TLE2['Va'])**2)
     print(MSE)
     Error.append(MSE)
     FA.append(Final_altitude)
