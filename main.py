@@ -19,7 +19,7 @@
 
 # Load standard modules
 import numpy as np
-
+import spiceypy
 import matplotlib
 from matplotlib import pyplot as plt
 
@@ -33,8 +33,39 @@ from tudatpy import constants
 from tudatpy.util import result2array
 from tudatpy.astro.time_conversion import DateTime
 import datetime
+import sgp4
+from sgp4.api import Satrec
+from astropy.coordinates import SkyCoord, TEME, ICRS
+import astropy.units as u
 # import inspect
+def teme_to_j2000(coords_teme):
+    # Extract coordinates
+    x_teme, y_teme, z_teme, vx_teme, vy_teme, vz_teme = coords_teme
 
+    # Create SkyCoord object for TEME coordinates
+    coords_teme = SkyCoord(x=x_teme * u.km,
+                           y=y_teme * u.km,
+                           z=z_teme * u.km,
+                           v_x=vx_teme * u.km / u.s,
+                           v_y=vy_teme * u.km / u.s,
+                           v_z=vz_teme * u.km / u.s,
+                           frame=TEME(obstime='J2000'))
+
+    # Transform to J2000 frame
+    coords_j2000 = coords_teme.transform_to(ICRS)
+
+    # Extract transformed coordinates and velocities
+    x_j2000 = coords_j2000.cartesian.x.to_value(u.km)
+    y_j2000 = coords_j2000.cartesian.y.to_value(u.km)
+    z_j2000 = coords_j2000.cartesian.z.to_value(u.km)
+    vx_j2000 = coords_j2000.velocity.d_x.to_value(u.km / u.s)
+    vy_j2000 = coords_j2000.velocity.d_y.to_value(u.km / u.s)
+    vz_j2000 = coords_j2000.velocity.d_z.to_value(u.km / u.s)
+
+    # Combine into an array
+    coords_j2000_array = np.array([x_j2000, y_j2000, z_j2000, vx_j2000, vy_j2000, vz_j2000])
+
+    return coords_j2000_array
 
 # ## Configuration
 # NAIF's `SPICE` kernels are first loaded, so that the position of various bodies such as the Earth can be make known to `tudatpy`.
@@ -198,8 +229,27 @@ initial_state = element_conversion.keplerian_to_cartesian_elementwise(
     longitude_of_ascending_node=np.deg2rad(272.4752),
     true_anomaly=element_conversion.mean_to_true_anomaly(eccentricity=0.001126, mean_anomaly=np.deg2rad(306.7920)),
 )
-
-
+# OVERRIDE THE INITIAL STATE!!
+initTLE = environment.Tle("1 32789U 08021G   22249.01876123  .00014642  00000-0  77860-3 0  9995", "2 32789  97.3369 272.4752 0011260  53.4348 306.7920 15.15311550784120")
+initial_ephemeris = environment.TleEphemeris( "Earth", "J2000", initTLE, False )
+initial_state = initial_ephemeris.cartesian_state(simulation_start_epoch)
+print(element_conversion.teme_state_to_j2000(simulation_start_epoch, initial_state), element_conversion.cartesian_to_keplerian(element_conversion.teme_state_to_eclipj2000(simulation_start_epoch, initial_state), bodies.get("Earth").gravitational_parameter))
+print(initial_state, element_conversion.cartesian_to_keplerian(initial_state, bodies.get("Earth").gravitational_parameter))
+# sgpsatellite = Satrec.twoline2rv("1 32789U 08021G   22249.01876123  .00014642  00000-0  77860-3 0  9995", "2 32789  97.3369 272.4752 0011260  53.4348 306.7920 15.15311550784120")
+# sgpstate = sgpsatellite.sgp4(time_conversion.seconds_since_epoch_to_julian_day( simulation_start_epoch),0.0)
+# print(sgpstate)
+# listthing=[]
+# for coord in sgpstate[1]:
+#     listthing.append(coord)
+# for coord in sgpstate[2]:
+#     listthing.append(coord)
+#print(listthing, element_conversion.cartesian_to_keplerian(listthing, bodies.get("Earth").gravitational_parameter))
+#print(teme_to_j2000(listthing), element_conversion.cartesian_to_keplerian(teme_to_j2000(listthing), bodies.get("Earth").gravitational_parameter))
+#initial_state = spice.get_cartesian_state_from_tle_at_epoch(epoch=simulation_start_epoch ,tle=environment.Tle("1 32789U 08021G   22249.01876123  .00014642  00000-0  77860-3 0  9995", "2 32789  97.3369 272.4752 0011260  53.4348 306.7920 15.15311550784120"))
+# evstate = spiceypy.spiceypy.ev2lin(simulation_start_epoch, [1.082616E-3, -2.53881E-6, -1.65597E-6, 7.43669161E-2, 120.0, 78.0, 6378.135, 1.0], [0.00014642, 0.00000, 77860E-3, 97.3369, 272.4752, 0.0011260 , 53.4348, 306.7920, 15.15311550, simulation_start_epoch ])
+# print("evstate", evstate, "keplstate", element_conversion.cartesian_to_keplerian(evstate, bodies.get("Earth").gravitational_parameter))
+# print(initial_state)
+#print(element_conversion.cartesian_to_keplerian(initial_state, bodies.get("Earth").gravitational_parameter))
 # ### Define dependent variables to save
 # In this example, we are interested in saving not only the propagated state of the satellite over time, but also a set of so-called dependent variables, that are to be computed (or extracted and saved) at each integration step.
 # 
@@ -255,7 +305,7 @@ termination_settings_list = [propagation_setup.propagator.time_termination(simul
 termination_condition = propagation_setup.propagator.hybrid_termination(termination_settings_list, fulfill_single_condition = True)
 
 # Create numerical integrator settings
-fixed_step_size = 150.00
+fixed_step_size = 50.00
 # integrator_settings = propagation_setup.integrator.runge_kutta_4(fixed_step_size) 
 # integrator_settings = propagation_setup.integrator.adams_bashforth_moulton(fixed_step_size, 5.0, 150, minimum_order=6, maximum_order=11)
 # integrator_settings = propagation_setup.integrator.bulirsch_stoer_variable_step(initial_time_step=fixed_step_size,extrapolation_sequence = propagation_setup.integrator.deufelhard_sequence, maximum_number_of_steps=7, 
