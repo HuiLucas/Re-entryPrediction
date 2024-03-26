@@ -109,7 +109,7 @@ body_settings = environment_setup.get_default_body_settings(
     global_frame_origin,
     global_frame_orientation)
 
-body_settings.get("Earth").atmosphere_settings = environment_setup.atmosphere.nrlmsise00()
+body_settings.get("Earth").atmosphere_settings = environment_setup.atmosphere.nrlmsise00(space_weather_file ="C:/Users/lhuir/Downloads/SW-All.txt")
 
 # Create system of selected celestial bodies
 bodies = environment_setup.create_system_of_bodies(body_settings)
@@ -132,7 +132,7 @@ bodies.get("Delfi-C3").mass =  2.2
 
 # Create aerodynamic coefficient interface settings, and add to vehicle
 reference_area = 0.08  # Average projection area of a 3U CubeSat
-drag_coefficient = 2.20
+drag_coefficient = 1.8
 aero_coefficient_settings = environment_setup.aerodynamic_coefficients.constant(
     reference_area, [drag_coefficient, 0, 0]
 )
@@ -233,7 +233,7 @@ initial_state = element_conversion.keplerian_to_cartesian_elementwise(
 initTLE = environment.Tle("1 32789U 08021G   22249.01876123  .00014642  00000-0  77860-3 0  9995", "2 32789  97.3369 272.4752 0011260  53.4348 306.7920 15.15311550784120")
 initial_ephemeris = environment.TleEphemeris( "Earth", "J2000", initTLE, False )
 initial_state = initial_ephemeris.cartesian_state(simulation_start_epoch)
-print(element_conversion.teme_state_to_j2000(simulation_start_epoch, initial_state), element_conversion.cartesian_to_keplerian(element_conversion.teme_state_to_eclipj2000(simulation_start_epoch, initial_state), bodies.get("Earth").gravitational_parameter))
+#print(element_conversion.teme_state_to_j2000(simulation_start_epoch, initial_state), element_conversion.cartesian_to_keplerian(element_conversion.teme_state_to_eclipj2000(simulation_start_epoch, initial_state), bodies.get("Earth").gravitational_parameter))
 print(initial_state, element_conversion.cartesian_to_keplerian(initial_state, bodies.get("Earth").gravitational_parameter))
 # sgpsatellite = Satrec.twoline2rv("1 32789U 08021G   22249.01876123  .00014642  00000-0  77860-3 0  9995", "2 32789  97.3369 272.4752 0011260  53.4348 306.7920 15.15311550784120")
 # sgpstate = sgpsatellite.sgp4(time_conversion.seconds_since_epoch_to_julian_day( simulation_start_epoch),0.0)
