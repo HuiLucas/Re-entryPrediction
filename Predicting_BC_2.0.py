@@ -1,5 +1,10 @@
+# Load basic modules
 import numpy as np
-
+import datetime
+import pandas as pd
+import re
+from datetime import datetime, timedelta
+import math
 import matplotlib
 from matplotlib import pyplot as plt
 
@@ -12,9 +17,161 @@ from tudatpy.astro import element_conversion, time_conversion
 from tudatpy import constants
 from tudatpy.util import result2array
 from tudatpy.astro.time_conversion import DateTime
-import datetime
-# import inspect
+import sys
 
+"""-------------------------------"""
+"""Inputs"""
+TLE1_number = 7000
+TLE2_number = 7200
+
+Mass = 2.2
+
+reference_area = 0.011  # Average projection area of a 3U CubeSat
+drag_coefficient = 0.5
+step_size_Cd = 0.25
+
+itterations = 5
+
+radiation_pressure_coefficient = 1.2
+
+fixed_step_size = 200.0 
+"""Change to a lower step size when the code works"""
+
+"""-------------------------------"""
+
+
+
+
+def convert_epoch_day_to_date(epoch_year, epoch_day):
+    # Create a datetime object for the start of the epoch year
+    start_of_year = datetime(int(epoch_year), 1, 1)
+
+    # Add the epoch day to the start of the year, subtracting one because
+    # datetime's day count starts at 1, not 0
+    epoch_date = start_of_year + timedelta(days=float(epoch_day) - 1)
+
+    # Extract the month, day, and hour
+    month = epoch_date.month
+    day = epoch_date.day
+    hour = epoch_date.hour
+
+    return month, day, hour
+# Open the file
+with open('/workspaces/Re-entryPrediction/TLE-Data_C3.txt', 'r') as file:
+    # Read lines two at a time
+    lines = file.readlines()
+    TLE_sets = [(lines[i], lines[i + 1]) for i in range(0, len(lines), 2)]
+
+# Create lists to store the split lines
+split_TLE_sets = []
+
+# Loop over each TLE set
+for TLE_set in TLE_sets:
+    # Split each line and extract the numeric values
+    line1 = re.findall(r'\d+\.\d+|\d+', TLE_set[0])  # Find all numeric characters and decimal points
+    line2 = re.findall(r'\d+\.\d+|\d+', TLE_set[1])  # Find all numeric characters and decimal points
+
+    # Add the split lines to the list
+    split_TLE_sets.append((line1, line2))
+
+# Now split_TLE_sets is a list of tuples, where each tuple is a pair of split lines (a TLE set)
+# You can access the first split TLE set like this:
+TLE_1 = split_TLE_sets[TLE1_number]
+TLE_2 = split_TLE_sets[TLE2_number]
+
+def parse_TLE(TLE):
+    TLE_line1 = TLE[0]
+    TLE_line2 = TLE[1]
+
+    Int_Des_Year = TLE_line1[2][:2]
+    Int_Des = TLE_line1[2][2:]
+    Epoch_Year = TLE_line1[3][:2]
+    Epoch_Day = TLE_line1[3][2:]
+    Inclination = TLE_line2[2]
+    RAAN = TLE_line2[3]
+    Eccentricity = int(TLE_line2[4])*10**(-7)
+    Arg_Perigee = TLE_line2[5]
+    Mean_Anomaly = TLE_line2[6]
+    Mean_Motion = TLE_line2[7][:11]
+    Rev_Num = TLE_line2[7][11:16]
+
+    # Calculate the launch year
+    if int(Int_Des_Year) < 57:
+        launch_year = int(Int_Des_Year)+2000
+    else:
+        launch_year = int(Int_Des_Year)+1900
+
+    # Calculate the period and semi-major axis
+    Period = (1*24*3600)/(float(Mean_Motion))
+    semi_major_axis = (Period**2 * 3.9860044188*10**14/((2*math.pi)**2))**(1/3)
+    rp = semi_major_axis*(1-Eccentricity)
+    ra = semi_major_axis*(1+Eccentricity)
+
+    Height_apo = ra/1000 - 6371
+    Height_peri = rp/1000 - 6371
+
+    # Calculating the velocity
+    Vp = math.sqrt((3.9860044188*10**14*2*ra)/(rp*(ra+rp)))
+    Va = math.sqrt((3.9860044188*10**14*2*rp)/(ra*(ra+rp)))
+
+    # Convert the epoch year and day to an actual date and time
+    if int(Epoch_Year) < 30:
+        epoch_year = int(Epoch_Year) + 2000  # Add 2000 to get the full year
+    else:
+        epoch_year = int(Epoch_Year) + 1900  
+    start_of_year = datetime(epoch_year, 1, 1)  # January 1 of the epoch year
+    epoch_day = float(Epoch_Day)  # Convert to float to handle fractional days
+
+    epoch_date = start_of_year + timedelta(days=epoch_day)
+
+    month, day, hour = convert_epoch_day_to_date(epoch_year, epoch_day)
+
+    parsed_values = {
+        'Int_Des_Year': Int_Des_Year,
+        'Int_Des': Int_Des,
+        'Epoch_Year': Epoch_Year,
+        'Epoch_Day': Epoch_Day,
+        'Inclination': Inclination,
+        'RAAN': RAAN,
+        'Eccentricity': Eccentricity,
+        'Arg_Perigee': Arg_Perigee,
+        'Mean_Anomaly': Mean_Anomaly,
+        'Mean_Motion': Mean_Motion,
+        'Rev_Num': Rev_Num,
+        'Launch_Year': launch_year,
+        'Period': Period,
+        'Semi_Major_Axis': semi_major_axis,
+        'Height_Apo': Height_apo,
+        'Height_Peri': Height_peri,
+        'Vp': Vp,
+        'Va': Va,
+        'Year_Actual': epoch_year,
+        'Start_of_Year': start_of_year,
+        'Day_Float': epoch_day,
+        'Date': epoch_date,
+        'Month': month,
+        'Day': day,
+        'Hour': hour
+    }
+
+    return parsed_values
+
+# Now you can parse each TLE set like this:
+parsed_TLE1 = parse_TLE(TLE_1)
+parsed_TLE2 = parse_TLE(TLE_2)
+
+
+print('\n')
+print('\n')
+print("The code will run from", parsed_TLE1['Date'], "to", parsed_TLE2['Date'])
+print('\n')
+print('Grab yourself some coffee, this might take a while...')
+print('\n')
+
+
+    
+# And access the values like this:
+"""print(parsed_TLE1['Epoch_Year_Actual'])"""
 
 # ## Configuration
 # NAIF's `SPICE` kernels are first loaded, so that the position of various bodies such as the Earth can be make known to `tudatpy`.
@@ -22,14 +179,13 @@ import datetime
 # Then, the start and end simulation epochs are setups. In this case, the start epoch is set to `0`, corresponding to the 1st of January 2000. The times should be specified in seconds since J2000.
 # Please refer to the API documentation of the `time_conversion module` [here](https://tudatpy.readthedocs.io/en/latest/time_conversion.html) for more information on this.
 
-
 # Load spice kernels
 spice.load_standard_kernels()
 
 # Set simulation start and end epochs
-start_date = DateTime(2022, 9, 6, 0, 27, 00.970272)
+start_date = DateTime(parsed_TLE1['Year_Actual'], parsed_TLE1['Month'], parsed_TLE1['Day'], parsed_TLE1['Hour'])
 simulation_start_epoch = start_date.epoch()
-simulation_end_epoch   = DateTime(2022, 10, 6).epoch()
+simulation_end_epoch   = DateTime(parsed_TLE2['Year_Actual'], parsed_TLE2['Month'], parsed_TLE2['Day'], parsed_TLE2['Hour']).epoch()
 
 
 # ## Environment setup
@@ -58,6 +214,8 @@ body_settings = environment_setup.get_default_body_settings(
     global_frame_origin,
     global_frame_orientation)
 
+body_settings.get("Earth").atmosphere_settings = environment_setup.atmosphere.nrlmsise00()
+
 # Create system of selected celestial bodies
 bodies = environment_setup.create_system_of_bodies(body_settings)
 
@@ -69,25 +227,14 @@ bodies = environment_setup.create_system_of_bodies(body_settings)
 # Create vehicle objects.
 bodies.create_empty_body("Delfi-C3")
 
-bodies.get("Delfi-C3").mass = 2.2
-
-# To account for the aerodynamic of the satellite, let's add an aerodynamic interface and add it to the environment setup, taking the followings into account:
-# - A constant drag coefficient of 1.2.
-# - A reference area of 0.035m$^2$.
-# - No sideslip or lift coefficient (equal to 0).
-# - No moment coefficient.
-
-# Create aerodynamic coefficient interface settings, and add to vehicle
-reference_area = 0.011  # Average projection area of a 3U CubeSat
-drag_coefficient = 1.5
+bodies.get("Delfi-C3").mass = Mass
 
 
 # To account for the pressure of the solar radiation on the satellite, let's add another interface. This takes a radiation pressure coefficient of 1.2, and a radiation area of 4m$^2$. This interface also accounts for the variation in pressure cause by the shadow of Earth.
 
 
 # Create radiation pressure settings, and add to vehicle
-reference_area_radiation = 0.011  # Average projection area of a 3U CubeSat
-radiation_pressure_coefficient = 1.2
+reference_area_radiation = reference_area  # Average projection area of a 3U CubeSat
 occulting_bodies_dict = dict()
 occulting_bodies_dict[ "Sun" ] = [ "Earth" ]
 vehicle_target_settings = environment_setup.radiation_pressure.cannonball_radiation_target(
@@ -159,12 +306,12 @@ acceleration_settings = {"Delfi-C3": accelerations_settings_delfi_c3}
 earth_gravitational_parameter = bodies.get("Earth").gravitational_parameter
 initial_state = element_conversion.keplerian_to_cartesian_elementwise(
     gravitational_parameter=earth_gravitational_parameter,
-    semi_major_axis= 7002.990555879878e3,
-    eccentricity= 0.001126,
-    inclination=np.deg2rad(97.3369),
-    argument_of_periapsis=np.deg2rad(53.4348),
-    longitude_of_ascending_node=np.deg2rad(272.4752),
-    true_anomaly=element_conversion.mean_to_true_anomaly(eccentricity=0.001126, mean_anomaly=np.deg2rad(306.7920)),
+    semi_major_axis= float(parsed_TLE1['Semi_Major_Axis']),
+    eccentricity= float(parsed_TLE1['Eccentricity']),
+    inclination=np.deg2rad(float(parsed_TLE1['Inclination'])),
+    argument_of_periapsis=np.deg2rad(float(parsed_TLE1['Arg_Perigee'])),
+    longitude_of_ascending_node=np.deg2rad(float(parsed_TLE1['RAAN'])),
+    true_anomaly=element_conversion.mean_to_true_anomaly(eccentricity=float(parsed_TLE1['Eccentricity']), mean_anomaly=np.deg2rad(float(parsed_TLE1['Mean_Anomaly']))),
 )
 
 
@@ -223,7 +370,7 @@ termination_settings_list = [propagation_setup.propagator.time_termination(simul
 termination_condition = propagation_setup.propagator.hybrid_termination(termination_settings_list, fulfill_single_condition = True)
 
 # Create numerical integrator settings
-fixed_step_size = 200.0
+
 # integrator_settings = propagation_setup.integrator.runge_kutta_4(fixed_step_size)
 # integrator_settings = propagation_setup.integrator.adams_bashforth_moulton(fixed_step_size, 5.0, 150, minimum_order=6, maximum_order=11)
 integrator_settings = propagation_setup.integrator.bulirsch_stoer_variable_step(initial_time_step=fixed_step_size,extrapolation_sequence = propagation_setup.integrator.deufelhard_sequence, maximum_number_of_steps=7, 
@@ -255,11 +402,11 @@ integrator_settings = propagation_setup.integrator.bulirsch_stoer_variable_step(
 # 
 # The same is done with the dependent variable history. The column indexes corresponding to a given dependent variable in the `dep_vars` variable are printed when the simulation is run, when `create_dynamics_simulator()` is called.
 # Do mind that converting to an ndarray using the `result2array()` utility will shift these indexes, since the first column (index 0) will then be the times.
-
+Error = []
 DC = []
 FA= []
-for i in range(5):
-    drag_coefficient = drag_coefficient + 0.5
+for i in range(itterations):
+    drag_coefficient = drag_coefficient + step_size_Cd
 
     aero_coefficient_settings = environment_setup.aerodynamic_coefficients.constant(
     reference_area, [drag_coefficient, 0, 0]
@@ -282,13 +429,14 @@ for i in range(5):
         termination_condition,
         output_variables=dependent_variables_to_save,
     )
-    propagator_settings.print_settings.print_dependent_variable_indices = True
-    propagator_settings.print_settings.print_state_indices = True
+    propagator_settings.print_settings.print_dependent_variable_indices = False
+    propagator_settings.print_settings.print_state_indices = False
     # propagator_settings.print_settings.results_print_frequency_in_seconds = 0.5e7
     propagator_settings.print_settings.results_print_frequency_in_steps =100000
 
    
     DC.append(drag_coefficient)
+    
 
 # Create simulation object and propagate the dynamics
     dynamics_simulator = numerical_simulation.create_dynamics_simulator(
@@ -302,14 +450,40 @@ for i in range(5):
     dep_vars_array = result2array(dep_vars)
 
     Final_altitude = dep_vars_array[-1,19]
+    kepler_elements = dep_vars_array[:,4:10]
+    Semi_major_axis = kepler_elements[:,0]
+    eccentricity = kepler_elements[:,1]
+    inclination = np.rad2deg(kepler_elements[:,2])
+    argument_of_periapsis = np.rad2deg(kepler_elements[:,3])
+    raan = np.rad2deg(kepler_elements[:,4])
+    true_anomaly = np.rad2deg(kepler_elements[:,5])
+
+    Rp = Semi_major_axis*(1-eccentricity[-1])
+    Ra = Semi_major_axis*(1+eccentricity[-1])
+
+    Height_apo = Ra/1000 - 6371
+    Height_peri = Rp/1000 - 6371
+
+    # Calculating the velocity
+    Vp = math.sqrt((3.9860044188*10**14*2*Ra[-1])/(Rp[-1]*(Ra[-1]+Rp[-1])))
+    Va = math.sqrt((3.9860044188*10**14*2*Rp[-1])/(Ra[-1]*(Ra[-1]+Rp[-1])))
+
+    print(parsed_TLE2['Height_Apo'], Height_apo[-1])
+    print(parsed_TLE2['Height_Peri'], Height_peri[-1])
+    print(parsed_TLE2['Vp'], Vp)
+    print(parsed_TLE2['Va'], Va)
+
+
+
+
+    MSE = (1/4) * ((Height_apo[-1] - parsed_TLE2['Height_Apo'])**2 + (Height_peri[-1] - parsed_TLE2['Height_Peri'])**2 + (Vp - parsed_TLE2['Vp'])**2 + (Va - parsed_TLE2['Va'])**2)
+    print(MSE)
+    Error.append(MSE)
     FA.append(Final_altitude)
 
 print(DC)
 print(FA)
-
-
-
-
+print(Error)
 
 # ## Post-process the propagation results
 # The results of the propagation are then processed to a more user-friendly form.
@@ -319,11 +493,11 @@ print(FA)
 
 
 # Plot total acceleration as function of time
-start_time=(time_conversion.calendar_date_to_julian_day(datetime.datetime(2022, 9, 6, 0, 27, 0, 970272))-time_conversion.calendar_date_to_julian_day(datetime.datetime(2000, 1, 1, 0, 0, 0, 0)))
+"""start_time=(time_conversion.calendar_date_to_julian_day(datetime.datetime(2022, 9, 6, 0, 27, 0, 970272))-time_conversion.calendar_date_to_julian_day(datetime.datetime(2000, 1, 1, 0, 0, 0, 0)))
 print(dep_vars_array[:,0]/(3600*24))
 time_days = dep_vars_array[:,0]/(3600*24) - start_time
 total_acceleration_norm = np.linalg.norm(dep_vars_array[:,1:4], axis=1)
-"""plt.figure(figsize=(9, 5))
+plt.figure(figsize=(9, 5))
 plt.title("Total acceleration norm on Delfi-C3 over the course of propagation.")
 plt.plot(time_days, total_acceleration_norm)
 plt.xlabel('Time [days]')
@@ -335,9 +509,9 @@ plt.show()"""
 
 #print(dep_vars_array[0,:])
 # altitude over time
-altitude = dep_vars_array[:,19]
+"""altitude = dep_vars_array[:,19]
 dates = [time_conversion.julian_day_to_calendar_date(start_date.julian_day()) + datetime.timedelta(days=day) for day in time_days]
-"""plt.figure(figsize=(9, 5))
+plt.figure(figsize=(9, 5))
 plt.title("Altitude of Delfi-C3 over the course of propagation.")
 plt.plot(dates, altitude)
 plt.gcf().autofmt_xdate()
@@ -360,19 +534,29 @@ plt.tight_layout()
 plt.show()
 plt.savefig('altitude vs DC.png')
 
+plt.figure(figsize=(9, 5))
+plt.title("DC vs Error.")
+plt.plot(DC, Error)
+plt.xlabel('DC')
+plt.ylabel('Error')
+plt.grid()
+plt.tight_layout()
+plt.show()
+plt.savefig('Error vs DC.png')
+
 
 # ### Ground track
 # Let's then plot the ground track of the satellite in its first 3 hours. This makes use of the latitude and longitude dependent variables.
 
 
 # Plot ground track for a period of 3 hours
-latitude = dep_vars_array[:,10]
+"""latitude = dep_vars_array[:,10]
 longitude = dep_vars_array[:,11]
 hours = 3
 subset = int(len(time_days) / 24 * hours)
 latitude = np.rad2deg(latitude[0: subset])
 longitude = np.rad2deg(longitude[0: subset])
-"""plt.figure(figsize=(9, 5))
+plt.figure(figsize=(9, 5))
 plt.title("3 hour ground track of Delfi-C3")
 plt.scatter(longitude, latitude, s=1)
 plt.xlabel('Longitude [deg]')
