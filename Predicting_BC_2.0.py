@@ -28,15 +28,15 @@ TLE2_number = 8782
 Mass = 2.2
 
 reference_area = 0.08  # Average projection area of a 3U CubeSat
-drag_coefficient_lower = 1.5
-drag_coefficient_upper = 2.8
+drag_coefficient_lower = 1.4
+drag_coefficient_upper = 2.0
 
 
-itterations = 13
+itterations = 14
 
 radiation_pressure_coefficient = 1.2
 
-fixed_step_size = 100
+fixed_step_size = 50
 
 """Change to a lower step size when the code works"""
 
@@ -185,21 +185,7 @@ parsed_TLE1 = parse_TLE(TLE_1)
 parsed_TLE2 = parse_TLE(TLE_2)
 
 
-
-
-second_TLE = initTLE[TLE2_number]
-
-
-
-
-print('\n')
-print("The code will run from", parsed_TLE1['Date'], "to", parsed_TLE2['Date'])
-print('It will run for a drag coefficient between', drag_coefficient_lower, 'and', drag_coefficient_upper,'with a step size of', step_size)
-print('\n')
-print('Grab yourself some coffee, this might take a while...')
-print('\n')
-
-    
+second_TLE = initTLE[TLE2_number]    
 # And access the values like this:
 """print(parsed_TLE1['Epoch_Year_Actual'])"""
 
@@ -217,6 +203,18 @@ start_date = datetime(2000, 1, 1, 0, 0, 0, 0)+relativedelta(years= int(parsed_TL
 simulation_start_epoch = time_conversion.datetime_to_tudat(start_date).epoch()
 end_date  = datetime(2000, 1, 1, 0, 0, 0, 0)+relativedelta(years= int(parsed_TLE2['Epoch_Year']))+timedelta(days = float(parsed_TLE2['Epoch_Day'])-1)
 simulation_end_epoch = time_conversion.datetime_to_tudat(end_date).epoch()
+
+
+
+print('\n')
+print("The code will run from", start_date, "to", end_date)
+print('It will run for a drag coefficient between', drag_coefficient_lower, 'and', drag_coefficient_upper,'with a step size of', step_size)
+print('\n')
+print('Grab yourself some coffee, this might take a while...')
+print('\n')
+
+
+
 
 
 # ## Environment setup
@@ -469,7 +467,8 @@ DC = []
 FA= []
 for i in range(itterations):
     drag_coefficient = drag_coefficient_lower + i*step_size
-    print("Starting simulation for a drag coefficient of:", drag_coefficient)
+    print("-----Starting simulation for a drag coefficient of:", drag_coefficient,'-----')
+    print('\n')
 
     aero_coefficient_settings = environment_setup.aerodynamic_coefficients.constant(
     reference_area, [drag_coefficient, 0, 0]
@@ -536,12 +535,16 @@ for i in range(itterations):
     print(Height_periFinal, Height_peri[-1])
     print(VpFinal, Vp)
     print(VaFinal, Va)
+    print('\n')
+
 
 
 
 
     MSE = (1/4) * ((Height_apo[-1] - Height_apoFinal)**2 + (Height_peri[-1] - Height_periFinal)**2 + (Vp - VpFinal)**2 + (Va - VaFinal)**2)
     print(MSE)
+    print('\n')
+
     Error.append(MSE)
     FA.append(Height_apo[-1])
 
