@@ -22,7 +22,7 @@ from dateutil.relativedelta import relativedelta
 
 """-------------------------------"""
 """Inputs"""
-TLE1_number = 8300
+TLE1_number = 8500
 TLE2_number = 8782
 
 Mass = 2.2
@@ -394,6 +394,24 @@ for i in range(len(data_mid)):
     Semi_major_axis_mid.append(data_mid[i][0])
     eccentricity_mid.append(data_mid[i][1])
 
+    Height_Apo_Mid = []
+    Height_Peri_Mid = []
+    Vp_Mid = []
+    Va_Mid = []
+    for i in range(len(TLE_mid)):
+        Rp_mid = Semi_major_axis_mid[i]*(1-eccentricity_mid[i])
+        Ra_mid = Semi_major_axis_mid[i]*(1+eccentricity_mid[i])
+
+        Height_apo_mid = Ra_mid/1000 - 6371
+        Height_peri_mid = Rp_mid/1000 - 6371
+
+        # Calculating the velocity
+        Vp_mid = math.sqrt((3.9860044188*10**14*2*Ra_mid)/(Rp_mid*(Ra_mid+Rp_mid)))
+        Va_mid = math.sqrt((3.9860044188*10**14*2*Rp_mid)/(Ra_mid*(Ra_mid+Rp_mid)))
+        Height_Apo_Mid.append(Height_apo_mid)
+        Height_Peri_Mid.append(Height_peri_mid)
+        Vp_Mid.append(Vp_mid)
+        Va_Mid.append(Va_mid)
 
 
 Semi_major_axisFinal = element_conversion.cartesian_to_keplerian(state_2, bodies.get("Earth").gravitational_parameter)[0]
@@ -562,11 +580,14 @@ for i in range(itterations):
     raan = np.rad2deg(kepler_elements[:,4])
     true_anomaly = np.rad2deg(kepler_elements[:,5])
 
-    Rp = Semi_major_axis*(1-eccentricity[-1])
-    Ra = Semi_major_axis*(1+eccentricity[-1])
+    Rp = Semi_major_axis*(1-eccentricity[-1])  
+    Ra = Semi_major_axis*(1+eccentricity[-1])   
 
     Height_apo = Ra/1000 - 6371
     Height_peri = Rp/1000 - 6371
+
+
+    "Add lists of Rp, Ra, Vp and Va for the midpoints and implement that in the error2 calculations"    
 
     # Calculating the velocity
     Vp = math.sqrt((3.9860044188*10**14*2*Ra[-1])/(Rp[-1]*(Ra[-1]+Rp[-1])))
@@ -578,37 +599,22 @@ for i in range(itterations):
     print(VaFinal, Va)
     print('\n')
 
-
+        
     MSE = (1/4) * ((Height_apo[-1] - Height_apoFinal)**2 + (Height_peri[-1] - Height_periFinal)**2 + (Vp - VpFinal)**2 + (Va - VaFinal)**2)
     print(MSE)
     print('\n')
 
-    Height_Apo_Mid = []
-    Height_Peri_Mid = []
-    Vp_Mid = []
-    Va_Mid = []
-    for i in range(len(TLE_mid)):
-        Rp_mid = Semi_major_axis_mid[i]*(1-eccentricity_mid[i])
-        Ra_mid = Semi_major_axis_mid[i]*(1+eccentricity_mid[i])
 
-        Height_apo_mid = Ra_mid/1000 - 6371
-        Height_peri_mid = Rp_mid/1000 - 6371
-
-        # Calculating the velocity
-        Vp_mid = math.sqrt((3.9860044188*10**14*2*Ra_mid)/(Rp_mid*(Ra_mid+Rp_mid)))
-        Va_mid = math.sqrt((3.9860044188*10**14*2*Rp_mid)/(Ra_mid*(Ra_mid+Rp_mid)))
-        Height_Apo_Mid.append(Height_apo_mid)
-        Height_Peri_Mid.append(Height_peri_mid)
-        Vp_Mid.append(Vp_mid)
-        Va_Mid.append(Va_mid)
     MSE_mid = []
     for i in range(len(TLE_mid)):
         MSE_mid.append((1/4) * ((Height_Apo_Mid[i] - Height_apo[TLE_mid[i]])**2 + (Height_Peri_Mid[i]- Height_peri[TLE_mid[i]])**2 + (Vp_Mid[i] - Vp[TLE_mid[i]])**2 + (Va_Mid[i] - Va[TLE_mid[i]])**2))
     MSE2 = (1/Epoch_checks) * (((Height_apo[-1] - Height_apoFinal)**2 + (Height_peri[-1] - Height_periFinal)**2 + (Vp - VpFinal)**2 + (Va - VaFinal)**2) + sum(MSE_mid))
     
+    print(MSE2)
     Error2.append(MSE2)
     Error.append(MSE)
     SMA.append(Semi_major_axis)
+
 
 
 
