@@ -38,12 +38,20 @@ radiation_pressure_coefficient = 1.2
 
 fixed_step_size = 50
 
+Epoch_checks = 10
+
 """Change to a lower step size when the code works"""
 
 """-------------------------------"""
 
 
 step_size  = (drag_coefficient_upper - drag_coefficient_lower)/itterations
+Epoch_dis = round((TLE2_number - TLE1_number)/Epoch_checks,0)
+
+TLE_mid = []
+for i in range(Epoch_checks-1):
+    TLE_mid.append(TLE1_number + (i+1)*int(Epoch_dis))
+
 
 
 # Open the file
@@ -184,6 +192,10 @@ def parse_TLE(TLE):
 parsed_TLE1 = parse_TLE(TLE_1)
 parsed_TLE2 = parse_TLE(TLE_2)
 
+parsed_mid_TLE = []
+for i in range(len(TLE_mid)):
+    parsed_mid_TLE.append(parse_TLE(split_TLE_sets[TLE_mid[i]]))
+
 
 second_TLE = initTLE[TLE2_number]    
 # And access the values like this:
@@ -203,6 +215,16 @@ start_date = datetime(2000, 1, 1, 0, 0, 0, 0)+relativedelta(years= int(parsed_TL
 simulation_start_epoch = time_conversion.datetime_to_tudat(start_date).epoch()
 end_date  = datetime(2000, 1, 1, 0, 0, 0, 0)+relativedelta(years= int(parsed_TLE2['Epoch_Year']))+timedelta(days = float(parsed_TLE2['Epoch_Day'])-1)
 simulation_end_epoch = time_conversion.datetime_to_tudat(end_date).epoch()
+
+print(start_date)
+TLE_mid_epoch = []
+Dates_mid = []
+for i in range(len(TLE_mid)):
+    mid_date = datetime(2000, 1, 1, 0, 0, 0, 0)+relativedelta(years= int(parsed_mid_TLE[i]['Epoch_Year'])+1)+timedelta(days = float(parsed_mid_TLE[i]['Epoch_Day'])-1)
+    Dates_mid.append(mid_date)
+    mid_epoch = time_conversion.datetime_to_tudat(mid_date).epoch()
+    TLE_mid_epoch.append(mid_epoch)
+
 
 
 
@@ -356,6 +378,24 @@ ephemerisdef_2 = environment.TleEphemeris( "Earth", "J2000", second_TLE, False )
 state_2 = ephemerisdef_2.cartesian_state(simulation_end_epoch)
 #print(element_conversion.cartesian_to_keplerian(state_2, bodies.get("Earth").gravitational_parameter))
 
+states_med = []
+for i in range(len(TLE_mid)):
+    ephemerisdef_mid = environment.TleEphemeris( "Earth", "J2000", initTLE[TLE_mid[i]], False )
+    state_mid = ephemerisdef_mid.cartesian_state(TLE_mid_epoch[i])
+    states_med.append(state_mid)
+
+data_mid = []
+for i in range(len(states_med)):
+    data_mid.append(element_conversion.cartesian_to_keplerian(states_med[i], bodies.get("Earth").gravitational_parameter))
+
+Semi_major_axis_mid = []
+eccentricity_mid = []
+for i in range(len(data_mid)):
+    Semi_major_axis_mid.append(data_mid[i][0])
+    eccentricity_mid.append(data_mid[i][1])
+
+
+
 Semi_major_axisFinal = element_conversion.cartesian_to_keplerian(state_2, bodies.get("Earth").gravitational_parameter)[0]
 eccentricityFinal = element_conversion.cartesian_to_keplerian(state_2, bodies.get("Earth").gravitational_parameter)[1]
 
@@ -463,8 +503,9 @@ integrator_settings = propagation_setup.integrator.runge_kutta_fixed_step(time_s
 # The same is done with the dependent variable history. The column indexes corresponding to a given dependent variable in the `dep_vars` variable are printed when the simulation is run, when `create_dynamics_simulator()` is called.
 # Do mind that converting to an ndarray using the `result2array()` utility will shift these indexes, since the first column (index 0) will then be the times.
 Error = []
+Error2 = []
 DC = []
-FA= []
+SMA= []
 for i in range(itterations):
     drag_coefficient = drag_coefficient_lower + i*step_size
     print("-----Starting simulation for a drag coefficient of:", drag_coefficient,'-----')
@@ -538,41 +579,38 @@ for i in range(itterations):
     print('\n')
 
 
-
-
-
     MSE = (1/4) * ((Height_apo[-1] - Height_apoFinal)**2 + (Height_peri[-1] - Height_periFinal)**2 + (Vp - VpFinal)**2 + (Va - VaFinal)**2)
     print(MSE)
     print('\n')
 
+    Height_Apo_Mid = []
+    Height_Peri_Mid = []
+    Vp_Mid = []
+    Va_Mid = []
+    for i in range(len(TLE_mid)):
+        Rp_mid = Semi_major_axis_mid[i]*(1-eccentricity_mid[i])
+        Ra_mid = Semi_major_axis_mid[i]*(1+eccentricity_mid[i])
+
+        Height_apo_mid = Ra_mid/1000 - 6371
+        Height_peri_mid = Rp_mid/1000 - 6371
+
+        # Calculating the velocity
+        Vp_mid = math.sqrt((3.9860044188*10**14*2*Ra_mid)/(Rp_mid*(Ra_mid+Rp_mid)))
+        Va_mid = math.sqrt((3.9860044188*10**14*2*Rp_mid)/(Ra_mid*(Ra_mid+Rp_mid)))
+        Height_Apo_Mid.append(Height_apo_mid)
+        Height_Peri_Mid.append(Height_peri_mid)
+        Vp_Mid.append(Vp_mid)
+        Va_Mid.append(Va_mid)
+    MSE_mid = []
+    for i in range(len(TLE_mid)):
+        MSE_mid.append((1/4) * ((Height_Apo_Mid[i] - Height_apo[TLE_mid[i]])**2 + (Height_Peri_Mid[i]- Height_peri[TLE_mid[i]])**2 + (Vp_Mid[i] - Vp[TLE_mid[i]])**2 + (Va_Mid[i] - Va[TLE_mid[i]])**2))
+    MSE2 = (1/Epoch_checks) * (((Height_apo[-1] - Height_apoFinal)**2 + (Height_peri[-1] - Height_periFinal)**2 + (Vp - VpFinal)**2 + (Va - VaFinal)**2) + sum(MSE_mid))
+    
+    Error2.append(MSE2)
     Error.append(MSE)
-    FA.append(Height_apo[-1])
-
-print(DC)
-print(FA)
-print(Error)
-
-# ## Post-process the propagation results
-# The results of the propagation are then processed to a more user-friendly form.
-# 
-# ### Total acceleration over time
-# Let's first plot the total acceleration on the satellite over time. This can be done by taking the norm of the first three columns of the dependent variable list.
+    SMA.append(Semi_major_axis)
 
 
-# Plot total acceleration as function of time
-"""start_time=(time_conversion.calendar_date_to_julian_day(datetime.datetime(2022, 9, 6, 0, 27, 0, 970272))-time_conversion.calendar_date_to_julian_day(datetime.datetime(2000, 1, 1, 0, 0, 0, 0)))
-print(dep_vars_array[:,0]/(3600*24))
-time_days = dep_vars_array[:,0]/(3600*24) - start_time
-total_acceleration_norm = np.linalg.norm(dep_vars_array[:,1:4], axis=1)
-plt.figure(figsize=(9, 5))
-plt.title("Total acceleration norm on Delfi-C3 over the course of propagation.")
-plt.plot(time_days, total_acceleration_norm)
-plt.xlabel('Time [days]')
-plt.ylabel('Total Acceleration [m/s$^2$]')
-plt.xlim([min(time_days), max(time_days)])
-plt.grid()
-plt.tight_layout()
-plt.show()"""
 
 #print(dep_vars_array[0,:])
 # altitude over time
@@ -593,7 +631,7 @@ plt.savefig('altitude.png')"""
 
 plt.figure(figsize=(9, 5))
 plt.title("DC vs FA.")
-plt.plot(DC, FA)
+plt.plot(DC, SMA)
 plt.xlabel('DC')
 plt.ylabel('Altitude [m]')
 plt.grid()
@@ -684,47 +722,4 @@ plt.show()
 plt.savefig('test.png')"""
 
 
-# ### Accelerations over time
-# Finally, let's plot and compare each of the included accelerations.
 
-"""plt.figure(figsize=(9, 5))
-
-# Point Mass Gravity Acceleration Sun
-acceleration_norm_pm_sun = dep_vars_array[:,12]
-plt.plot(time_days, acceleration_norm_pm_sun, label='PM Sun', linewidth=1)
-
-# Point Mass Gravity Acceleration Moon
-acceleration_norm_pm_moon = dep_vars_array[:,13]
-plt.plot(time_days, acceleration_norm_pm_moon, label='PM Moon', linewidth=1)
-
-# Point Mass Gravity Acceleration Mars
-acceleration_norm_pm_mars = dep_vars_array[:,14]
-plt.plot(time_days, acceleration_norm_pm_mars, label='PM Mars', linewidth=1)
-
-# Point Mass Gravity Acceleration Venus
-acceleration_norm_pm_venus = dep_vars_array[:,15]
-plt.plot(time_days, acceleration_norm_pm_venus, label='PM Venus', linewidth=1)
-
-# Spherical Harmonic Gravity Acceleration Earth
-acceleration_norm_sh_earth = dep_vars_array[:,16]
-plt.plot(time_days, acceleration_norm_sh_earth, label='SH Earth', linewidth=1)
-
-# Aerodynamic Acceleration Earth
-acceleration_norm_aero_earth = dep_vars_array[:,17]
-plt.plot(time_days, acceleration_norm_aero_earth, label='Aerodynamic Earth', linewidth=1)
-
-# Cannonball Radiation Pressure Acceleration Sun
-acceleration_norm_rp_sun = dep_vars_array[:,18]
-plt.plot(time_days, acceleration_norm_rp_sun, label='Radiation Pressure Sun', linewidth=1)
-
-plt.xlim([min(time_days), max(time_days)])
-plt.xlabel('Time [days]')
-plt.ylabel('Acceleration Norm [m/s$^2$]')
-
-plt.legend(bbox_to_anchor=(1.005, 1))
-plt.suptitle("Accelerations norms on Delfi-C3, distinguished by type and origin, over the course of propagation.")
-plt.yscale('log')
-plt.grid()
-plt.tight_layout()
-plt.show()
-plt.savefig('test2.png')"""
