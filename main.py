@@ -30,6 +30,7 @@ from tudatpy import numerical_simulation
 from tudatpy.numerical_simulation import environment
 from tudatpy.numerical_simulation import environment_setup, propagation_setup
 from tudatpy.astro import element_conversion, time_conversion
+from parallelbar import progress_starmap
 from tudatpy import constants
 from tudatpy.util import result2array
 from tudatpy.astro.time_conversion import DateTime
@@ -524,9 +525,9 @@ if __name__ == "__main__":
     N = 200
     # CD values to test
     CD_values = np.random.normal(1.8, 0.1, N)
-    n_cores = mp.cpu_count()//2
+    n_cores = mp.cpu_count()//3
     with mp.get_context("spawn").Pool(n_cores) as pool:
-        outputs = pool.starmap(simulate, [(CD,) for CD in CD_values])
+        outputs = progress_starmap(simulate, [(CD,) for CD in CD_values])
     print(outputs)
     plt.figure(figsize=(9, 5))
     plt.title("Distribution of Re-Entry times of Delfi-C3 over its orbital propagation.")
