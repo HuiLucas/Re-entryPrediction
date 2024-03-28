@@ -18,24 +18,26 @@ from tudatpy import constants
 from tudatpy.util import result2array
 from tudatpy.astro.time_conversion import DateTime
 import sys
+from dateutil.relativedelta import relativedelta
 
 """-------------------------------"""
 """Inputs"""
-TLE1_number = 7000
-TLE2_number = 7300
+TLE1_number = 8300
+TLE2_number = 8782
 
 Mass = 2.2
 
 reference_area = 0.08  # Average projection area of a 3U CubeSat
-drag_coefficient_lower = 1
-drag_coefficient_upper = 3
+drag_coefficient_lower = 1.4
+drag_coefficient_upper = 2.0
 
 
-itterations = 20
+itterations = 14
 
 radiation_pressure_coefficient = 1.2
 
-fixed_step_size = 200.0 
+fixed_step_size = 50
+
 """Change to a lower step size when the code works"""
 
 """-------------------------------"""
@@ -45,18 +47,17 @@ step_size  = (drag_coefficient_upper - drag_coefficient_lower)/itterations
 
 
 # Open the file
-with open('/workspaces/Re-entryPrediction/TLE-Data_C3.txt', 'r') as file:
+with open('TLE-Data_C3.txt', 'r') as file:
     # Read lines two at a time
     lines = file.readlines()
     TLE_sets = [(lines[i].strip(), lines[i + 1].strip()) for i in range(0, len(lines), 2)]
+
 
 initTLE = []
 # Now you can use the TLE_sets in your code like this:
 for TLE_set in TLE_sets:
     initTLE.append(environment.Tle(TLE_set[0], TLE_set[1]))
 
-
-print(TLE_set[0], TLE_set[1])
 
 def convert_epoch_day_to_date(epoch_year, epoch_day):
     # Create a datetime object for the start of the epoch year
@@ -73,10 +74,12 @@ def convert_epoch_day_to_date(epoch_year, epoch_day):
 
     return month, day, hour
 # Open the file
-with open('/workspaces/Re-entryPrediction/TLE-Data_C3.txt', 'r') as file:
+with open('TLE-Data_C3.txt', 'r') as file:
     # Read lines two at a time
     lines = file.readlines()
     TLE_sets = [(lines[i], lines[i + 1]) for i in range(0, len(lines), 2)]
+
+
 
 # Create lists to store the split lines
 split_TLE_sets = []
@@ -90,10 +93,13 @@ for TLE_set in TLE_sets:
     # Add the split lines to the list
     split_TLE_sets.append((line1, line2))
 
+
 # Now split_TLE_sets is a list of tuples, where each tuple is a pair of split lines (a TLE set)
 # You can access the first split TLE set like this:
 TLE_1 = split_TLE_sets[TLE1_number]
 TLE_2 = split_TLE_sets[TLE2_number]
+
+
 
 def parse_TLE(TLE):
     TLE_line1 = TLE[0]
@@ -141,6 +147,8 @@ def parse_TLE(TLE):
     epoch_date = start_of_year + timedelta(days=epoch_day)
 
     month, day, hour = convert_epoch_day_to_date(epoch_year, epoch_day)
+    if epoch_year % 4 == 0 and month > 2:
+        day = day - 1
 
     parsed_values = {
         'Int_Des_Year': Int_Des_Year,
@@ -177,16 +185,7 @@ parsed_TLE1 = parse_TLE(TLE_1)
 parsed_TLE2 = parse_TLE(TLE_2)
 
 
-print('\n')
-print('\n')
-print("The code will run from", parsed_TLE1['Date'], "to", parsed_TLE2['Date'])
-print('It will run for a drag coefficient between', drag_coefficient_lower, 'and', drag_coefficient_upper,'with a step size of', step_size)
-print('\n')
-print('Grab yourself some coffee, this might take a while...')
-print('\n')
-
-
-    
+second_TLE = initTLE[TLE2_number]    
 # And access the values like this:
 """print(parsed_TLE1['Epoch_Year_Actual'])"""
 
@@ -200,9 +199,22 @@ print('\n')
 spice.load_standard_kernels()
 
 # Set simulation start and end epochs
-start_date = DateTime(parsed_TLE1['Year_Actual'], parsed_TLE1['Month'], parsed_TLE1['Day'], parsed_TLE1['Hour'])
-simulation_start_epoch = start_date.epoch()
-simulation_end_epoch   = DateTime(parsed_TLE2['Year_Actual'], parsed_TLE2['Month'], parsed_TLE2['Day'], parsed_TLE2['Hour']).epoch()
+start_date = datetime(2000, 1, 1, 0, 0, 0, 0)+relativedelta(years= int(parsed_TLE1['Epoch_Year']))+timedelta(days = float(parsed_TLE1['Epoch_Day'])-1)
+simulation_start_epoch = time_conversion.datetime_to_tudat(start_date).epoch()
+end_date  = datetime(2000, 1, 1, 0, 0, 0, 0)+relativedelta(years= int(parsed_TLE2['Epoch_Year']))+timedelta(days = float(parsed_TLE2['Epoch_Day'])-1)
+simulation_end_epoch = time_conversion.datetime_to_tudat(end_date).epoch()
+
+
+
+print('\n')
+print("The code will run from", start_date, "to", end_date)
+print('It will run for a drag coefficient between', drag_coefficient_lower, 'and', drag_coefficient_upper,'with a step size of', step_size)
+print('\n')
+print('Grab yourself some coffee, this might take a while...')
+print('\n')
+
+
+
 
 
 # ## Environment setup
@@ -320,21 +332,49 @@ acceleration_settings = {"Delfi-C3": accelerations_settings_delfi_c3}
 # Set initial conditions for the satellite that will be
 # propagated in this simulation. The initial conditions are given in
 # Keplerian elements and later on converted to Cartesian elements
+
+
+ephemerisdef = environment.TleEphemeris( "Earth", "J2000", initTLE[TLE1_number], False )
+state = ephemerisdef.cartesian_state(simulation_start_epoch)
+#print(element_conversion.cartesian_to_keplerian(state, bodies.get("Earth").gravitational_parameter))
+
+
+
 earth_gravitational_parameter = bodies.get("Earth").gravitational_parameter
 initial_state = element_conversion.keplerian_to_cartesian_elementwise(
     gravitational_parameter=earth_gravitational_parameter,
-    semi_major_axis= float(parsed_TLE1['Semi_Major_Axis']),
-    eccentricity= float(parsed_TLE1['Eccentricity']),
-    inclination=np.deg2rad(float(parsed_TLE1['Inclination'])),
-    argument_of_periapsis=np.deg2rad(float(parsed_TLE1['Arg_Perigee'])),
-    longitude_of_ascending_node=np.deg2rad(float(parsed_TLE1['RAAN'])),
-    true_anomaly=element_conversion.mean_to_true_anomaly(eccentricity=float(parsed_TLE1['Eccentricity']), mean_anomaly=np.deg2rad(float(parsed_TLE1['Mean_Anomaly']))),
+    semi_major_axis= float(element_conversion.cartesian_to_keplerian(state, bodies.get("Earth").gravitational_parameter)[0]),
+    eccentricity= float(element_conversion.cartesian_to_keplerian(state, bodies.get("Earth").gravitational_parameter)[1]),
+    inclination=float(element_conversion.cartesian_to_keplerian(state, bodies.get("Earth").gravitational_parameter)[2]),
+    argument_of_periapsis=float(element_conversion.cartesian_to_keplerian(state, bodies.get("Earth").gravitational_parameter)[3]),
+    longitude_of_ascending_node=float(element_conversion.cartesian_to_keplerian(state, bodies.get("Earth").gravitational_parameter)[4]),
+    true_anomaly=element_conversion.mean_to_true_anomaly(float(element_conversion.cartesian_to_keplerian(state, bodies.get("Earth").gravitational_parameter)[1]), mean_anomaly=float(float(element_conversion.cartesian_to_keplerian(state, bodies.get("Earth").gravitational_parameter)[5]))),
 )
 
 
-ephemerisdef = environment.TleEphemeris( "Earth", "J2000", initTLE[0], False )
-state = ephemerisdef.cartesian_state(simulation_start_epoch)
-print(element_conversion.cartesian_to_keplerian(state, bodies.get("Earth").gravitational_parameter))
+ephemerisdef_2 = environment.TleEphemeris( "Earth", "J2000", second_TLE, False )
+state_2 = ephemerisdef_2.cartesian_state(simulation_end_epoch)
+#print(element_conversion.cartesian_to_keplerian(state_2, bodies.get("Earth").gravitational_parameter))
+
+Semi_major_axisFinal = element_conversion.cartesian_to_keplerian(state_2, bodies.get("Earth").gravitational_parameter)[0]
+eccentricityFinal = element_conversion.cartesian_to_keplerian(state_2, bodies.get("Earth").gravitational_parameter)[1]
+
+#print(parsed_TLE1['Semi_Major_Axis'])
+#print(parsed_TLE1['Eccentricity'])
+#print(element_conversion.cartesian_to_keplerian(state, bodies.get("Earth").gravitational_parameter)[0])
+#print(parsed_TLE2['Semi_Major_Axis'])
+#print(element_conversion.cartesian_to_keplerian(state_2, bodies.get("Earth").gravitational_parameter)[0])
+#print(state)
+#print(state_2)
+#print(element_conversion.cartesian_to_keplerian(state, bodies.get("Earth").gravitational_parameter)) and print(element_conversion.cartesian_to_keplerian(state_2, bodies.get("Earth").gravitational_parameter))
+
+RaFinal = Semi_major_axisFinal*(1+eccentricityFinal)
+RpFinal = Semi_major_axisFinal*(1-eccentricityFinal)
+
+Height_apoFinal = RaFinal/1000 - 6371
+Height_periFinal = RpFinal/1000 - 6371
+VaFinal = math.sqrt((3.9860044188*10**14*2*RpFinal)/(RaFinal*(RaFinal+RpFinal)))
+VpFinal = math.sqrt((3.9860044188*10**14*2*RaFinal)/(RpFinal*(RaFinal+RpFinal)))
 # ### Define dependent variables to save
 # In this example, we are interested in saving not only the propagated state of the satellite over time, but also a set of so-called dependent variables, that are to be computed (or extracted and saved) at each integration step.
 # 
@@ -391,13 +431,13 @@ termination_condition = propagation_setup.propagator.hybrid_termination(terminat
 
 # Create numerical integrator settings
 
-# integrator_settings = propagation_setup.integrator.runge_kutta_4(fixed_step_size)
+#integrator_settings = propagation_setup.integrator.runge_kutta_4(fixed_step_size)
 # integrator_settings = propagation_setup.integrator.adams_bashforth_moulton(fixed_step_size, 5.0, 150, minimum_order=6, maximum_order=11)
-integrator_settings = propagation_setup.integrator.bulirsch_stoer_variable_step(initial_time_step=fixed_step_size,extrapolation_sequence = propagation_setup.integrator.deufelhard_sequence, maximum_number_of_steps=7, 
-                                                                                step_size_control_settings =propagation_setup.integrator.step_size_control_elementwise_scalar_tolerance(1.0E-10, 1.0E-10, minimum_factor_increase=0.05),
-                                                                                step_size_validation_settings =propagation_setup.integrator.step_size_validation(0.1, 10000.0),
-                                                                                assess_termination_on_minor_steps = False)
-
+#integrator_settings = propagation_setup.integrator.bulirsch_stoer_variable_step(initial_time_step=fixed_step_size,extrapolation_sequence = propagation_setup.integrator.deufelhard_sequence, maximum_number_of_steps=7, 
+                                                                                #step_size_control_settings =propagation_setup.integrator.step_size_control_elementwise_scalar_tolerance(1.0E-10, 1.0E-10, minimum_factor_increase=0.05),
+                                                                                #step_size_validation_settings =propagation_setup.integrator.step_size_validation(0.1, 10000.0),
+                                                                                #assess_termination_on_minor_steps = False)
+integrator_settings = propagation_setup.integrator.runge_kutta_fixed_step(time_step=fixed_step_size, coefficient_set=propagation_setup.integrator.rkf_78)
 
 # processing_settings = propagation_setup.propagator.SingleArcPropagatorProcessingSettings()
 
@@ -427,6 +467,8 @@ DC = []
 FA= []
 for i in range(itterations):
     drag_coefficient = drag_coefficient_lower + i*step_size
+    print("-----Starting simulation for a drag coefficient of:", drag_coefficient,'-----')
+    print('\n')
 
     aero_coefficient_settings = environment_setup.aerodynamic_coefficients.constant(
     reference_area, [drag_coefficient, 0, 0]
@@ -452,7 +494,8 @@ for i in range(itterations):
     propagator_settings.print_settings.print_dependent_variable_indices = False
     propagator_settings.print_settings.print_state_indices = False
     # propagator_settings.print_settings.results_print_frequency_in_seconds = 0.5e7
-    propagator_settings.print_settings.results_print_frequency_in_steps =100000
+    #propagator_settings.print_settings.results_print_frequency_in_steps =100000
+    propagator_settings.print_settings.results_print_frequency_in_steps = False
 
    
     DC.append(drag_coefficient)
@@ -488,16 +531,20 @@ for i in range(itterations):
     Vp = math.sqrt((3.9860044188*10**14*2*Ra[-1])/(Rp[-1]*(Ra[-1]+Rp[-1])))
     Va = math.sqrt((3.9860044188*10**14*2*Rp[-1])/(Ra[-1]*(Ra[-1]+Rp[-1])))
     print('For a drag coefficient of',round(drag_coefficient,2),'the TLE data versus the simulation data is as follows:')
-    print(parsed_TLE2['Height_Apo'], Height_apo[-1])
-    print(parsed_TLE2['Height_Peri'], Height_peri[-1])
-    print(parsed_TLE2['Vp'], Vp)
-    print(parsed_TLE2['Va'], Va)
+    print(Height_apoFinal, Height_apo[-1])
+    print(Height_periFinal, Height_peri[-1])
+    print(VpFinal, Vp)
+    print(VaFinal, Va)
+    print('\n')
 
 
 
 
-    MSE = (1/4) * ((Height_apo[-1] - parsed_TLE2['Height_Apo'])**2 + (Height_peri[-1] - parsed_TLE2['Height_Peri'])**2 + (Vp - parsed_TLE2['Vp'])**2 + (Va - parsed_TLE2['Va'])**2)
+
+    MSE = (1/4) * ((Height_apo[-1] - Height_apoFinal)**2 + (Height_peri[-1] - Height_periFinal)**2 + (Vp - VpFinal)**2 + (Va - VaFinal)**2)
     print(MSE)
+    print('\n')
+
     Error.append(MSE)
     FA.append(Height_apo[-1])
 
