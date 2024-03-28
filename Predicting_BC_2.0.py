@@ -18,24 +18,25 @@ from tudatpy import constants
 from tudatpy.util import result2array
 from tudatpy.astro.time_conversion import DateTime
 import sys
+from dateutil.relativedelta import relativedelta
 
 """-------------------------------"""
 """Inputs"""
-TLE1_number = 7000
-TLE2_number = 7300
+TLE1_number = 8300
+TLE2_number = 8782
 
 Mass = 2.2
 
 reference_area = 0.08  # Average projection area of a 3U CubeSat
-drag_coefficient_lower = 1
-drag_coefficient_upper = 2.5
+drag_coefficient_lower = 1.5
+drag_coefficient_upper = 2.8
 
 
-itterations = 15
+itterations = 13
 
 radiation_pressure_coefficient = 1.2
 
-fixed_step_size = 50
+fixed_step_size = 100
 
 """Change to a lower step size when the code works"""
 
@@ -46,7 +47,7 @@ step_size  = (drag_coefficient_upper - drag_coefficient_lower)/itterations
 
 
 # Open the file
-with open('/workspaces/Re-entryPrediction/TLE-Data_C3.txt', 'r') as file:
+with open('TLE-Data_C3.txt', 'r') as file:
     # Read lines two at a time
     lines = file.readlines()
     TLE_sets = [(lines[i].strip(), lines[i + 1].strip()) for i in range(0, len(lines), 2)]
@@ -73,7 +74,7 @@ def convert_epoch_day_to_date(epoch_year, epoch_day):
 
     return month, day, hour
 # Open the file
-with open('/workspaces/Re-entryPrediction/TLE-Data_C3.txt', 'r') as file:
+with open('TLE-Data_C3.txt', 'r') as file:
     # Read lines two at a time
     lines = file.readlines()
     TLE_sets = [(lines[i], lines[i + 1]) for i in range(0, len(lines), 2)]
@@ -146,6 +147,8 @@ def parse_TLE(TLE):
     epoch_date = start_of_year + timedelta(days=epoch_day)
 
     month, day, hour = convert_epoch_day_to_date(epoch_year, epoch_day)
+    if epoch_year % 4 == 0 and month > 2:
+        day = day - 1
 
     parsed_values = {
         'Int_Des_Year': Int_Des_Year,
@@ -182,7 +185,10 @@ parsed_TLE1 = parse_TLE(TLE_1)
 parsed_TLE2 = parse_TLE(TLE_2)
 
 
+
+
 second_TLE = initTLE[TLE2_number]
+
 
 
 
@@ -207,9 +213,10 @@ print('\n')
 spice.load_standard_kernels()
 
 # Set simulation start and end epochs
-start_date = DateTime(parsed_TLE1['Year_Actual'], parsed_TLE1['Month'], parsed_TLE1['Day'], parsed_TLE1['Hour'])
-simulation_start_epoch = start_date.epoch()
-simulation_end_epoch   = DateTime(parsed_TLE2['Year_Actual'], parsed_TLE2['Month'], parsed_TLE2['Day'], parsed_TLE2['Hour']).epoch()
+start_date = datetime(2000, 1, 1, 0, 0, 0, 0)+relativedelta(years= int(parsed_TLE1['Epoch_Year']))+timedelta(days = float(parsed_TLE1['Epoch_Day'])-1)
+simulation_start_epoch = time_conversion.datetime_to_tudat(start_date).epoch()
+end_date  = datetime(2000, 1, 1, 0, 0, 0, 0)+relativedelta(years= int(parsed_TLE2['Epoch_Year']))+timedelta(days = float(parsed_TLE2['Epoch_Day'])-1)
+simulation_end_epoch = time_conversion.datetime_to_tudat(end_date).epoch()
 
 
 # ## Environment setup
@@ -462,6 +469,7 @@ DC = []
 FA= []
 for i in range(itterations):
     drag_coefficient = drag_coefficient_lower + i*step_size
+    print("Starting simulation for a drag coefficient of:", drag_coefficient)
 
     aero_coefficient_settings = environment_setup.aerodynamic_coefficients.constant(
     reference_area, [drag_coefficient, 0, 0]
