@@ -19,7 +19,6 @@
 
 # Load standard modules
 import numpy as np
-import spiceypy
 import matplotlib
 from matplotlib import pyplot as plt
 import multiprocessing as mp
@@ -35,39 +34,10 @@ from tudatpy import constants
 from tudatpy.util import result2array
 from tudatpy.astro.time_conversion import DateTime
 import datetime
-import sgp4
-from sgp4.api import Satrec
-from astropy.coordinates import SkyCoord, TEME, ICRS
-import astropy.units as u
-# import inspect
-def teme_to_j2000(coords_teme):
-    # Extract coordinates
-    x_teme, y_teme, z_teme, vx_teme, vy_teme, vz_teme = coords_teme
-
-    # Create SkyCoord object for TEME coordinates
-    coords_teme = SkyCoord(x=x_teme * u.km,
-                           y=y_teme * u.km,
-                           z=z_teme * u.km,
-                           v_x=vx_teme * u.km / u.s,
-                           v_y=vy_teme * u.km / u.s,
-                           v_z=vz_teme * u.km / u.s,
-                           frame=TEME(obstime='J2000'))
-
-    # Transform to J2000 frame
-    coords_j2000 = coords_teme.transform_to(ICRS)
-
-    # Extract transformed coordinates and velocities
-    x_j2000 = coords_j2000.cartesian.x.to_value(u.km)
-    y_j2000 = coords_j2000.cartesian.y.to_value(u.km)
-    z_j2000 = coords_j2000.cartesian.z.to_value(u.km)
-    vx_j2000 = coords_j2000.velocity.d_x.to_value(u.km / u.s)
-    vy_j2000 = coords_j2000.velocity.d_y.to_value(u.km / u.s)
-    vz_j2000 = coords_j2000.velocity.d_z.to_value(u.km / u.s)
-
-    # Combine into an array
-    coords_j2000_array = np.array([x_j2000, y_j2000, z_j2000, vx_j2000, vy_j2000, vz_j2000])
-
-    return coords_j2000_array
+#from sgp4.api import Satrec
+import os
+# import inspect    # Extract coordinates
+ 
 
 # ## Configuration
 # NAIF's `SPICE` kernels are first loaded, so that the position of various bodies such as the Earth can be make known to `tudatpy`.
@@ -113,7 +83,7 @@ def simulate(CD=1.8):
         global_frame_origin,
         global_frame_orientation)
 
-    body_settings.get("Earth").atmosphere_settings = environment_setup.atmosphere.nrlmsise00(space_weather_file ="C:/Users/lhuir/Downloads/SW-All.txt")
+    body_settings.get("Earth").atmosphere_settings = environment_setup.atmosphere.nrlmsise00(space_weather_file ="SW-All.txt")
 
     # Create system of selected celestial bodies
     bodies = environment_setup.create_system_of_bodies(body_settings)
@@ -238,7 +208,7 @@ def simulate(CD=1.8):
     initial_ephemeris = environment.TleEphemeris( "Earth", "J2000", initTLE, False )
     initial_state = initial_ephemeris.cartesian_state(simulation_start_epoch)
     #print(element_conversion.teme_state_to_j2000(simulation_start_epoch, initial_state), element_conversion.cartesian_to_keplerian(element_conversion.teme_state_to_eclipj2000(simulation_start_epoch, initial_state), bodies.get("Earth").gravitational_parameter))
-    print(initial_state, element_conversion.cartesian_to_keplerian(initial_state, bodies.get("Earth").gravitational_parameter))
+    #print(initial_state, element_conversion.cartesian_to_keplerian(initial_state, bodies.get("Earth").gravitational_parameter))
     # sgpsatellite = Satrec.twoline2rv("1 32789U 08021G   22249.01876123  .00014642  00000-0  77860-3 0  9995", "2 32789  97.3369 272.4752 0011260  53.4348 306.7920 15.15311550784120")
     # sgpstate = sgpsatellite.sgp4(time_conversion.seconds_since_epoch_to_julian_day( simulation_start_epoch),0.0)
     # print(sgpstate)
@@ -289,7 +259,7 @@ def simulate(CD=1.8):
         propagation_setup.dependent_variable.altitude("Delfi-C3", "Earth"),
     ]
 
-    print(propagation_setup.dependent_variable.PropagationDependentVariables(1))
+    #print(propagation_setup.dependent_variable.PropagationDependentVariables(1))
     # ### Create the propagator settings
     # The propagator is finally setup.
     # 
@@ -332,11 +302,11 @@ def simulate(CD=1.8):
         termination_condition,
         output_variables=dependent_variables_to_save,
     )
-    propagator_settings.print_settings.print_dependent_variable_indices = True
-    propagator_settings.print_settings.print_state_indices = True
+    propagator_settings.print_settings.print_dependent_variable_indices = False #True
+    propagator_settings.print_settings.print_state_indices = False # True
     # propagator_settings.print_settings.results_print_frequency_in_seconds = 0.5e7
-    propagator_settings.print_settings.results_print_frequency_in_steps =100000
-    print(propagator_settings.print_settings)
+    propagator_settings.print_settings.results_print_frequency_in_steps =0#100000
+    #print(propagator_settings.print_settings)
 
 
     # ## Propagate the orbit
@@ -375,23 +345,26 @@ def simulate(CD=1.8):
 
     # Plot total acceleration as function of time
     start_time=(time_conversion.calendar_date_to_julian_day(datetime.datetime(2022, 9, 6, 0, 27, 0, 970272))-time_conversion.calendar_date_to_julian_day(datetime.datetime(2000, 1, 1, 0, 0, 0, 0)))
-    print(dep_vars_array[:,0]/(3600*24))
+    #print(dep_vars_array[:,0]/(3600*24))
     time_days = dep_vars_array[:,0]/(3600*24) - start_time
     total_acceleration_norm = np.linalg.norm(dep_vars_array[:,1:4], axis=1)
-    plt.figure(figsize=(9, 5))
-    plt.title("Total acceleration norm on Delfi-C3 over the course of propagation.")
-    plt.plot(time_days, total_acceleration_norm)
-    plt.xlabel('Time [days]')
-    plt.ylabel('Total Acceleration [m/s$^2$]')
-    plt.xlim([min(time_days), max(time_days)])
-    plt.grid()
-    plt.tight_layout()
+    if False == True:
+        plt.figure(figsize=(9, 5))
+        plt.title("Total acceleration norm on Delfi-C3 over the course of propagation.")
+        plt.plot(time_days, total_acceleration_norm)
+        plt.xlabel('Time [days]')
+        plt.ylabel('Total Acceleration [m/s$^2$]')
+        plt.xlim([min(time_days), max(time_days)])
+        plt.grid()
+        plt.tight_layout()
     # plt.show()
 
-    print(dep_vars_array[0,:])
+    #print(dep_vars_array[0,:])
     # altitude over time
     altitude = dep_vars_array[:,19]
     dates = [time_conversion.julian_day_to_calendar_date(start_date.julian_day()) + datetime.timedelta(days=day) for day in time_days]
+    return dates[-1] 
+if False == True:
     plt.figure(figsize=(9, 5))
     plt.title("Altitude of Delfi-C3 over the course of propagation.")
     plt.plot(dates, altitude)
@@ -517,12 +490,12 @@ def simulate(CD=1.8):
     plt.grid()
     plt.tight_layout()
     #plt.show()
-    return dates[-1]
+
 
 
 if __name__ == "__main__":
     # Number of simulations to run
-    N = 200
+    N = 3 #200
     # CD values to test
     CD_values = np.random.normal(1.8, 0.1, N)
     n_cores = mp.cpu_count()//3
@@ -538,4 +511,13 @@ if __name__ == "__main__":
     plt.xlim([min(outputs), max(outputs)])
     plt.grid()
     plt.tight_layout()
+    i = 0
+    while True:
+        i += 1
+        newname = '{}{:d}.png'.format("reentrytimes", i)
+        if os.path.exists(newname):
+            continue
+        plt.savefig(newname)
+        break
+    #plt.savefig('reentry_times2.png')
     plt.show()
