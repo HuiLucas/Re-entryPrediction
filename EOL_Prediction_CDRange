@@ -4,7 +4,7 @@ starttime = time.time()
 # Load standard modules
 import numpy as np
 from matplotlib import pyplot as plt
-import winsound
+from playsound import playsound
 
 # Load tudatpy modules
 from tudatpy.interface import spice
@@ -54,7 +54,7 @@ radiation_pressure_coefficient = dataset[5]         # Radiation pressure coeffic
 ##### EOL RANGE FOR C_D RANGE #####
 CD_mean = 1.8                                       # Mean of the normal distribution for the CD range
 CD_sd = 0.1                                         # Standard deviation of the normal distribution for the CD range
-N = 500                                             # Number of samples
+N = 8                                             # Number of samples
 #####^ SETUP VARIABLES ^###################################################################
 ###########################################################################################
 
@@ -329,4 +329,4 @@ if __name__ == "__main__":
     ff.write(f"Associated graph: EOL distribution of {satellite} - {now.day}-{now.month}-{now.year} {now.hour}h{now.minute}")
 
     # Play sound to notify of code being finished running
-    winsound.Beep(440, 1000)
+    playsound("microwaveping.mp3")
