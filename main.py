@@ -18,6 +18,7 @@
 
 
 # Load standard modules
+print("Something3")
 import numpy as np
 import matplotlib
 from matplotlib import pyplot as plt
@@ -36,6 +37,9 @@ from tudatpy.astro.time_conversion import DateTime
 import datetime
 #from sgp4.api import Satrec
 import os
+import time
+from pyuploadcare import Uploadcare, File
+uploadcare = Uploadcare(public_key='bc7d47c3effc69b4eeb6', secret_key='b055eae9641402861ca4')
 # import inspect    # Extract coordinates
  
 
@@ -495,7 +499,8 @@ if False == True:
 
 if __name__ == "__main__":
     # Number of simulations to run
-    N = 3 #200
+    N = 200 #int(input("Number of MC cycles")) #3 #200
+    print(N)
     # CD values to test
     CD_values = np.random.normal(1.8, 0.1, N)
     n_cores = mp.cpu_count()//3
@@ -519,5 +524,8 @@ if __name__ == "__main__":
             continue
         plt.savefig(newname)
         break
+    with open(newname, 'rb') as file_object:
+        ucare_file = uploadcare.upload(file_object)
+    time.sleep(180)
     #plt.savefig('reentry_times2.png')
-    plt.show()
+    #plt.show()
