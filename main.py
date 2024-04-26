@@ -502,7 +502,7 @@ if __name__ == "__main__":
     N = 200 #int(input("Number of MC cycles")) #3 #200
     print(N)
     # CD values to test
-    CD_values = np.random.normal(1.8, 0.1, N)
+    CD_values = np.array([1.5, 1.65, 1.8]) # np.random.normal(1.8, 0.1, N)
     n_cores = mp.cpu_count()//3
     with mp.get_context("spawn").Pool(n_cores) as pool:
         outputs = progress_starmap(simulate, [(CD,) for CD in CD_values])
