@@ -87,7 +87,7 @@ spice.load_standard_kernels()
 
 
 # Useful datasets: [name, norad_cat_id, mass, reference area, drag coefficient, radiation pressure coefficient, launch date]
-C3_data =   ["Delfi-C3",   32789, 2.2, 0.080, 1.6, 1.1,  "2008-04-28"] # True C3 re-entry: 2023-11-13 (433 days after 2022-09-06)
+C3_data =   ["Delfi-C3",   32789, 2.2, 0.080, 1.61, 1.1,  "2008-04-28"] # True C3 re-entry: 2023-11-13 (433 days after 2022-09-06)
 N3XT_data = ["Delfi-N3XT", 39428, 2.8, 0.087, 2.2, 1.3,  "2013-11-21"]
 PQ_data =   ["Delfi-PQ",   51074, 0.6, 0.011, 2.2, 1.3,  "2022-01-13"]
 
