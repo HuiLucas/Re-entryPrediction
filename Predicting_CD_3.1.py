@@ -18,6 +18,9 @@ from tudatpy import constants
 from tudatpy.util import result2array
 from tudatpy.astro.time_conversion import DateTime, datetime_to_tudat, date_time_from_epoch, datetime_to_python
 import sys
+import time
+import uploadcare
+import os
 
 """-------------------------------"""
 """Inputs"""
@@ -48,7 +51,7 @@ if (TLE2_number - TLE1_number)%Comparisons != 0:
     sys.exit("The number of comparisons is not a factor of the number of TLEs")
 
 
-step_size  = (drag_coefficient_upper - drag_coefficient_lower)/itterations #Calculates the Drag Coefficient step size
+step_size  = (drag_coefficient_upper - drag_coefficient_lower)/(itterations-1) #Calculates the Drag Coefficient step size
 Comp_Epochs = [TLE1_number + (i+1)*int((TLE2_number-TLE1_number)/Comparisons) for i in range(Comparisons)] #Calculates the epochs for the comparisons
 
 
@@ -455,7 +458,7 @@ for i in range(itterations):
 
     print("\n")
     print("starting the propagtion for a drag coefficient of", drag_coefficient)
-    print("\n")
+
 
     aero_coefficient_settings = environment_setup.aerodynamic_coefficients.constant(
     reference_area, [drag_coefficient, 0, 0]
@@ -567,8 +570,8 @@ for i in range(itterations):
 
     
     
-    print(SM_Comp_lst)
-    print(ACT_Semi_major_lst)
+    #print(SM_Comp_lst)
+    #print(ACT_Semi_major_lst)
     
     
 
@@ -578,11 +581,40 @@ for i in range(itterations):
         MSE = MSE/len(SM_Comp_lst)
     Error.append(MSE)
 
-    print("the Mean Squared Error for this Drag Coefficient is:",MSE)
+    plt.figure(figsize=(9, 5))
+    plt.title("Semi major axis prediction vs actual semi major axis for a drag coefficient of " + str(drag_coefficient))
+    plt.figure(figsize=(9, 5))
+    plt.plot(range(len(SM_Comp_lst)), SM_Comp_lst, label="Predicted Semi-Major Axis")
+    plt.plot(range(len(ACT_Semi_major_lst)), ACT_Semi_major_lst, label="Real Semi-Major Axis")
+    plt.xlabel('Epoch Number')
+    plt.ylabel('Semi-Major Axis')
+    plt.legend()
+    plt.grid(True)
+    plt.savefig('Comparison of Real and Predicted Semi-Major Axis.png')
+    # Create a new directory for this run
+    current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    directory_path = os.path.join("Real vs Predicted SMA", "Run_" + current_time)
+    os.makedirs(directory_path, exist_ok=True)
+
+    i = 0
+    while True:
+        i += 1
+        newname = os.path.join(directory_path, '{}{:d}.png'.format("Real vs Predicted SMA for Cd=", DC[i]))
+        if os.path.exists(newname):
+            continue
+        plt.savefig(newname)
+        break
+
+    with open(newname, 'rb') as file_object:
+        ucare_file = uploadcare.upload(file_object)
+
+    time.sleep(180)
+
+    print("the Mean Squared Error is:",MSE)
 
 
-print(DC)
-print(Error)
+#print(DC)
+#print(Error)
 plt.figure(figsize=(9, 5))
 plt.title("DC vs Error.")
 plt.plot(DC, Error)
@@ -592,14 +624,21 @@ plt.grid()
 plt.tight_layout()
 plt.show()
 plt.savefig('Error vs DC.png')
+directory_path = "Error vs Cd"
+i =0
+while True:
+    i += 1
+    newname = os.path.join(directory_path, '{}{:d}.png'.format("Error vs Cd with iterations", itterations,"and", Comparisons,"Comparisons"))
+    if os.path.exists(newname):
+        continue
+    plt.savefig(newname)
+    break
 
-plt.figure(figsize=(9, 5))
-plt.title("Comparison of Real and Predicted Semi-Major Axis")
-plt.plot(range(len(SM_Comp_lst)), SM_Comp_lst, label="Predicted Semi-Major Axis")
-plt.plot(range(len(ACT_Semi_major_lst)), ACT_Semi_major_lst, label="Real Semi-Major Axis")
-plt.xlabel('Epoch Number')
-plt.ylabel('Semi-Major Axis')
-plt.legend()
-plt.grid(True)
-plt.show()
-plt.savefig('Comparison of Real and Predicted Semi-Major Axis.png')
+with open(newname, 'rb') as file_object:
+    ucare_file = uploadcare.upload(file_object)
+
+time.sleep(180)
+
+
+
+
