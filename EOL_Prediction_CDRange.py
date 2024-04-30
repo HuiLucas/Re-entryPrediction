@@ -52,7 +52,7 @@ reference_area_radiation = dataset[3]               # Reference area for radiati
 radiation_pressure_coefficient = dataset[5]         # Radiation pressure coefficient [-]
 
 ##### EOL RANGE FOR C_D RANGE #####
-CD_mean = 1.8                                       # Mean of the normal distribution for the CD range
+CD_mean = 1.61                                       # Mean of the normal distribution for the CD range
 CD_sd = 0.1                                         # Standard deviation of the normal distribution for the CD range
 N = 8                                             # Number of samples
 #####^ SETUP VARIABLES ^###################################################################
