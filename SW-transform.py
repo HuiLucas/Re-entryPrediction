@@ -4,6 +4,24 @@ SW_F10_predicted = open('SW-F10-predicted.txt', 'r')
 
 
 
+class observed_data:
+    def __init__(self):
+        self.kp = [0,0,0,0,0,0,0,0]
+        self.sum = 0
+        self.Ap = [0,0,0,0,0,0,0,0]
+        self.avg = 0
+        self.cp = 0
+        self.c9 = 0
+        self.ISN = 0
+        self.F10_7_adj = 0
+        self.Q = 0
+        self.ctr81_adj = 0
+        self.lst81_adj = 0
+        self.F10_7_obs = 0
+        self.ctr81_obs = 0
+        self.lst81_obs = 0
+
+
 
 # Open the file for reading and writing
 with open('SW-NEW.txt', 'r+') as file:
