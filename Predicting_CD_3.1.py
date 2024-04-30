@@ -595,7 +595,6 @@ for i in range(itterations):
     current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     directory_path = os.path.join("Real vs Predicted SMA", "Run_" + current_time)
     os.makedirs(directory_path, exist_ok=True)
-
     i = 0
     while True:
         i += 1
