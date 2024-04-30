@@ -16,22 +16,22 @@ from tudatpy.numerical_simulation import environment_setup, propagation_setup
 from tudatpy.astro import element_conversion, time_conversion
 from tudatpy import constants
 from tudatpy.util import result2array
-from tudatpy.astro.time_conversion import DateTime
+from tudatpy.astro.time_conversion import DateTime, datetime_to_tudat, date_time_from_epoch, datetime_to_python
 import sys
 
 """-------------------------------"""
 """Inputs"""
-TLE1_number = 5000
+TLE1_number = 7000
 TLE2_number = 8000
 
 Mass = 2.2
 
 reference_area = 0.08  # Average projection area of a 3U CubeSat
-drag_coefficient_lower = 1.6
-drag_coefficient_upper = 1.7
+drag_coefficient_lower = 1.5
+drag_coefficient_upper = 1.8
 
 
-itterations = 1
+itterations = 4
 
 radiation_pressure_coefficient = 1.2
 
@@ -54,7 +54,7 @@ Comp_Epochs = [TLE1_number + (i+1)*int((TLE2_number-TLE1_number)/Comparisons) fo
 
 
 # Open the file
-with open('TLE-Data_C3.txt', 'r') as file:
+with open('/workspaces/Re-entryPrediction/TLE-Data_C3.txt', 'r') as file:
     # Read lines two at a time
     lines = file.readlines()
     TLE_sets = [(lines[i].strip(), lines[i + 1].strip()) for i in range(0, len(lines), 2)]
@@ -81,7 +81,7 @@ def convert_epoch_day_to_date(epoch_year, epoch_day):
 
     return month, day, hour
 # Open the file
-with open('TLE-Data_C3.txt', 'r') as file:
+with open('/workspaces/Re-entryPrediction/TLE-Data_C3.txt', 'r') as file:
     # Read lines two at a time
     lines = file.readlines()
     TLE_sets = [(lines[i], lines[i + 1]) for i in range(0, len(lines), 2)]
@@ -309,28 +309,12 @@ central_bodies = ["Earth"]
 # This dictionary is finally input to the propagation setup to create the acceleration models.
 
 # Define accelerations acting on Delfi-C3 by Sun and Earth.
-accelerations_settings_delfi_c3 = dict(
-    Sun=[
-        propagation_setup.acceleration.radiation_pressure(),
-        propagation_setup.acceleration.point_mass_gravity()
-    ],
-    Earth=[
-        propagation_setup.acceleration.spherical_harmonic_gravity(5, 5),
-        propagation_setup.acceleration.aerodynamic()
-    ],
-    Moon=[
-        propagation_setup.acceleration.point_mass_gravity()
-    ],
-    Mars=[
-        propagation_setup.acceleration.point_mass_gravity()
-    ],
-    Venus=[
-        propagation_setup.acceleration.point_mass_gravity()
-    ]
-)
+
+
+
 
 # Create global accelerations settings dictionary.
-acceleration_settings = {"Delfi-C3": accelerations_settings_delfi_c3}
+
 
 # Create acceleration models.
 
@@ -479,6 +463,34 @@ for i in range(itterations):
     environment_setup.add_aerodynamic_coefficient_interface(
     bodies, "Delfi-C3", aero_coefficient_settings)
 
+    aero_coefficient_settings = environment_setup.aerodynamic_coefficients.constant(
+    reference_area, [drag_coefficient, 0, 0]
+    )
+    environment_setup.add_aerodynamic_coefficient_interface(
+        bodies, "Delfi-C3", aero_coefficient_settings)
+    accelerations_settings_delfi_c3 = dict(
+        Sun=[
+            propagation_setup.acceleration.radiation_pressure(),
+            propagation_setup.acceleration.point_mass_gravity()
+        ],
+        Earth=[
+            propagation_setup.acceleration.spherical_harmonic_gravity(5, 5),
+            propagation_setup.acceleration.aerodynamic()
+        ],
+        Moon=[
+            propagation_setup.acceleration.point_mass_gravity()
+        ],
+        Mars=[
+            propagation_setup.acceleration.point_mass_gravity()
+        ],
+        Venus=[
+            propagation_setup.acceleration.point_mass_gravity()
+        ]
+    )
+
+    # Create global accelerations settings dictionary.
+    acceleration_settings = {"Delfi-C3": accelerations_settings_delfi_c3}
+
     acceleration_models = propagation_setup.create_acceleration_models(
     bodies,
     acceleration_settings,
@@ -545,8 +557,8 @@ for i in range(itterations):
 
     #This makes a list of the predicted semi-major axis at the epochs that are compared to the TLE data
     SM_Comp_lst = []
-    for i in range(len(indices_in_sim_epochs)):
-        SM_Comp_lst.append(SMA[indices_in_sim_epochs[i]])
+    for i in range(len(indices_in_Output_Epochs)):
+        SM_Comp_lst.append(SMA[indices_in_Output_Epochs[i]])
 
     #This makes a list of the actual semi-major axis at the epochs that are compared to the TLE data
     ACT_Semi_major_lst = []

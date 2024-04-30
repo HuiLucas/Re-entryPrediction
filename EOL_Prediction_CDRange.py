@@ -282,7 +282,7 @@ if __name__ == "__main__":
     # Plotterdeplot
     now = datetime.now()
     plt.figure(figsize=(9, 5))
-    plt.title(f"CURRENT_PREDICTIONS/EOL distribution of {satellite} - {now.day}-{now.month}-{now.year} {now.hour}h{now.minute}")
+    plt.title(f"PREDICTIONS_RANGE/EOL distribution of {satellite} - {now.day}-{now.month}-{now.year} {now.hour}h{now.minute}")
     plt.hist(outputs, bins=20)
     plt.xlim([min(outputs), max(outputs)])
     plt.xticks(np.arange(round(min(outputs)/10)*10, round(max(outputs)/10)*10+10, 10))
@@ -290,7 +290,7 @@ if __name__ == "__main__":
     plt.ylabel('Frequency')
     plt.grid()
     plt.tight_layout()
-    plt.savefig(f"CURRENT_PREDICTIONS/EOL distribution of {satellite} - {now.day}-{now.month}-{now.year} {now.hour}h{now.minute}")
+    plt.savefig(f"PREDICTIONS_RANGE/EOL distribution of {satellite} - {now.day}-{now.month}-{now.year} {now.hour}h{now.minute}")
 
 
     # Create text file with all inputs and outputs
@@ -300,7 +300,7 @@ if __name__ == "__main__":
     runtime = endtime - starttime
     print(f"Ran in {runtime} seconds or {runtime/60} minutes")
 
-    ff = open(f"CURRENT_PREDICTIONS\{satellite} EOL Prediction - {now.day}-{now.month}-{now.year} {now.hour}h{now.minute}", "w")
+    ff = open(f"PREDICTIONS_RANGE\{satellite} EOL Prediction - {now.day}-{now.month}-{now.year} {now.hour}h{now.minute}", "w")
     ff.write(f"============== End-of-Life Prediction for {satellite} ==============\n")
     ff.write(f"### File creation on {datetime.now()} \n")
     ff.write("\n")
