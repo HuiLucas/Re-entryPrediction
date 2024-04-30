@@ -87,7 +87,7 @@ spice.load_standard_kernels()
 
 
 # Useful datasets: [name, norad_cat_id, mass, reference area, drag coefficient, radiation pressure coefficient, launch date]
-C3_data =   ["Delfi-C3",   32789, 2.2, 0.080, 1.65, 1.1,  "2008-04-28"] # True C3 re-entry: 2023-11-13 (433 days after 2022-09-06)
+C3_data =   ["Delfi-C3",   32789, 2.2, 0.080, 1.6, 1.1,  "2008-04-28"] # True C3 re-entry: 2023-11-13 (433 days after 2022-09-06)
 N3XT_data = ["Delfi-N3XT", 39428, 2.8, 0.087, 2.2, 1.3,  "2013-11-21"]
 PQ_data =   ["Delfi-PQ",   51074, 0.6, 0.011, 2.2, 1.3,  "2022-01-13"]
 
@@ -258,18 +258,18 @@ dep_vars = dynamics_simulator.dependent_variable_history
 dep_vars_array = result2array(dep_vars)
 
 # Plot altitude as function of time and save it
-time = (dep_vars_array[:,0] - datetime_to_tudat(date1).epoch()) / (3600 * 24) #In days
-EOL_estimate = time[-1]
+Time = (dep_vars_array[:,0] - datetime_to_tudat(date1).epoch()) / (3600 * 24) #In days
+EOL_estimate = Time[-1]
 EOL_date = datetime_to_python(date_time_from_epoch(EOL_estimate * (3600 * 24) + datetime_to_tudat(date1).epoch())).date()
 now = datetime.now()
 print(f"Final remaining lifetime estimate: {EOL_estimate} days. This estimates re-entry on {EOL_date}")
 altitude = dep_vars_array[:, 1] / 1000
 plt.figure(figsize=(9, 5))
 plt.title(f"{satellite} altitude, starting from {date1.date()}. step size = {fixed_step_size}")
-plt.plot(time, altitude)
+plt.plot(Time, altitude)
 plt.xlabel('Time [days]')
 plt.ylabel('Altitude [km]')
-plt.xlim([min(time), max(time)])
+plt.xlim([min(Time), max(Time)])
 plt.grid()
 plt.tight_layout()
 plt.savefig(f"PREDICTIONS_SINGLE/Altitude over the course of propagation of {satellite} - {now.day}-{now.month}-{now.year} {now.hour}h{now.minute}.png")
