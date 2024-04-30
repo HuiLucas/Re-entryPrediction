@@ -21,7 +21,9 @@ class observed_data:
         self.ctr81_obs = 0
         self.lst81_obs = 0
 
+observed_data_list = [observed_data() for i in range(0, 23719)]
 
+observed_data_list[0].kp = [0,0,0,0,0,0,0,0]
 
 # Open the file for reading and writing
 with open('SW-NEW.txt', 'r+') as file:
