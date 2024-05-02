@@ -23,16 +23,16 @@ import os
 
 """-------------------------------"""
 """Inputs"""
-satellite = "Delfi-C3"
+satellite = "Delfi-PQ"
 
-TLE1_number = 8300
-TLE2_number = 8800
+TLE1_number = 280
+TLE2_number = 580
 
-Mass = 2.2
+Mass = 0.6
 
-reference_area = 0.08  # Average projection area of a 3U CubeSat
-drag_coefficient_lower = 1.3
-drag_coefficient_upper = 2.1
+reference_area = 0.011  # Average projection area of a 3U CubeSat
+drag_coefficient_lower = 2.3
+drag_coefficient_upper = 2.5
 
 
 iterations = 11
@@ -57,7 +57,7 @@ Comp_Epochs = [TLE1_number + (i+1)*int((TLE2_number-TLE1_number)/Comparisons) fo
 
 
 # Open the file
-with open('TLE-Data_C3.txt', 'r') as file:
+with open('TLE-Data_PQ.txt', 'r') as file:
     # Read lines two at a time
     lines = file.readlines()
     TLE_sets = [(lines[i].strip(), lines[i + 1].strip()) for i in range(0, len(lines), 2)]
@@ -84,7 +84,7 @@ def convert_epoch_day_to_date(epoch_year, epoch_day):
 
     return month, day, hour
 # Open the file
-with open('TLE-Data_C3.txt', 'r') as file:
+with open('TLE-Data_PQ.txt', 'r') as file:
     # Read lines two at a time
     lines = file.readlines()
     TLE_sets = [(lines[i], lines[i + 1]) for i in range(0, len(lines), 2)]
