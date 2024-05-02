@@ -52,7 +52,7 @@ reference_area_radiation = dataset[3]               # Reference area for radiati
 radiation_pressure_coefficient = dataset[5]         # Radiation pressure coefficient [-]
 
 ##### EOL RANGE FOR C_D RANGE #####
-CD_mean = 1.61                                       # Mean of the normal distribution for the CD range
+CD_mean = 1.61                                      # Mean of the normal distribution for the CD range
 CD_sd = 0.1                                         # Standard deviation of the normal distribution for the CD range
 N = 8                                             # Number of samples
 #####^ SETUP VARIABLES ^###################################################################
@@ -300,7 +300,7 @@ if __name__ == "__main__":
     runtime = endtime - starttime
     print(f"Ran in {runtime} seconds or {runtime/60} minutes")
 
-    ff = open(f"PREDICTIONS_RANGE\{satellite} EOL Prediction - {now.day}-{now.month}-{now.year} {now.hour}h{now.minute}", "w")
+    ff = open(f"PREDICTIONS_RANGE/{satellite} EOL Prediction - {now.day}-{now.month}-{now.year} {now.hour}h{now.minute}", "w")
     ff.write(f"============== End-of-Life Prediction for {satellite} ==============\n")
     ff.write(f"### File creation on {datetime.now()} \n")
     ff.write("\n")
