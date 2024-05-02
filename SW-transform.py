@@ -55,6 +55,81 @@ monthly_predicted_data_list = [monthly_predicted_data() for i in range(0, 209)]
 
 observed_data_list[0].kp = [0,0,0,0,0,0,0,0]
 
+
+############ Kp #############################################
+lines = kp_indeces.readlines()
+last_15_chars_list = []
+for line in lines[2:26]:      #23719 +3 for right range
+    last_15_chars = line[-17:].strip()
+    last_15_chars_list.append(last_15_chars)
+    seperate_row = []
+    for item in last_15_chars_list:
+        new_row = [item[i:i+2] for i in range(0, len(item), 2)]
+        seperate_row.append(new_row)
+
+    
+    for row in seperate_row:
+        for i in range(len(row)):
+            row[i] = row[i].replace("o", "0")
+            row[i] = row[i].replace("+", "3")
+            row[i] = row[i].replace("4-", "37")
+            row[i] = row[i].replace("5-", "47")
+            row[i] = row[i].replace("6-", "57")
+            row[i] = row[i].replace("7-", "67")
+            row[i] = row[i].replace("8-", "77")
+            row[i] = row[i].replace("9-", "87")
+            row[i] = row[i].replace("2-", "17")
+            row[i] = row[i].replace("3-", "27")
+            row[i] = row[i].replace("1-", "7")
+    
+    for row in seperate_row:
+        for i in range(len(row)):
+            row[i] = int(row[i])
+
+for i in range(0, 23):  
+    observed_data_list[i].kp = seperate_row[i]
+
+############ Ap #############################################
+
+observed_data_list[0].Ap = [0,0,0,0,0,0,0,0]
+
+seperate_AP = seperate_row
+
+for row in seperate_AP:
+    for i in range(len(row)):
+        row[i] = row[i].replace(3,2)
+        row[i] = row[i].replace(7,3)
+        row[i] = row[i].replace(10,4)
+        row[i] = row[i].replace(13,5)
+        row[i] = row[i].replace(17,6)
+        row[i] = row[i].replace(20,7)
+        row[i] = row[i].replace(23,9)
+        row[i] = row[i].replace(27,12)
+        row[i] = row[i].replace(30,15)
+        row[i] = row[i].replace(33,18)
+        row[i] = row[i].replace(37,22)
+        row[i] = row[i].replace(40,27)
+        row[i] = row[i].replace(43,32)
+        row[i] = row[i].replace(47,39)
+        row[i] = row[i].replace(50,48)
+        row[i] = row[i].replace(53,56)
+        row[i] = row[i].replace(57,67)
+        row[i] = row[i].replace(60,80)
+        row[i] = row[i].replace(63,94)
+        row[i] = row[i].replace(67,111)
+        row[i] = row[i].replace(70,132)
+        row[i] = row[i].replace(73,154)
+        row[i] = row[i].replace(77,179)
+        row[i] = row[i].replace(80,207)
+        row[i] = row[i].replace(83,236)
+        row[i] = row[i].replace(87,300)
+        row[i] = row[i].replace(90,400)
+
+for i in range(0, 23):  
+    observed_data_list[i].Ap = seperate_AP[i]
+
+print (observed_data_list[0].Ap)
+
 # Open the file for reading and writing
 with open('SW-NEW.txt', 'r+') as file:
     # Read the contents of the file
