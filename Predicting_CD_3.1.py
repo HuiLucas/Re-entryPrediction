@@ -23,14 +23,14 @@ import os
 
 """-------------------------------"""
 """Inputs"""
-TLE1_number = 8600
+TLE1_number = 8300
 TLE2_number = 8800
 
 Mass = 2.2
 
 reference_area = 0.08  # Average projection area of a 3U CubeSat
-drag_coefficient_lower = 1.5
-drag_coefficient_upper = 1.9
+drag_coefficient_lower = 1.3
+drag_coefficient_upper = 2.1
 
 
 iterations = 11
@@ -55,7 +55,7 @@ Comp_Epochs = [TLE1_number + (i+1)*int((TLE2_number-TLE1_number)/Comparisons) fo
 
 
 # Open the file
-with open('/workspaces/Re-entryPrediction/TLE-Data_C3.txt', 'r') as file:
+with open('TLE-Data_C3.txt', 'r') as file:
     # Read lines two at a time
     lines = file.readlines()
     TLE_sets = [(lines[i].strip(), lines[i + 1].strip()) for i in range(0, len(lines), 2)]
