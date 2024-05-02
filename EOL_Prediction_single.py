@@ -279,7 +279,7 @@ plt.savefig(f"PREDICTIONS_SINGLE\{satellite}\{satellite} altitude, starting from
 
 endtime = time.time()
 runtime = endtime - starttime
-print(f"Ran in {runtime} seconds or {runtime/60} minutes")
+print(f"Ran in {runtime/60} minutes")
 
 # Create text file with all inputs and outputs
 ff = open(f"PREDICTIONS_SINGLE\{satellite}\{satellite} EOL Prediction - {now.day}-{now.month}-{now.year} {now.hour}h{now.minute}", "w")
