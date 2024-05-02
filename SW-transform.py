@@ -130,6 +130,19 @@ for i in range(0, 23):
 
 print (observed_data_list[0].Ap)
 
+
+######################### F10.7 ########################################
+lines2 = kp_indeces.readlines()
+f107_list = []
+for i in range(186, 23904):
+    f107 = list(lines2[i])[10:13]
+    for i in range(len(f107)):
+        f107[i] = int(f107[i])
+    f107num = f107[0]*100 + f107[1]*10 + f107[2]    
+    f107_list.append(f107num)
+
+print(f107_list[0:10])
+
 # Open the file for reading and writing
 with open('SW-NEW.txt', 'r+') as file:
     # Read the contents of the file
