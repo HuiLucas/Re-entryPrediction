@@ -29,6 +29,8 @@ import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 import matplotlib.pyplot as plt
 
+print(f"Started running at {datetime.now()}")
+
 def get_tle(norad_cat_id, date):
     # INPUTS: norad_cat_id (int) = ID of the satellite, date (str) = Date to get TLE at in form YEAR-MONTH-DAY--YEAR-MONTH-DAY
     # EXAMPLE: get_tle(32789, 2022-09-06)
@@ -273,17 +275,17 @@ plt.ylabel('Altitude [km]')
 plt.xlim([min(Time), max(Time)])
 plt.grid()
 plt.tight_layout()
-plt.savefig(f"PREDICTIONS_SINGLE\{satellite}\{satellite} altitude, CD={drag_coefficient}, starting from {date1.date()}. - {now.day}-{now.month}-{now.year} {now.hour}h{now.minute}.png")
+plt.savefig(f"PREDICTIONS_SINGLE\{satellite}\{satellite} altitude, starting from {date1.date()}. - {now.day}-{now.month}-{now.year} {now.hour}h{now.minute}.png")
 
 endtime = time.time()
 runtime = endtime - starttime
-print(f"Ran in {runtime} seconds or {runtime/60} minutes")
+print(f"Ran in {runtime/60} minutes")
 
 # Create text file with all inputs and outputs
 ff = open(f"PREDICTIONS_SINGLE\{satellite}\{satellite} EOL Prediction - {now.day}-{now.month}-{now.year} {now.hour}h{now.minute}", "w")
 ff.write(f"============== End-of-Life Prediction for {satellite} ==============\n")
 ff.write(f"### File creation on {datetime.now()} \n")
-ff.write(f"### Associated graph: Altitude over the course of propagation of {satellite} - {now.day}-{now.month}-{now.year} {now.hour}h{now.minute} \n")
+ff.write(f"### Associated graph: {satellite} altitude, starting from {date1.date()}. - {now.day}-{now.month}-{now.year} {now.hour}h{now.minute} \n")
 ff.write("\n")
 ff.write("============================ INPUTS ============================ \n")
 ff.write(f"Satellite name:                    {satellite} \n")
@@ -299,15 +301,15 @@ ff.write(f"TLE: {line1} \n")
 ff.write(f"     {line2} \n")
 ff.write("\n")
 ff.write("=========================== SETTINGS =========================== \n")
-ff.write(f"Integrator used:     {integrator_used} \n")
-ff.write(f"(Initial) time step: {fixed_step_size} [s] \n")
+ff.write(f"Integrator used:        {integrator_used} \n")
+ff.write(f"Time step:              {fixed_step_size} [s] \n")
 ff.write(f"Atmospheric model used: {atmomodel}")
 ff.write("\n")
 ff.write("=========================== OUTPUTS =========================== \n")
 ff.write(f"Remaining lifetime estimate: {EOL_estimate} [days] \n")
 ff.write(f"                             {EOL_estimate/365} [years] \n")
 ff.write(f"Estimated re-entry:          {EOL_date} \n")
-ff.write(f"Runtime:          {runtime/60} [min] \n")
+ff.write(f"Runtime:                     {runtime/60} [min] \n")
 
 # Play sound to notify of code being finished running
 playsound("microwaveping.mp3")
