@@ -465,8 +465,8 @@ for i in range(iterations):
     # Calculate the Mean Squared Error
     MSE = 0
     for i in range(len(SM_Comp_lst)):
-        MSE += (SM_Comp_lst[i] - ACT_Semi_major_lst[i])**2
-        MSE = MSE/len(SM_Comp_lst)
+        MSE = MSE + ((ACT_Semi_major_lst[i] - SM_Comp_lst[i])**2)
+    MSE = MSE/(len(SM_Comp_lst)*10**6)
     Error.append(MSE)
 
     # Plot the predicted semi-major axis vs the actual semi-major axis
