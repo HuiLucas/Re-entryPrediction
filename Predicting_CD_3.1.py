@@ -8,6 +8,7 @@ import math
 import matplotlib
 from matplotlib import pyplot as plt
 
+
 # Load tudatpy modules
 from tudatpy.interface import spice
 from tudatpy import numerical_simulation
@@ -16,30 +17,27 @@ from tudatpy.numerical_simulation import environment_setup, propagation_setup
 from tudatpy.astro import element_conversion, time_conversion
 from tudatpy import constants
 from tudatpy.util import result2array
-from tudatpy.astro.time_conversion import DateTime, datetime_to_tudat, date_time_from_epoch, datetime_to_python
+from tudatpy.astro.time_conversion import DateTime
 import sys
-import time
-import uploadcare
 import os
 
 """-------------------------------"""
 """Inputs"""
-TLE1_number = 7000
-TLE2_number = 8000
+TLE1_number = 8600
+TLE2_number = 8800
 
 Mass = 2.2
 
 reference_area = 0.08  # Average projection area of a 3U CubeSat
 drag_coefficient_lower = 1.5
-drag_coefficient_upper = 1.8
+drag_coefficient_upper = 1.9
 
 
-itterations = 4
+iterations = 11
 
 radiation_pressure_coefficient = 1.2
 
 fixed_step_size = 100
-"""Change to a lower step size when the code works"""
 
 Comparisons = 100 #Number of Epochs you compare to the TLE data
 
@@ -51,7 +49,7 @@ if (TLE2_number - TLE1_number)%Comparisons != 0:
     sys.exit("The number of comparisons is not a factor of the number of TLEs")
 
 
-step_size  = (drag_coefficient_upper - drag_coefficient_lower)/(itterations-1) #Calculates the Drag Coefficient step size
+step_size  = (drag_coefficient_upper - drag_coefficient_lower)/(iterations-1) #Calculates the Drag Coefficient step size
 Comp_Epochs = [TLE1_number + (i+1)*int((TLE2_number-TLE1_number)/Comparisons) for i in range(Comparisons)] #Calculates the epochs for the comparisons
 
 
@@ -202,20 +200,11 @@ second_TLE = initTLE[TLE2_number]
 
 print('\n')
 print("The code will run from", parsed_TLE1['Date'], "to", parsed_TLE2['Date'])
-print('It will run for a drag coefficient between', drag_coefficient_lower, 'and', drag_coefficient_upper,'with a step size of', step_size)
+print('It will run for a drag coefficient between', drag_coefficient_lower, 'and', drag_coefficient_upper,'with a step size of', round(step_size,4))
 print('\n')
 print('Grab yourself some coffee, this might take a while...')
-print('\n')
 
     
-# And access the values like this:
-"""print(parsed_TLE1['Epoch_Year_Actual'])"""
-
-# ## Configuration
-# NAIF's `SPICE` kernels are first loaded, so that the position of various bodies such as the Earth can be make known to `tudatpy`.
-# 
-# Then, the start and end simulation epochs are setups. In this case, the start epoch is set to `0`, corresponding to the 1st of January 2000. The times should be specified in seconds since J2000.
-# Please refer to the API documentation of the `time_conversion module` [here](https://tudatpy.readthedocs.io/en/latest/time_conversion.html) for more information on this.
 
 # Load spice kernels
 spice.load_standard_kernels()
@@ -229,21 +218,6 @@ sim_epochs=[]
 for i in range(Comparisons):
     Comp_date = DateTime(parsed_TLE_LST[i+1]['Year_Actual'], parsed_TLE_LST[i+1]['Month'], parsed_TLE_LST[i+1]['Day'], parsed_TLE_LST[i+1]['Hour']).epoch()
     sim_epochs.append(Comp_date)
-
-#print(sim_epochs)
-
-# ## Environment setup
-# Let’s create the environment for our simulation. This setup covers the creation of (celestial) bodies, vehicle(s), and environment interfaces.
-# 
-# ### Create the bodies
-# Bodies can be created by making a list of strings with the bodies that is to be included in the simulation.
-# 
-# The default body settings (such as atmosphere, body shape, rotation model) are taken from `SPICE`.
-# 
-# These settings can be adjusted. Please refere to the [Available Environment Models](https://tudat-space.readthedocs.io/en/latest/_src_user_guide/state_propagation/environment_setup/create_models/available.html#available-environment-models) in the user guide for more details.
-# 
-# Finally, the system of bodies is created using the settings. This system of bodies is stored into the variable `bodies`.
-
 
 # Define string names for bodies to be created from default.
 bodies_to_create = ["Sun", "Earth", "Moon", "Mars", "Venus"]
@@ -264,17 +238,10 @@ body_settings.get("Earth").atmosphere_settings = environment_setup.atmosphere.nr
 bodies = environment_setup.create_system_of_bodies(body_settings)
 
 
-# ### Create the vehicle
-# Let's now create the 400kg satellite for which the perturbed orbit around Earth will be propagated.
-
-
 # Create vehicle objects.
 bodies.create_empty_body("Delfi-C3")
 
 bodies.get("Delfi-C3").mass = Mass
-
-
-# To account for the pressure of the solar radiation on the satellite, let's add another interface. This takes a radiation pressure coefficient of 1.2, and a radiation area of 4m$^2$. This interface also accounts for the variation in pressure cause by the shadow of Earth.
 
 
 # Create radiation pressure settings, and add to vehicle
@@ -287,68 +254,19 @@ environment_setup.add_radiation_pressure_target_model(
     bodies, "Delfi-C3", vehicle_target_settings)
 
 
-# ## Propagation setup
-# Now that the environment is created, the propagation setup is defined.
-# 
-# First, the bodies to be propagated and the central bodies will be defined.
-# Central bodies are the bodies with respect to which the state of the respective propagated bodies is defined.
-
 # Define bodies that are propagated
 bodies_to_propagate = ["Delfi-C3"]
 
 # Define central bodies of propagation
 central_bodies = ["Earth"]
 
-# ### Create the acceleration model
-# First off, the acceleration settings that act on `Delfi-C3` are to be defined.
-# In this case, these consist in the followings:
-# - Graviational acceleration of Earth modeled as Spherical Harmonics, taken up to a degree and order 5.
-# - Gravitational acceleration of the Sun, the Moon, Mars, and Venus, modeled as a Point Mass.
-# - Aerodynamic acceleration caused by the atmosphere of the Earth (using the aerodynamic interface defined earlier).
-# - Radiation pressure acceleration caused by the Sun (using the radiation interface defined earlier).
-# 
-# The acceleration settings defined are then applied to `Delfi-C3` in a dictionary.
-# 
-# This dictionary is finally input to the propagation setup to create the acceleration models.
-
-# Define accelerations acting on Delfi-C3 by Sun and Earth.
-
-
-
-
-# Create global accelerations settings dictionary.
-
-
-# Create acceleration models.
-
-# ### Define the initial state
-# The initial state of the vehicle that will be propagated is now defined. 
-# 
-# This initial state always has to be provided as a cartesian state, in the form of a list with the first three elements reprensenting the initial position, and the three remaining elements representing the initial velocity.
-# 
-# Within this example, we will retrieve the initial state of Delfi-C3 using its Two-Line-Elements (TLE) the date of its launch (April the 28th, 2008). The TLE strings are obtained from [space-track.org](https://www.space-track.org).
-
-# Set initial conditions for the satellite that will be
-# propagated in this simulation. The initial conditions are given in
-# Keplerian elements and later on converted to Cartesian elements
 
 
 ephemerisdef = environment.TleEphemeris( "Earth", "J2000", initTLE[TLE1_number], False )
 state = ephemerisdef.cartesian_state(simulation_start_epoch)
-#print(element_conversion.cartesian_to_keplerian(state, bodies.get("Earth").gravitational_parameter))
-
 
 
 earth_gravitational_parameter = bodies.get("Earth").gravitational_parameter
-initial_state = element_conversion.keplerian_to_cartesian_elementwise(
-    gravitational_parameter=earth_gravitational_parameter,
-    semi_major_axis= float(element_conversion.cartesian_to_keplerian(state, bodies.get("Earth").gravitational_parameter)[0]),
-    eccentricity= float(element_conversion.cartesian_to_keplerian(state, bodies.get("Earth").gravitational_parameter)[1]),
-    inclination=float(element_conversion.cartesian_to_keplerian(state, bodies.get("Earth").gravitational_parameter)[2]),
-    argument_of_periapsis=float(element_conversion.cartesian_to_keplerian(state, bodies.get("Earth").gravitational_parameter)[3]),
-    longitude_of_ascending_node=float(element_conversion.cartesian_to_keplerian(state, bodies.get("Earth").gravitational_parameter)[4]),
-    true_anomaly=element_conversion.mean_to_true_anomaly(float(element_conversion.cartesian_to_keplerian(state, bodies.get("Earth").gravitational_parameter)[1]), mean_anomaly=float(float(element_conversion.cartesian_to_keplerian(state, bodies.get("Earth").gravitational_parameter)[5]))),
-)
 
 ephemerisdef_lst = [] #list of ephemeris definitions for the comparisons
 state_lst = [] #list of states for the comparisons
@@ -363,7 +281,6 @@ for i in range(Comparisons):
 
 ephemerisdef_2 = environment.TleEphemeris( "Earth", "J2000", second_TLE, False )
 state_2 = ephemerisdef_2.cartesian_state(simulation_end_epoch)
-#print(element_conversion.cartesian_to_keplerian(state_2, bodies.get("Earth").gravitational_parameter))
 
 
 
@@ -378,31 +295,6 @@ for i in range(Comparisons):
     Semi_major_axis_lst.append(Semi_major_axis)
     eccentricity_lst.append(eccentricity)
 
-
-
-# Plotting the semi-major axis list over the epoch number
-plt.plot(range(Comparisons), Semi_major_axis_lst)
-plt.xlabel('Epoch Number')
-plt.ylabel('Semi-Major Axis')
-plt.title('Semi-Major Axis vs Epoch Number')
-plt.grid(True)
-plt.show()
-plt.savefig('Semi-Major Axis vs Epoch Number.png')
-
-
-
-
-RaFinal = Semi_major_axisFinal*(1+eccentricityFinal)
-RpFinal = Semi_major_axisFinal*(1-eccentricityFinal)
-
-Height_apoFinal = RaFinal/1000 - 6371
-Height_periFinal = RpFinal/1000 - 6371
-VaFinal = math.sqrt((3.9860044188*10**14*2*RpFinal)/(RaFinal*(RaFinal+RpFinal)))
-VpFinal = math.sqrt((3.9860044188*10**14*2*RaFinal)/(RpFinal*(RaFinal+RpFinal)))
-# ### Define dependent variables to save
-# In this example, we are interested in saving not only the propagated state of the satellite over time, but also a set of so-called dependent variables, that are to be computed (or extracted and saved) at each integration step.
-# 
-# [This page](https://tudatpy.readthedocs.io/en/latest/dependent_variable.html) of the tudatpy API website provides a detailled explanation of all the dependent variables that are available.
 
 # Define list of dependent variables to save
 dependent_variables_to_save = [
@@ -434,9 +326,6 @@ dependent_variables_to_save = [
     propagation_setup.dependent_variable.altitude("Delfi-C3", "Earth"),
 ]
 
-print(propagation_setup.dependent_variable.PropagationDependentVariables(1))
-
-
 
 # Create termination settings
 #termination_condition = propagation_setup.propagator.time_termination(simulation_end_epoch)
@@ -451,9 +340,15 @@ integrator_settings = propagation_setup.integrator.runge_kutta_fixed_step(time_s
 
 
 
+# Specify the directory name
+dir_name = "Error vs Cd/" + str(str(TLE1_number) + " to " + str(TLE2_number) + " CD " + str(drag_coefficient_lower) + " to " + str(drag_coefficient_upper) + ", " + str(Comparisons) + " Comps")
+
+# Create the directory
+os.makedirs(dir_name,exist_ok=True)
+i = 0
 Error = []
 DC = []
-for i in range(itterations):
+for i in range(iterations):
     drag_coefficient = drag_coefficient_lower + i*step_size
 
     print("\n")
@@ -533,7 +428,6 @@ for i in range(itterations):
     Output_Epochs = states_array[:,0] #Same kind of format as sim_epochs
 
 
-
 # Find the common elements
     common_elements = np.in1d(Output_Epochs, sim_epochs)
 # Find the indices of the common elements in Output_Epochs
@@ -544,9 +438,6 @@ for i in range(itterations):
     for element in Output_Epochs[indices_in_Output_Epochs]:
         indices_in_sim_epochs.append(np.where(sim_epochs == element)[0][0])
 
-    #print("Common elements:", Output_Epochs[indices_in_Output_Epochs])
-    #print("Indices in Output_Epochs:", indices_in_Output_Epochs)
-    #print("Indices in sim_epochs:", indices_in_sim_epochs)
 
     #Final_altitude = dep_vars_array[-1,19]
     kepler_elements = dep_vars_array[:,4:10]
@@ -568,52 +459,29 @@ for i in range(itterations):
     for i in indices_in_sim_epochs:
         ACT_Semi_major_lst.append(Semi_major_axis_lst[i])
 
-    
-    
-    #print(SM_Comp_lst)
-    #print(ACT_Semi_major_lst)
-    
-    
 
+    # Calculate the Mean Squared Error
     MSE = 0
     for i in range(len(SM_Comp_lst)):
         MSE += (SM_Comp_lst[i] - ACT_Semi_major_lst[i])**2
         MSE = MSE/len(SM_Comp_lst)
     Error.append(MSE)
 
+    # Plot the predicted semi-major axis vs the actual semi-major axis
     plt.figure(figsize=(9, 5))
     plt.title("Semi major axis prediction vs actual semi major axis for a drag coefficient of " + str(drag_coefficient))
-    plt.figure(figsize=(9, 5))
     plt.plot(range(len(SM_Comp_lst)), SM_Comp_lst, label="Predicted Semi-Major Axis")
     plt.plot(range(len(ACT_Semi_major_lst)), ACT_Semi_major_lst, label="Real Semi-Major Axis")
     plt.xlabel('Epoch Number')
     plt.ylabel('Semi-Major Axis')
-    plt.legend()
+    plt.legend(loc = 'lower left')
     plt.grid(True)
-    plt.savefig('Comparison of Real and Predicted Semi-Major Axis.png')
-    # Create a new directory for this run
-    current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-    directory_path = os.path.join("Real vs Predicted SMA", "Run_" + current_time)
-    os.makedirs(directory_path, exist_ok=True)
-    i = 0
-    while True:
-        i += 1
-        newname = os.path.join(directory_path, '{}{:d}.png'.format("Real vs Predicted SMA for Cd=", DC[i]))
-        if os.path.exists(newname):
-            continue
-        plt.savefig(newname)
-        break
+    plt.savefig(f'{dir_name}/Real vs Predicted Semi-Major Axis {drag_coefficient}.png')
 
-    with open(newname, 'rb') as file_object:
-        ucare_file = uploadcare.upload(file_object)
-
-    time.sleep(180)
 
     print("the Mean Squared Error is:",MSE)
 
-
-#print(DC)
-#print(Error)
+# Plot the error vs the drag coefficient
 plt.figure(figsize=(9, 5))
 plt.title("DC vs Error.")
 plt.plot(DC, Error)
@@ -621,23 +489,4 @@ plt.xlabel('DC')
 plt.ylabel('Error')
 plt.grid()
 plt.tight_layout()
-plt.show()
-plt.savefig('Error vs DC.png')
-directory_path = "Error vs Cd"
-i =0
-while True:
-    i += 1
-    newname = os.path.join(directory_path, '{}{:d}.png'.format("Error vs Cd with iterations", itterations,"and", Comparisons,"Comparisons"))
-    if os.path.exists(newname):
-        continue
-    plt.savefig(newname)
-    break
-
-with open(newname, 'rb') as file_object:
-    ucare_file = uploadcare.upload(file_object)
-
-time.sleep(180)
-
-
-
-
+plt.savefig(f'{dir_name}/Error vs Cd.png')
