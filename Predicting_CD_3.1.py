@@ -33,7 +33,7 @@ drag_coefficient_lower = 1.5
 drag_coefficient_upper = 1.9
 
 
-itterations = 11
+iterations = 11
 
 radiation_pressure_coefficient = 1.2
 
@@ -49,7 +49,7 @@ if (TLE2_number - TLE1_number)%Comparisons != 0:
     sys.exit("The number of comparisons is not a factor of the number of TLEs")
 
 
-step_size  = (drag_coefficient_upper - drag_coefficient_lower)/(itterations-1) #Calculates the Drag Coefficient step size
+step_size  = (drag_coefficient_upper - drag_coefficient_lower)/(iterations-1) #Calculates the Drag Coefficient step size
 Comp_Epochs = [TLE1_number + (i+1)*int((TLE2_number-TLE1_number)/Comparisons) for i in range(Comparisons)] #Calculates the epochs for the comparisons
 
 
@@ -348,7 +348,7 @@ os.makedirs(dir_name,exist_ok=True)
 i = 0
 Error = []
 DC = []
-for i in range(itterations):
+for i in range(iterations):
     drag_coefficient = drag_coefficient_lower + i*step_size
 
     print("\n")
