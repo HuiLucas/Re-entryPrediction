@@ -24,6 +24,41 @@ observed_data_list = [observed_data() for i in range(0, 23719)]
 
 observed_data_list[0].kp = [0,0,0,0,0,0,0,0]
 
+
+############ Kp #############################################
+lines = kp_indeces.readlines()
+last_15_chars_list = []
+for line in lines[2:23722]:      #23719 +3 for right range
+    last_15_chars = line[-17:].strip()
+    last_15_chars_list.append(last_15_chars)
+    seperate_row = []
+    for item in last_15_chars_list:
+        new_row = [item[i:i+2] for i in range(0, len(item), 2)]
+        seperate_row.append(new_row)
+
+    
+    for row in seperate_row:
+        for i in range(len(row)):
+            row[i] = row[i].replace("o", "0")
+            row[i] = row[i].replace("+", "3")
+            row[i] = row[i].replace("4-", "37")
+            row[i] = row[i].replace("5-", "47")
+            row[i] = row[i].replace("6-", "57")
+            row[i] = row[i].replace("7-", "67")
+            row[i] = row[i].replace("8-", "77")
+            row[i] = row[i].replace("9-", "87")
+            row[i] = row[i].replace("2-", "17")
+            row[i] = row[i].replace("3-", "27")
+            row[i] = row[i].replace("1-", "7")
+    
+    for row in seperate_row:
+        for i in range(len(row)):
+            row[i] = int(row[i])
+
+for i in range(0, 23719):  
+    observed_data_list[i].kp = seperate_row[i]
+
+    
 # Open the file for reading and writing
 with open('SW-NEW.txt', 'r+') as file:
     # Read the contents of the file
