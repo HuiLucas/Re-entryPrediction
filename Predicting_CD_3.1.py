@@ -23,6 +23,8 @@ import os
 
 """-------------------------------"""
 """Inputs"""
+satellite = "Delfi-C3"
+
 TLE1_number = 8300
 TLE2_number = 8800
 
@@ -239,9 +241,9 @@ bodies = environment_setup.create_system_of_bodies(body_settings)
 
 
 # Create vehicle objects.
-bodies.create_empty_body("Delfi-C3")
+bodies.create_empty_body(satellite)
 
-bodies.get("Delfi-C3").mass = Mass
+bodies.get(satellite).mass = Mass
 
 
 # Create radiation pressure settings, and add to vehicle
@@ -251,11 +253,11 @@ occulting_bodies_dict[ "Sun" ] = [ "Earth" ]
 vehicle_target_settings = environment_setup.radiation_pressure.cannonball_radiation_target(
     reference_area_radiation, radiation_pressure_coefficient, occulting_bodies_dict )
 environment_setup.add_radiation_pressure_target_model(
-    bodies, "Delfi-C3", vehicle_target_settings)
+    bodies, satellite, vehicle_target_settings)
 
 
 # Define bodies that are propagated
-bodies_to_propagate = ["Delfi-C3"]
+bodies_to_propagate = [satellite]
 
 # Define central bodies of propagation
 central_bodies = ["Earth"]
@@ -298,39 +300,39 @@ for i in range(Comparisons):
 
 # Define list of dependent variables to save
 dependent_variables_to_save = [
-    propagation_setup.dependent_variable.total_acceleration("Delfi-C3"),
-    propagation_setup.dependent_variable.keplerian_state("Delfi-C3", "Earth"),
-    propagation_setup.dependent_variable.latitude("Delfi-C3", "Earth"),
-    propagation_setup.dependent_variable.longitude("Delfi-C3", "Earth"),
+    propagation_setup.dependent_variable.total_acceleration(satellite),
+    propagation_setup.dependent_variable.keplerian_state(satellite, "Earth"),
+    propagation_setup.dependent_variable.latitude(satellite, "Earth"),
+    propagation_setup.dependent_variable.longitude(satellite, "Earth"),
     propagation_setup.dependent_variable.single_acceleration_norm(
-        propagation_setup.acceleration.point_mass_gravity_type, "Delfi-C3", "Sun"
+        propagation_setup.acceleration.point_mass_gravity_type, satellite, "Sun"
     ),
     propagation_setup.dependent_variable.single_acceleration_norm(
-        propagation_setup.acceleration.point_mass_gravity_type, "Delfi-C3", "Moon"
+        propagation_setup.acceleration.point_mass_gravity_type, satellite, "Moon"
     ),
     propagation_setup.dependent_variable.single_acceleration_norm(
-        propagation_setup.acceleration.point_mass_gravity_type, "Delfi-C3", "Mars"
+        propagation_setup.acceleration.point_mass_gravity_type, satellite, "Mars"
     ),
     propagation_setup.dependent_variable.single_acceleration_norm(
-        propagation_setup.acceleration.point_mass_gravity_type, "Delfi-C3", "Venus"
+        propagation_setup.acceleration.point_mass_gravity_type, satellite, "Venus"
     ),
     propagation_setup.dependent_variable.single_acceleration_norm(
-        propagation_setup.acceleration.spherical_harmonic_gravity_type, "Delfi-C3", "Earth"
+        propagation_setup.acceleration.spherical_harmonic_gravity_type, satellite, "Earth"
     ),
     propagation_setup.dependent_variable.single_acceleration_norm(
-        propagation_setup.acceleration.aerodynamic_type, "Delfi-C3", "Earth"
+        propagation_setup.acceleration.aerodynamic_type, satellite, "Earth"
     ),
     propagation_setup.dependent_variable.single_acceleration_norm(
-        propagation_setup.acceleration.cannonball_radiation_pressure_type, "Delfi-C3", "Sun"
+        propagation_setup.acceleration.cannonball_radiation_pressure_type, satellite, "Sun"
     ),
-    propagation_setup.dependent_variable.altitude("Delfi-C3", "Earth"),
+    propagation_setup.dependent_variable.altitude(satellite, "Earth"),
 ]
 
 
 # Create termination settings
 #termination_condition = propagation_setup.propagator.time_termination(simulation_end_epoch)
 termination_settings_list = [propagation_setup.propagator.time_termination(simulation_end_epoch), propagation_setup.propagator.dependent_variable_termination(
-  dependent_variable_settings = propagation_setup.dependent_variable.altitude( "Delfi-C3", "Earth" ),
+  dependent_variable_settings = propagation_setup.dependent_variable.altitude( satellite, "Earth" ),
   limit_value = 100.0E3,
   use_as_lower_limit = True)]
 termination_condition = propagation_setup.propagator.hybrid_termination(termination_settings_list, fulfill_single_condition = True)
@@ -359,13 +361,13 @@ for i in range(iterations):
     reference_area, [drag_coefficient, 0, 0]
     )
     environment_setup.add_aerodynamic_coefficient_interface(
-    bodies, "Delfi-C3", aero_coefficient_settings)
+    bodies, satellite, aero_coefficient_settings)
 
     aero_coefficient_settings = environment_setup.aerodynamic_coefficients.constant(
     reference_area, [drag_coefficient, 0, 0]
     )
     environment_setup.add_aerodynamic_coefficient_interface(
-        bodies, "Delfi-C3", aero_coefficient_settings)
+        bodies, satellite, aero_coefficient_settings)
     accelerations_settings_delfi_c3 = dict(
         Sun=[
             propagation_setup.acceleration.radiation_pressure(),
@@ -387,7 +389,7 @@ for i in range(iterations):
     )
 
     # Create global accelerations settings dictionary.
-    acceleration_settings = {"Delfi-C3": accelerations_settings_delfi_c3}
+    acceleration_settings = {satellite: accelerations_settings_delfi_c3}
 
     acceleration_models = propagation_setup.create_acceleration_models(
     bodies,
