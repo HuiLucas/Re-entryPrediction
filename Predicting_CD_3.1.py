@@ -27,6 +27,7 @@ satellite = "Delfi-n3Xt"
 TLE_Data = 'TLE-Data_n3Xt.txt'
 
 Folder = "Error vs Cd Delfi-n3Xt/"
+
 TLE1_number = 6700
 TLE2_number = 7200
 
