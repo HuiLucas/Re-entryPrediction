@@ -25,22 +25,22 @@ import os
 """-----------Inputs--------------"""
 """-------------------------------"""
 
-satellite = "Delfi-C3"
+satellite = "Delfi-n3Xt"
 
-TLE_Data = 'TLE-Data_C3.txt'
+TLE_Data = 'TLE-Data_n3Xt.txt'
 
-Folder = "Error vs Cd Delfi-C3/"
+Folder = "Error vs Cd Delfi-n3Xt/"
 
-TLE1_number = 400
-TLE2_number = 1000
+TLE1_number = 6180
+TLE2_number = 6480
 
-Mass = 2.2
+Mass = 2.8
 
-reference_area = 0.080  # Average projection area of a 3U CubeSat
-drag_coefficient_lower = 2.0
-drag_coefficient_upper = 2.4
+reference_area = 0.087  # Average projection area of a 3U CubeSat
+drag_coefficient_lower = 2.5
+drag_coefficient_upper = 3.3
 
-iterations = 9
+iterations = 17
 
 radiation_pressure_coefficient = 1.1
 
