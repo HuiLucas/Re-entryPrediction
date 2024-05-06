@@ -31,18 +31,18 @@ TLE_Data = 'TLE-Data_C3.txt'
 
 Folder = "Error vs Cd Delfi-C3/"
 
-TLE1_number = 8500
-TLE2_number = 8600
+TLE1_number = 400
+TLE2_number = 1000
 
 Mass = 2.2
 
-reference_area = 0.08  # Average projection area of a 3U CubeSat
-drag_coefficient_lower = 1.4
-drag_coefficient_upper = 1.8
+reference_area = 0.080  # Average projection area of a 3U CubeSat
+drag_coefficient_lower = 2.0
+drag_coefficient_upper = 2.4
 
 iterations = 9
 
-radiation_pressure_coefficient = 1.2
+radiation_pressure_coefficient = 1.1
 
 fixed_step_size = 100
 
