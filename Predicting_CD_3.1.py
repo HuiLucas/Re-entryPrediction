@@ -23,16 +23,19 @@ import os
 
 """-------------------------------"""
 """Inputs"""
-satellite = "Delfi-PQ"
+satellite = "Delfi-n3Xt"
+TLE_Data = 'TLE-Data_n3Xt.txt'
 
-TLE1_number = 280
-TLE2_number = 580
+Folder = "Error vs Cd Delfi-n3Xt/"
 
-Mass = 0.6
+TLE1_number = 6700
+TLE2_number = 7200
 
-reference_area = 0.011  # Average projection area of a 3U CubeSat
-drag_coefficient_lower = 2.3
-drag_coefficient_upper = 2.5
+Mass = 2.8
+
+reference_area = 0.087  # Average projection area of a 3U CubeSat
+drag_coefficient_lower = 1.3
+drag_coefficient_upper = 2.3
 
 
 iterations = 11
@@ -42,6 +45,7 @@ radiation_pressure_coefficient = 1.2
 fixed_step_size = 100
 
 Comparisons = 100 #Number of Epochs you compare to the TLE data
+
 
 
 """-------------------------------"""
@@ -57,7 +61,7 @@ Comp_Epochs = [TLE1_number + (i+1)*int((TLE2_number-TLE1_number)/Comparisons) fo
 
 
 # Open the file
-with open('TLE-Data_PQ.txt', 'r') as file:
+with open(TLE_Data, 'r') as file:
     # Read lines two at a time
     lines = file.readlines()
     TLE_sets = [(lines[i].strip(), lines[i + 1].strip()) for i in range(0, len(lines), 2)]
@@ -84,7 +88,7 @@ def convert_epoch_day_to_date(epoch_year, epoch_day):
 
     return month, day, hour
 # Open the file
-with open('TLE-Data_PQ.txt', 'r') as file:
+with open(TLE_Data, 'r') as file:
     # Read lines two at a time
     lines = file.readlines()
     TLE_sets = [(lines[i], lines[i + 1]) for i in range(0, len(lines), 2)]
@@ -343,7 +347,7 @@ integrator_settings = propagation_setup.integrator.runge_kutta_fixed_step(time_s
 
 
 # Specify the directory name
-dir_name = "Error vs Cd/" + str(str(TLE1_number) + " to " + str(TLE2_number) + " CD " + str(drag_coefficient_lower) + " to " + str(drag_coefficient_upper) + ", " + str(Comparisons) + " Comps")
+dir_name = Folder + str(str(TLE1_number) + " to " + str(TLE2_number) + " CD " + str(drag_coefficient_lower) + " to " + str(drag_coefficient_upper) + ", " + str(Comparisons) + " Comps")
 
 # Create the directory
 os.makedirs(dir_name,exist_ok=True)
