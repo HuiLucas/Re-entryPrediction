@@ -29,6 +29,8 @@ import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 import matplotlib.pyplot as plt
 
+print(f"Started running at {datetime.now()}")
+
 def get_tle(norad_cat_id, date):
     # INPUTS: norad_cat_id (int) = ID of the satellite, date (str) = Date to get TLE at in form YEAR-MONTH-DAY--YEAR-MONTH-DAY
     # EXAMPLE: get_tle(32789, 2022-09-06)
@@ -89,13 +91,13 @@ spice.load_standard_kernels()
 
 # Useful datasets: [name, norad_cat_id, mass, reference area, drag coefficient, radiation pressure coefficient, launch date]
 C3_data =   ["Delfi-C3",   32789, 2.2, 0.080, 1.62, 1.1,  "2008-04-28"] # True C3 re-entry: 2023-11-13 (433 days after 2022-09-06)(799 days after 2021-09-06)(4086 days after 2012-09-06)
-N3XT_data = ["Delfi-N3XT", 39428, 2.8, 0.087, 2.2, 1.1,  "2013-11-21"] 
+N3XT_data = ["Delfi-N3XT", 39428, 2.8, 0.087, 3.1, 1.1,  "2013-11-21"] 
 PQ_data =   ["Delfi-PQ",   51074, 0.6, 0.011, 2.385, 1.1,  "2022-01-13"] # True PQ re-entry: 2024-01-09 (491 days after 2022-09-06)
 
 ###########################################################################################
 ##### SETUP VARIABLES #####################################################################
-dataset = C3_data                                   # For automatic data input
-tle_date = "2012-09-06--2012-09-07"                 # Date for TLE (One-day interval, takes first TLE in it)
+dataset = N3XT_data                                   # For automatic data input
+tle_date = "2024-05-01--2024-05-02"                 # Date for TLE (One-day interval, takes first TLE in it)
 propagation_duration = 9999                         # How long to propagate for at most [days] (in case something goes wrong, so that the code doesn't keep running until the end of time)
 fixed_step_size = 100.0                             # Step size for integrator
 
@@ -107,6 +109,7 @@ reference_area = dataset[3]                         # Reference area for aerodyn
 drag_coefficient = dataset[4]                       # Drag coefficient [-]
 reference_area_radiation = dataset[3]               # Reference area for radiation pressure [m²]
 radiation_pressure_coefficient = dataset[5]         # Radiation pressure coefficient [-]
+solardata = "Historical"                            # Name of solar data file, if historical just historical
 #####^ SETUP VARIABLES ^###################################################################
 ###########################################################################################
 
@@ -273,17 +276,17 @@ plt.ylabel('Altitude [km]')
 plt.xlim([min(Time), max(Time)])
 plt.grid()
 plt.tight_layout()
-plt.savefig(f"PREDICTIONS_SINGLE\{satellite}\{satellite} altitude, CD={drag_coefficient}, starting from {date1.date()}. - {now.day}-{now.month}-{now.year} {now.hour}h{now.minute}.png")
+plt.savefig(f"PREDICTIONS_SINGLE\{satellite}\{satellite} altitude, starting from {date1.date()}. - {now.day}-{now.month}-{now.year} {now.hour}h{now.minute}.png")
 
 endtime = time.time()
 runtime = endtime - starttime
-print(f"Ran in {runtime} seconds or {runtime/60} minutes")
+print(f"Ran in {runtime/60} minutes")
 
 # Create text file with all inputs and outputs
 ff = open(f"PREDICTIONS_SINGLE\{satellite}\{satellite} EOL Prediction - {now.day}-{now.month}-{now.year} {now.hour}h{now.minute}", "w")
 ff.write(f"============== End-of-Life Prediction for {satellite} ==============\n")
 ff.write(f"### File creation on {datetime.now()} \n")
-ff.write(f"### Associated graph: Altitude over the course of propagation of {satellite} - {now.day}-{now.month}-{now.year} {now.hour}h{now.minute} \n")
+ff.write(f"### Associated graph: {satellite} altitude, starting from {date1.date()}. - {now.day}-{now.month}-{now.year} {now.hour}h{now.minute} \n")
 ff.write("\n")
 ff.write("============================ INPUTS ============================ \n")
 ff.write(f"Satellite name:                    {satellite} \n")
@@ -299,15 +302,16 @@ ff.write(f"TLE: {line1} \n")
 ff.write(f"     {line2} \n")
 ff.write("\n")
 ff.write("=========================== SETTINGS =========================== \n")
-ff.write(f"Integrator used:     {integrator_used} \n")
-ff.write(f"(Initial) time step: {fixed_step_size} [s] \n")
-ff.write(f"Atmospheric model used: {atmomodel}")
+ff.write(f"Integrator used:           {integrator_used} \n")
+ff.write(f"Time step:                 {fixed_step_size} [s] \n")
+ff.write(f"Atmospheric model used:    {atmomodel} \n")
+ff.write(f"Solar radiation data used: {solardata}")
 ff.write("\n")
 ff.write("=========================== OUTPUTS =========================== \n")
 ff.write(f"Remaining lifetime estimate: {EOL_estimate} [days] \n")
 ff.write(f"                             {EOL_estimate/365} [years] \n")
 ff.write(f"Estimated re-entry:          {EOL_date} \n")
-ff.write(f"Runtime:          {runtime/60} [min] \n")
+ff.write(f"Runtime:                     {runtime/60} [min] \n")
 
 # Play sound to notify of code being finished running
 playsound("microwaveping.mp3")

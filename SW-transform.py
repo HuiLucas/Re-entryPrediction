@@ -88,47 +88,82 @@ for line in lines[2:26]:      #23719 +3 for right range
 
 for i in range(0, 23):  
     observed_data_list[i].kp = seperate_row[i]
+print(seperate_row[0])
+print (last_15_chars_list[0])
 
+'''
 ############ Ap #############################################
 
 observed_data_list[0].Ap = [0,0,0,0,0,0,0,0]
 
-seperate_AP = seperate_row
+print(last_15_chars_list[0:2])
+
+seperate_AP = []
+for item in last_15_chars_list:
+        new_row = [item[i:i+2] for i in range(0, len(item), 2)]
+        seperate_AP.append(new_row)
 
 for row in seperate_AP:
     for i in range(len(row)):
-        row[i] = row[i].replace(3,2)
-        row[i] = row[i].replace(7,3)
-        row[i] = row[i].replace(10,4)
-        row[i] = row[i].replace(13,5)
-        row[i] = row[i].replace(17,6)
-        row[i] = row[i].replace(20,7)
-        row[i] = row[i].replace(23,9)
-        row[i] = row[i].replace(27,12)
-        row[i] = row[i].replace(30,15)
-        row[i] = row[i].replace(33,18)
-        row[i] = row[i].replace(37,22)
-        row[i] = row[i].replace(40,27)
-        row[i] = row[i].replace(43,32)
-        row[i] = row[i].replace(47,39)
-        row[i] = row[i].replace(50,48)
-        row[i] = row[i].replace(53,56)
-        row[i] = row[i].replace(57,67)
-        row[i] = row[i].replace(60,80)
-        row[i] = row[i].replace(63,94)
-        row[i] = row[i].replace(67,111)
-        row[i] = row[i].replace(70,132)
-        row[i] = row[i].replace(73,154)
-        row[i] = row[i].replace(77,179)
-        row[i] = row[i].replace(80,207)
-        row[i] = row[i].replace(83,236)
-        row[i] = row[i].replace(87,300)
-        row[i] = row[i].replace(90,400)
+        row[i] = row[i].replace("0o", "0")
+        row[i] = row[i].replace("0+", "2")
+        row[i] = row[i].replace("1-", "3")
+        row[i] = row[i].replace("1o", "4")
+        row[i] = row[i].replace("1+", "5")
+        row[i] = row[i].replace("2-", "6")
+        row[i] = row[i].replace("2o", "7")
+        row[i] = row[i].replace("2+", "9")
+        row[i] = row[i].replace("3-", "12")
+        row[i] = row[i].replace("3o", "15")
+        row[i] = row[i].replace("3+", "18")
+        row[i] = row[i].replace("4-", "22")
+        row[i] = row[i].replace("4o", "27")
+        row[i] = row[i].replace("4+", "32")
+        row[i] = row[i].replace("5-", "39")
+        row[i] = row[i].replace("5o", "48")
+        row[i] = row[i].replace("5+", "56")
+        row[i] = row[i].replace("6-", "67")
+        row[i] = row[i].replace("6o", "80")
+        row[i] = row[i].replace("6+", "94")
+        row[i] = row[i].replace("7-", "111")
+        row[i] = row[i].replace("7o", "132")
+        row[i] = row[i].replace("7+", "154")
+        row[i] = row[i].replace("8-", "179")
+        row[i] = row[i].replace("8o", "207")
+        row[i] = row[i].replace("8+", "236")
+        row[i] = row[i].replace("9-", "300")
+        row[i] = row[i].replace("9o", "400")
+        row[i] = row[i].replace("9+", "500")
+  
+    for row in seperate_AP:
+        for i in range(len(row)):
+            row[i] = int(row[i])
 
+print(seperate_AP[0:2])
+print(len(seperate_AP))
 for i in range(0, 23):  
     observed_data_list[i].Ap = seperate_AP[i]
 
-print (observed_data_list[0].Ap)
+#print (observed_data_list[0].Ap)
+#print (seperate_row[0])
+#print (last_15_chars_list[0])
+
+'''
+
+
+######################### F10.7 ########################################
+with open('SW-kp-indeces.txt', 'r') as kp_indeces2:
+    lines2 = kp_indeces2.readlines()
+    f107_list = []
+    for i in range(185, 23904):
+        f107 = list(lines2[i])[11:14]
+        for j in range(len(f107)):
+            f107[j] = int(f107[j])
+        f107num = f107[0]*100 + f107[1]*10 + f107[2]    
+        f107_list.append(f107num)
+
+    print(f107_list[0:10])
+    print(f107_list[-10:])
 
 # Open the file for reading and writing
 with open('SW-NEW.txt', 'r+') as file:
@@ -167,11 +202,13 @@ with open('SW-NEW.txt', 'r+') as file:
             linelist[89:92] = [f"{observed_data_list[j].ISN//100 if observed_data_list[j].ISN//100 !=0 else nostring}", f"{observed_data_list[j].ISN%100//10 if (observed_data_list[j].ISN)%100//10 !=0 else nostring}", f"{(observed_data_list[j].ISN)%10}"]
             linelist[93:98] = [f"{observed_data_list[j].F10_7_adj//100 if observed_data_list[j].F10_7_adj//100 !=0 else nostring}", f"{observed_data_list[j].F10_7_adj%100//10 if (observed_data_list[j].F10_7_adj)%100//10 !=0 else nostring}", f"{(observed_data_list[j].F10_7_adj)%10}",".", f"{np.round(observed_data_list[j].F10_7_adj-int(observed_data_list[j].F10_7_adj), decimals=1)}"]
             linelist[99] = f"{observed_data_list[j].Q//1 if type(observed_data_list[j].Q) == int else nostring}"
-            linelist[101:106] = [f"{observed_data_list[j].ctr81_adj//100 if observed_data_list[j].ctr81_adj//100 !=0 else nostring}", f"{observed_data_list[j].ctr81_adj%100//10 if (observed_data_list[j].ctr81_adj)%100//10 !=0 else nostring}", f"{(observed_data_list[j].ctr81_adj)%10}",".", f"{np.round(observed_data_list[j].ctr81_adj-int(observed_data_list[j].ctr81_adj), decimals=1)}"]
-            linelist[107:112] = [f"{observed_data_list[j].lst81_adj//100 if observed_data_list[j].lst81_adj//100 !=0 else nostring}", f"{observed_data_list[j].lst81_adj%100//10 if (observed_data_list[j].lst81_adj)%100//10 !=0 else nostring}", f"{(observed_data_list[j].lst81_adj)%10}",".", f"{np.round(observed_data_list[j].lst81_adj-int(observed_data_list[j].lst81_adj), decimals=1)}"]
+            if j>100:
+                linelist[101:106] = [f"{observed_data_list[j].ctr81_adj//100 if observed_data_list[j].ctr81_adj//100 !=0 else nostring}", f"{observed_data_list[j].ctr81_adj%100//10 if (observed_data_list[j].ctr81_adj)%100//10 !=0 else nostring}", f"{(observed_data_list[j].ctr81_adj)%10}",".", f"{np.round(observed_data_list[j].ctr81_adj-int(observed_data_list[j].ctr81_adj), decimals=1)}"]
+                linelist[107:112] = [f"{observed_data_list[j].lst81_adj//100 if observed_data_list[j].lst81_adj//100 !=0 else nostring}", f"{observed_data_list[j].lst81_adj%100//10 if (observed_data_list[j].lst81_adj)%100//10 !=0 else nostring}", f"{(observed_data_list[j].lst81_adj)%10}",".", f"{np.round(observed_data_list[j].lst81_adj-int(observed_data_list[j].lst81_adj), decimals=1)}"]
             linelist[113:118] = [f"{observed_data_list[j].F10_7_obs//100 if observed_data_list[j].F10_7_obs//100 !=0 else nostring}", f"{observed_data_list[j].F10_7_obs%100//10 if (observed_data_list[j].F10_7_obs)%100//10 !=0 else nostring}", f"{(observed_data_list[j].F10_7_obs)%10}",".", f"{np.round(observed_data_list[j].F10_7_obs-int(observed_data_list[j].F10_7_obs), decimals=1)}"]
-            linelist[119:124] = [f"{observed_data_list[j].ctr81_obs//100 if observed_data_list[j].ctr81_obs//100 !=0 else nostring}", f"{observed_data_list[j].ctr81_obs%100//10 if (observed_data_list[j].ctr81_obs)%100//10 !=0 else nostring}", f"{(observed_data_list[j].ctr81_obs)%10}",".", f"{np.round(observed_data_list[j].ctr81_obs-int(observed_data_list[j].ctr81_obs), decimals=1)}"]
-            linelist[125:130] = [f"{observed_data_list[j].lst81_obs//100 if observed_data_list[j].lst81_obs//100 !=0 else nostring}", f"{observed_data_list[j].lst81_obs%100//10 if (observed_data_list[j].lst81_obs)%100//10 !=0 else nostring}", f"{(observed_data_list[j].lst81_obs)%10}",".", f"{np.round(observed_data_list[j].lst81_obs-int(observed_data_list[j].lst81_obs), decimals=1)}"]
+            if j>100:
+                linelist[119:124] = [f"{observed_data_list[j].ctr81_obs//100 if observed_data_list[j].ctr81_obs//100 !=0 else nostring}", f"{observed_data_list[j].ctr81_obs%100//10 if (observed_data_list[j].ctr81_obs)%100//10 !=0 else nostring}", f"{(observed_data_list[j].ctr81_obs)%10}",".", f"{np.round(observed_data_list[j].ctr81_obs-int(observed_data_list[j].ctr81_obs), decimals=1)}"]
+                linelist[125:130] = [f"{observed_data_list[j].lst81_obs//100 if observed_data_list[j].lst81_obs//100 !=0 else nostring}", f"{observed_data_list[j].lst81_obs%100//10 if (observed_data_list[j].lst81_obs)%100//10 !=0 else nostring}", f"{(observed_data_list[j].lst81_obs)%10}",".", f"{np.round(observed_data_list[j].lst81_obs-int(observed_data_list[j].lst81_obs), decimals=1)}"]
             line = ''.join(linelist)
             
 

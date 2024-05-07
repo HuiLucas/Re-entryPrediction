@@ -25,20 +25,24 @@ import os
 """-----------Inputs--------------"""
 """-------------------------------"""
 
-satellite = "Delfi-C3"
+satellite = "Delfi-n3Xt"
 
-TLE1_number = 7200
-TLE2_number = 7400
+TLE_Data = 'TLE-Data_n3Xt.txt'
 
-Mass = 2.2
+Folder = "Error vs Cd Delfi-n3Xt/"
 
-reference_area = 0.08  # Average projection area of a 3U CubeSat
-drag_coefficient_lower = 1.3
-drag_coefficient_upper = 1.9
+TLE1_number = 6180
+TLE2_number = 6480
 
-iterations = 3
+Mass = 2.8
 
-radiation_pressure_coefficient = 1.2
+reference_area = 0.087  # Average projection area of a 3U CubeSat
+drag_coefficient_lower = 2.5
+drag_coefficient_upper = 3.3
+
+iterations = 17
+
+radiation_pressure_coefficient = 1.1
 
 fixed_step_size = 100
 
@@ -61,7 +65,7 @@ Comp_Epochs = [TLE1_number + (i+1)*int((TLE2_number-TLE1_number)/Comparisons) fo
 
 
 # Open the file
-with open('TLE-Data_C3.txt', 'r') as file:
+with open(TLE_Data, 'r') as file:
     # Read lines two at a time
     lines = file.readlines()
     TLE_sets = [(lines[i].strip(), lines[i + 1].strip()) for i in range(0, len(lines), 2)]
@@ -88,7 +92,7 @@ def convert_epoch_day_to_date(epoch_year, epoch_day):
 
     return month, day, hour
 # Open the file
-with open('TLE-Data_C3.txt', 'r') as file:
+with open(TLE_Data, 'r') as file:
     # Read lines two at a time
     lines = file.readlines()
     TLE_sets = [(lines[i], lines[i + 1]) for i in range(0, len(lines), 2)]
@@ -327,7 +331,7 @@ integrator_settings = propagation_setup.integrator.runge_kutta_fixed_step(time_s
 
 
 # Create directory of new folder to save the plots
-dir_name = "Error vs Cd/" + str(str(TLE1_number) + " to " + str(TLE2_number) + 
+dir_name = Folder + str(str(TLE1_number) + " to " + str(TLE2_number) + 
                                 " CD " + str(drag_coefficient_lower) + " to " + 
                                 str(drag_coefficient_upper) + ", " + str(Comparisons) + " Comps")
 
@@ -450,7 +454,7 @@ for i in range(iterations):
     plt.ylabel('Semi-Major Axis')
     plt.legend(loc = 'lower left')
     plt.grid(True)
-    plt.savefig(f'{dir_name}/Real vs Predicted SMA {drag_coefficient}.png')
+    plt.savefig(f'{dir_name}/Real vs Predicted Semi-Major Axis {round(drag_coefficient, 3)}.png')
 
     print("the Mean Squared Error is:",MSE)
 

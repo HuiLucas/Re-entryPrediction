@@ -1,0 +1,27 @@
+============== End-of-Life Prediction for Delfi-N3XT ==============
+### File creation on 2024-05-06 14:54:32.445817 
+### Associated graph: Delfi-N3XT altitude, starting from 2024-05-01. - 6-5-2024 14h54 
+
+============================ INPUTS ============================ 
+Satellite name:                    Delfi-N3XT 
+NORAD Catalog ID:                  39428 
+Propagation starting date:         2024-05-01 
+Satellite mass:                    2.8 [kg] 
+Aerodynamic reference area:        0.087 [m^2] 
+Drag coefficient:                  3.1 
+Radiation Pressure reference area: 0.087 [m^2] 
+Radiation pressure coefficient:    1.1 
+
+TLE: 1 39428U 13066N   24122.75095250  .00014133  00000-0  18313-2 0  9996 
+     2 39428  97.8414  42.3401 0100707 238.8755 120.2548 14.77381065559236 
+
+=========================== SETTINGS =========================== 
+Integrator used:           Runge-Kutta 78, fixed time step 
+Time step:                 100.0 [s] 
+Atmospheric model used:    NRLMSISE-00
+Solar radiation data used: Historical
+=========================== OUTPUTS =========================== 
+Remaining lifetime estimate: 3847.202546296296 [days] 
+                             10.540280948756976 [years] 
+Estimated re-entry:          2034-11-12 
+Runtime:                     30.039056845506032 [min] 
