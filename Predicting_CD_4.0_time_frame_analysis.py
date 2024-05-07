@@ -27,24 +27,24 @@ import os
 
 satellite = "Delfi-C3"
 
-TLE1_number = 7000
-TLE2_number = 7600
+TLE1_number = 8300
+TLE2_number = 8900
 
 Mass = 2.2
 
 reference_area = 0.08  # Average projection area of a 3U CubeSat
-drag_coefficient_lower = 1.3
-drag_coefficient_upper = 1.9
+drag_coefficient_lower = 1.2
+drag_coefficient_upper = 2
 
-iterations = 3
+iterations = 9
 
 radiation_pressure_coefficient = 1.2
 
 fixed_step_size = 100
 
-Comparisons = 200 #Number of Epochs you compare to the TLE data
+Comparisons = 600 #Number of Epochs you compare to the TLE data
 
-time_frames = 3
+time_frames = 6
 
 
 
