@@ -27,16 +27,16 @@ import os
 
 satellite = "Delfi-C3"
 
-TLE1_number = 8500
-TLE2_number = 8800
+TLE1_number = 7200
+TLE2_number = 7400
 
 Mass = 2.2
 
 reference_area = 0.08  # Average projection area of a 3U CubeSat
-drag_coefficient_lower = 1.4
-drag_coefficient_upper = 1.8
+drag_coefficient_lower = 1.3
+drag_coefficient_upper = 1.9
 
-iterations = 9
+iterations = 3
 
 radiation_pressure_coefficient = 1.2
 
@@ -426,17 +426,10 @@ for i in range(iterations):
         indices_in_sim_epochs.append(np.where(sim_epochs == element)[0][0])
 
 
-    kepler_elements = dep_vars_array[:,4:10]
-    SMA = kepler_elements[:,0]
-    eccentricity = kepler_elements[:,1]
-    inclination = np.rad2deg(kepler_elements[:,2])
-    argument_of_periapsis = np.rad2deg(kepler_elements[:,3])
-    raan = np.rad2deg(kepler_elements[:,4])
-    true_anomaly = np.rad2deg(kepler_elements[:,5])
-
-
 #This makes a list of the predicted semi-major axis at the epochs that are compared to the TLE data
     SM_Comp_lst = []
+    kepler_elements = dep_vars_array[:,4:10]
+    SMA = kepler_elements[:,0]
     for i in range(len(indices_in_Output_Epochs)):
         SM_Comp_lst.append(SMA[indices_in_Output_Epochs[i]])
 
@@ -450,14 +443,14 @@ for i in range(iterations):
 
 # Plot the predicted semi-major axis vs the actual semi-major axis
     plt.figure(figsize=(9, 5))
-    plt.title("Semi major axis prediction vs actual semi major axis for a drag coefficient of " + str(drag_coefficient))
+    plt.title("Real vs Predicted Semi-Major Axis for a drag coefficient of " + str(drag_coefficient))
     plt.plot(range(len(SM_Comp_lst)), SM_Comp_lst, label="Predicted Semi-Major Axis")
     plt.plot(range(len(ACT_Semi_major_lst)), ACT_Semi_major_lst, label="Real Semi-Major Axis")
     plt.xlabel('Epoch Number')
     plt.ylabel('Semi-Major Axis')
     plt.legend(loc = 'lower left')
     plt.grid(True)
-    plt.savefig(f'{dir_name}/Real vs Predicted Semi-Major Axis {drag_coefficient}.png')
+    plt.savefig(f'{dir_name}/Real vs Predicted SMA {drag_coefficient}.png')
 
     print("the Mean Squared Error is:",MSE)
 
