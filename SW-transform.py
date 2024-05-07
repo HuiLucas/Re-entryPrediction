@@ -152,16 +152,18 @@ for i in range(0, 23):
 
 
 ######################### F10.7 ########################################
-lines2 = kp_indeces.readlines()
-f107_list = []
-for i in range(186, 23904):
-    f107 = list(lines2[i])[10:13]
-    for i in range(len(f107)):
-        f107[i] = int(f107[i])
-    f107num = f107[0]*100 + f107[1]*10 + f107[2]    
-    f107_list.append(f107num)
+with open('SW-kp-indeces.txt', 'r') as kp_indeces2:
+    lines2 = kp_indeces2.readlines()
+    f107_list = []
+    for i in range(185, 23904):
+        f107 = list(lines2[i])[11:14]
+        for j in range(len(f107)):
+            f107[j] = int(f107[j])
+        f107num = f107[0]*100 + f107[1]*10 + f107[2]    
+        f107_list.append(f107num)
 
-print(f107_list[0:10])
+    print(f107_list[0:10])
+    print(f107_list[-10:])
 
 # Open the file for reading and writing
 with open('SW-NEW.txt', 'r+') as file:
@@ -200,11 +202,13 @@ with open('SW-NEW.txt', 'r+') as file:
             linelist[89:92] = [f"{observed_data_list[j].ISN//100 if observed_data_list[j].ISN//100 !=0 else nostring}", f"{observed_data_list[j].ISN%100//10 if (observed_data_list[j].ISN)%100//10 !=0 else nostring}", f"{(observed_data_list[j].ISN)%10}"]
             linelist[93:98] = [f"{observed_data_list[j].F10_7_adj//100 if observed_data_list[j].F10_7_adj//100 !=0 else nostring}", f"{observed_data_list[j].F10_7_adj%100//10 if (observed_data_list[j].F10_7_adj)%100//10 !=0 else nostring}", f"{(observed_data_list[j].F10_7_adj)%10}",".", f"{np.round(observed_data_list[j].F10_7_adj-int(observed_data_list[j].F10_7_adj), decimals=1)}"]
             linelist[99] = f"{observed_data_list[j].Q//1 if type(observed_data_list[j].Q) == int else nostring}"
-            linelist[101:106] = [f"{observed_data_list[j].ctr81_adj//100 if observed_data_list[j].ctr81_adj//100 !=0 else nostring}", f"{observed_data_list[j].ctr81_adj%100//10 if (observed_data_list[j].ctr81_adj)%100//10 !=0 else nostring}", f"{(observed_data_list[j].ctr81_adj)%10}",".", f"{np.round(observed_data_list[j].ctr81_adj-int(observed_data_list[j].ctr81_adj), decimals=1)}"]
-            linelist[107:112] = [f"{observed_data_list[j].lst81_adj//100 if observed_data_list[j].lst81_adj//100 !=0 else nostring}", f"{observed_data_list[j].lst81_adj%100//10 if (observed_data_list[j].lst81_adj)%100//10 !=0 else nostring}", f"{(observed_data_list[j].lst81_adj)%10}",".", f"{np.round(observed_data_list[j].lst81_adj-int(observed_data_list[j].lst81_adj), decimals=1)}"]
+            if j>100:
+                linelist[101:106] = [f"{observed_data_list[j].ctr81_adj//100 if observed_data_list[j].ctr81_adj//100 !=0 else nostring}", f"{observed_data_list[j].ctr81_adj%100//10 if (observed_data_list[j].ctr81_adj)%100//10 !=0 else nostring}", f"{(observed_data_list[j].ctr81_adj)%10}",".", f"{np.round(observed_data_list[j].ctr81_adj-int(observed_data_list[j].ctr81_adj), decimals=1)}"]
+                linelist[107:112] = [f"{observed_data_list[j].lst81_adj//100 if observed_data_list[j].lst81_adj//100 !=0 else nostring}", f"{observed_data_list[j].lst81_adj%100//10 if (observed_data_list[j].lst81_adj)%100//10 !=0 else nostring}", f"{(observed_data_list[j].lst81_adj)%10}",".", f"{np.round(observed_data_list[j].lst81_adj-int(observed_data_list[j].lst81_adj), decimals=1)}"]
             linelist[113:118] = [f"{observed_data_list[j].F10_7_obs//100 if observed_data_list[j].F10_7_obs//100 !=0 else nostring}", f"{observed_data_list[j].F10_7_obs%100//10 if (observed_data_list[j].F10_7_obs)%100//10 !=0 else nostring}", f"{(observed_data_list[j].F10_7_obs)%10}",".", f"{np.round(observed_data_list[j].F10_7_obs-int(observed_data_list[j].F10_7_obs), decimals=1)}"]
-            linelist[119:124] = [f"{observed_data_list[j].ctr81_obs//100 if observed_data_list[j].ctr81_obs//100 !=0 else nostring}", f"{observed_data_list[j].ctr81_obs%100//10 if (observed_data_list[j].ctr81_obs)%100//10 !=0 else nostring}", f"{(observed_data_list[j].ctr81_obs)%10}",".", f"{np.round(observed_data_list[j].ctr81_obs-int(observed_data_list[j].ctr81_obs), decimals=1)}"]
-            linelist[125:130] = [f"{observed_data_list[j].lst81_obs//100 if observed_data_list[j].lst81_obs//100 !=0 else nostring}", f"{observed_data_list[j].lst81_obs%100//10 if (observed_data_list[j].lst81_obs)%100//10 !=0 else nostring}", f"{(observed_data_list[j].lst81_obs)%10}",".", f"{np.round(observed_data_list[j].lst81_obs-int(observed_data_list[j].lst81_obs), decimals=1)}"]
+            if j>100:
+                linelist[119:124] = [f"{observed_data_list[j].ctr81_obs//100 if observed_data_list[j].ctr81_obs//100 !=0 else nostring}", f"{observed_data_list[j].ctr81_obs%100//10 if (observed_data_list[j].ctr81_obs)%100//10 !=0 else nostring}", f"{(observed_data_list[j].ctr81_obs)%10}",".", f"{np.round(observed_data_list[j].ctr81_obs-int(observed_data_list[j].ctr81_obs), decimals=1)}"]
+                linelist[125:130] = [f"{observed_data_list[j].lst81_obs//100 if observed_data_list[j].lst81_obs//100 !=0 else nostring}", f"{observed_data_list[j].lst81_obs%100//10 if (observed_data_list[j].lst81_obs)%100//10 !=0 else nostring}", f"{(observed_data_list[j].lst81_obs)%10}",".", f"{np.round(observed_data_list[j].lst81_obs-int(observed_data_list[j].lst81_obs), decimals=1)}"]
             line = ''.join(linelist)
             
 
