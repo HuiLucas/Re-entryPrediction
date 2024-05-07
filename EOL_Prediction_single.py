@@ -97,7 +97,7 @@ PQ_data =   ["Delfi-PQ",   51074, 0.6, 0.011, 2.385, 1.1,  "2022-01-13"] # True 
 ###########################################################################################
 ##### SETUP VARIABLES #####################################################################
 dataset = N3XT_data                                   # For automatic data input
-tle_date = "2024-01-05--2024-01-06"                 # Date for TLE (One-day interval, takes first TLE in it)
+tle_date = "2024-05-01--2024-05-02"                 # Date for TLE (One-day interval, takes first TLE in it)
 propagation_duration = 9999                         # How long to propagate for at most [days] (in case something goes wrong, so that the code doesn't keep running until the end of time)
 fixed_step_size = 100.0                             # Step size for integrator
 
@@ -109,6 +109,7 @@ reference_area = dataset[3]                         # Reference area for aerodyn
 drag_coefficient = dataset[4]                       # Drag coefficient [-]
 reference_area_radiation = dataset[3]               # Reference area for radiation pressure [m²]
 radiation_pressure_coefficient = dataset[5]         # Radiation pressure coefficient [-]
+solardata = "Historical"                            # Name of solar data file, if historical just historical
 #####^ SETUP VARIABLES ^###################################################################
 ###########################################################################################
 
@@ -301,9 +302,10 @@ ff.write(f"TLE: {line1} \n")
 ff.write(f"     {line2} \n")
 ff.write("\n")
 ff.write("=========================== SETTINGS =========================== \n")
-ff.write(f"Integrator used:        {integrator_used} \n")
-ff.write(f"Time step:              {fixed_step_size} [s] \n")
-ff.write(f"Atmospheric model used: {atmomodel}")
+ff.write(f"Integrator used:           {integrator_used} \n")
+ff.write(f"Time step:                 {fixed_step_size} [s] \n")
+ff.write(f"Atmospheric model used:    {atmomodel} \n")
+ff.write(f"Solar radiation data used: {solardata}")
 ff.write("\n")
 ff.write("=========================== OUTPUTS =========================== \n")
 ff.write(f"Remaining lifetime estimate: {EOL_estimate} [days] \n")

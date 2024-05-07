@@ -16,9 +16,10 @@ TLE: 1 32789U 08021G   21249.57041430  .00002971  00000-0  18980-3 0  9990
      2 32789  97.3714 281.8067 0010644 216.2866 143.7643 15.09345454729062 
 
 =========================== SETTINGS =========================== 
-Integrator used:        Runge-Kutta 78, fixed time step 
-Time step:              100.0 [s] 
-Atmospheric model used: NRLMSISE-00
+Integrator used:           Runge-Kutta 78, fixed time step 
+Time step:                 100.0 [s] 
+Atmospheric model used:    NRLMSISE-00
+Solar radiation data used: Historical
 =========================== OUTPUTS =========================== 
 Remaining lifetime estimate: 794.2824074074074 [days] 
                              2.1761161846778285 [years] 
