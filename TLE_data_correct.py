@@ -21,7 +21,7 @@ import sys
 
 """-------------------------------"""
 """Inputs"""
-TLE1_number = 0
+TLE1_number = 3500
 TLE2_number = 9000
 
 Mass = 2.2
@@ -31,14 +31,14 @@ drag_coefficient_lower = 1.2
 drag_coefficient_upper = 2.0
 
 
-itterations = 16
+itterations = 20
 
 radiation_pressure_coefficient = 1.2
 
-fixed_step_size = 100
+fixed_step_size = 1
 """Change to a lower step size when the code works"""
 
-Comparisons = 10 #Number of Epochs you compare to the TLE data
+Comparisons = 100 #Number of Epochs you compare to the TLE data
 
 
 """-------------------------------"""
@@ -418,7 +418,6 @@ years = list(range(start_year, end_year + 1))
 
 # Slice the Semi_major_axis_lst list to match the length of years
 Semi_major_axis_lst = Semi_major_axis_lst[:len(years)]
-
 
 # Plot the semi-major axis over the years
 plt.plot(years, Semi_major_axis_lst)
