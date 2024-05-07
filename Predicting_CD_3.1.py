@@ -8,7 +8,6 @@ import math
 import matplotlib
 from matplotlib import pyplot as plt
 
-
 # Load tudatpy modules
 from tudatpy.interface import spice
 from tudatpy import numerical_simulation
@@ -21,23 +20,23 @@ from tudatpy.astro.time_conversion import DateTime
 import sys
 import os
 
+
 """-------------------------------"""
 """Inputs"""
-satellite = "Delfi-PQ"
+satellite = "Delfi-C3"
 
 TLE1_number = 280
 TLE2_number = 580
 
-Mass = 0.6
+Mass = 2.2
 
-reference_area = 0.011  # Average projection area of a 3U CubeSat
-drag_coefficient_lower = 2.3
-drag_coefficient_upper = 2.5
-
+reference_area = 0.080  # Average projection area of a 3U CubeSat
+drag_coefficient_lower = 1.4
+drag_coefficient_upper = 1.8
 
 iterations = 11
 
-radiation_pressure_coefficient = 1.2
+radiation_pressure_coefficient = 1.1
 
 fixed_step_size = 100
 
@@ -57,7 +56,7 @@ Comp_Epochs = [TLE1_number + (i+1)*int((TLE2_number-TLE1_number)/Comparisons) fo
 
 
 # Open the file
-with open('TLE-Data_PQ.txt', 'r') as file:
+with open('TLE-Data_C3.txt', 'r') as file:
     # Read lines two at a time
     lines = file.readlines()
     TLE_sets = [(lines[i].strip(), lines[i + 1].strip()) for i in range(0, len(lines), 2)]
@@ -84,7 +83,7 @@ def convert_epoch_day_to_date(epoch_year, epoch_day):
 
     return month, day, hour
 # Open the file
-with open('TLE-Data_PQ.txt', 'r') as file:
+with open('TLE-Data_C3.txt', 'r') as file:
     # Read lines two at a time
     lines = file.readlines()
     TLE_sets = [(lines[i], lines[i + 1]) for i in range(0, len(lines), 2)]
