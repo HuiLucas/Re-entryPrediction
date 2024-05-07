@@ -59,7 +59,7 @@ observed_data_list[0].kp = [0,0,0,0,0,0,0,0]
 ############ Kp #############################################
 lines = kp_indeces.readlines()
 last_15_chars_list = []
-for line in lines[2:26]:      #23719 +3 for right range
+for line in lines[2:240]:      #23719 +3 for right range
     last_15_chars = line[-17:].strip()
     last_15_chars_list.append(last_15_chars)
     seperate_row = []
@@ -86,22 +86,23 @@ for line in lines[2:26]:      #23719 +3 for right range
         for i in range(len(row)):
             row[i] = int(row[i])
 
-for i in range(0, 23):  
+for i in range(0, 237):         #23719
     observed_data_list[i].kp = seperate_row[i]
-print(seperate_row[0])
-print (last_15_chars_list[0])
+#print(seperate_row[0])
+#print (last_15_chars_list[0])
 
-'''
+
 ############ Ap #############################################
 
 observed_data_list[0].Ap = [0,0,0,0,0,0,0,0]
 
-print(last_15_chars_list[0:2])
+#print(last_15_chars_list[0:2])
 
 seperate_AP = []
 for item in last_15_chars_list:
         new_row = [item[i:i+2] for i in range(0, len(item), 2)]
         seperate_AP.append(new_row)
+#print (seperate_AP[0:3])
 
 for row in seperate_AP:
     for i in range(len(row)):
@@ -135,21 +136,23 @@ for row in seperate_AP:
         row[i] = row[i].replace("9o", "400")
         row[i] = row[i].replace("9+", "500")
   
-    for row in seperate_AP:
-        for i in range(len(row)):
-            row[i] = int(row[i])
+for row in seperate_AP:
+    # print(row)
+    for i in range(len(row)):
+        row[i] = int(row[i])
 
-print(seperate_AP[0:2])
-print(len(seperate_AP))
-for i in range(0, 23):  
+#print(seperate_AP[0:3])
+#print(len(seperate_AP))
+for i in range(0, 237):      #23719
     observed_data_list[i].Ap = seperate_AP[i]
 
-#print (observed_data_list[0].Ap)
+#print (observed_data_list[5].kp)
+#print (observed_data_list[5].Ap)
 #print (seperate_row[0])
-#print (last_15_chars_list[0])
+#sprint (last_15_chars_list[0])
+
 
 '''
-
 
 ######################### F10.7 ########################################
 lines2 = kp_indeces.readlines()
@@ -315,8 +318,9 @@ with open('SW-NEW.txt', 'r+') as file:
     file.truncate(0)
     file.writelines(lines)
 
+'''
 # Close the file
-file.close()
+#file.close()
 
 
 
