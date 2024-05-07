@@ -55,11 +55,12 @@ monthly_predicted_data_list = [monthly_predicted_data() for i in range(0, 209)]
 
 observed_data_list[0].kp = [0,0,0,0,0,0,0,0]
 
+q = 237  #change for the number of lines in the file
 
 ############ Kp #############################################
 lines = kp_indeces.readlines()
 last_15_chars_list = []
-for line in lines[2:240]:      #23719 +3 for right range
+for line in lines[2:q+3]:      #23719 +3 for right range
     last_15_chars = line[-17:].strip()
     last_15_chars_list.append(last_15_chars)
     seperate_row = []
@@ -86,7 +87,7 @@ for line in lines[2:240]:      #23719 +3 for right range
         for i in range(len(row)):
             row[i] = int(row[i])
 
-for i in range(0, 237):         #23719
+for i in range(0, q):         #23719
     observed_data_list[i].kp = seperate_row[i]
 #print(seperate_row[0])
 #print (last_15_chars_list[0])
@@ -143,7 +144,7 @@ for row in seperate_AP:
 
 #print(seperate_AP[0:3])
 #print(len(seperate_AP))
-for i in range(0, 237):      #23719
+for i in range(0, q):      #23719
     observed_data_list[i].Ap = seperate_AP[i]
 
 #print (observed_data_list[5].kp)
@@ -151,8 +152,105 @@ for i in range(0, 237):      #23719
 #print (seperate_row[0])
 #sprint (last_15_chars_list[0])
 
+############ SUM #############################################
 
-'''
+for i in range(0, q):      #23719
+    observed_data_list[i].sum = sum(observed_data_list[i].kp)
+
+#print (observed_data_list[5].sum)
+
+############ AVG #############################################
+
+for i in range(0, q):     #23719 
+    observed_data_list[i].avg = np.mean(observed_data_list[i].Ap)
+
+#print(observed_data_list[5].Ap)
+#print (observed_data_list[5].avg)
+
+############ CP #############################################
+
+average_Ap = []
+for i in range(0, q):      #23719
+    average_Ap.append(np.sum(observed_data_list[i].Ap))
+
+#print(observed_data_list[0].Ap,observed_data_list[1].Ap,observed_data_list[2].Ap,observed_data_list[3].Ap,observed_data_list[4].Ap)
+#print (average_Ap[5])
+
+for i in range(len(average_Ap)):
+        
+        if 0 <= average_Ap[i] <= 22:
+            average_Ap[i] = 0.0
+        elif 23 <= average_Ap[i] <= 34:
+            average_Ap[i] = 0.1
+        elif 35 <= average_Ap[i] <= 44: 
+            average_Ap[i] = 0.2
+        elif 45 <= average_Ap[i] <= 55:
+            average_Ap[i] = 0.3
+        elif 56 <= average_Ap[i] <= 66:
+            average_Ap[i] = 0.4
+        elif 67 <= average_Ap[i] <= 78:
+            average_Ap[i] = 0.5
+        elif 79 <= average_Ap[i] <= 90:
+            average_Ap[i] = 0.6
+        elif 91 <= average_Ap[i] <= 104:
+            average_Ap[i] = 0.7
+        elif 105 <= average_Ap[i] <= 120:
+            average_Ap[i] = 0.8
+        elif 121 <= average_Ap[i] <= 139:
+            average_Ap[i] = 0.9
+        elif 140 <= average_Ap[i] <= 164:
+            average_Ap[i] = 1.0
+        elif 165 <= average_Ap[i] <= 190:
+            average_Ap[i] = 1.1
+        elif 191 <= average_Ap[i] <= 228:
+            average_Ap[i] = 1.2
+        elif 229 <= average_Ap[i] <= 273:
+            average_Ap[i] = 1.3
+        elif 274 <= average_Ap[i] <= 320:
+            average_Ap[i] = 1.4
+        elif 321 <= average_Ap[i] <= 379:
+            average_Ap[i] = 1.5
+        elif 380 <= average_Ap[i] <= 453:
+            average_Ap[i] = 1.6
+        elif 454 <= average_Ap[i] <= 561:
+            average_Ap[i] = 1.7
+
+
+
+for i in range(0, q):      #23719
+    observed_data_list[i].cp = average_Ap[i]
+
+############ C9 ############################################
+
+for i in range(0, q):      #23719
+    if 0.0 <= observed_data_list[i].cp <= 0.1:
+        observed_data_list[i].c9 = 0
+    if 0.2 <= observed_data_list[i].cp <= 0.3:
+        observed_data_list[i].c9 = 1
+    if 0.4 <= observed_data_list[i].cp <= 0.5:
+        observed_data_list[i].c9 = 2
+    if 0.6 <= observed_data_list[i].cp <= 0.7:
+        observed_data_list[i].c9 = 3
+    if 0.8 <= observed_data_list[i].cp <= 0.9:
+        observed_data_list[i].c9 = 4
+    if 1.0 <= observed_data_list[i].cp <= 1.1:
+        observed_data_list[i].c9 = 5
+    if 1.2 <= observed_data_list[i].cp <= 1.4:
+        observed_data_list[i].c9 = 6
+    if 1.5 <= observed_data_list[i].cp <= 1.8:
+        observed_data_list[i].c9 = 7
+    if observed_data_list[i].cp == 1.9:
+        observed_data_list[i].c9 = 8
+    if 2.0 <= observed_data_list[i].cp <= 2.5:
+        observed_data_list[i].c9 = 9
+
+sum_Ap = []
+for i in range(0, q):      #23719
+    sum_Ap.append(np.sum(observed_data_list[i].Ap))
+
+#k = 236
+#print(f'sum={sum_Ap[k]}, cp={observed_data_list[k].cp},c9={observed_data_list[k].c9}')
+
 
 ######################### F10.7 ########################################
 lines2 = kp_indeces.readlines()
@@ -318,7 +416,7 @@ with open('SW-NEW.txt', 'r+') as file:
     file.truncate(0)
     file.writelines(lines)
 
-'''
+
 # Close the file
 #file.close()
 
