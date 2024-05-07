@@ -20,6 +20,7 @@ Integrator used:           Runge-Kutta 78, fixed time step
 Time step:                 100.0 [s] 
 Atmospheric model used:    NRLMSISE-00
 Solar radiation data used: Historical
+
 =========================== OUTPUTS =========================== 
 Remaining lifetime estimate: 3847.202546296296 [days] 
                              10.540280948756976 [years] 
