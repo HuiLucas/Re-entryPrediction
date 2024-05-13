@@ -2,6 +2,10 @@ kp_indeces = open('SW-kp-indeces.txt', 'r')
 SW_F10_predicted = open('SW-F10-predicted.txt', 'r')
 import numpy as np
 
+import datetime
+from dateutil.relativedelta import relativedelta
+
+
 
 class observed_data:
     def __init__(self):
@@ -190,6 +194,16 @@ with open('SW-kp-indeces.txt', 'r') as kp_indeces2:
     print(f107_list[-10:])
     print(observed_data_list[19].F10_7_obs)
 
+    f107predicted_list = []
+    for i in range(0, 45):
+        if i + 23904 < len(lines2):
+            f107predicted = list(lines2[i+23904])[11:14]
+            for j in range(len(f107predicted)):
+                f107predicted[j] = int(f107predicted[j])
+            f107predictednum = f107predicted[0]*100 + f107predicted[1]*10 + f107predicted[2]    
+            f107predicted_list.append(f107predictednum)
+        
+print('list', f107predicted_list)
 for j in range(90, 23719):
     average1 = 0
     if j<23719-40:
@@ -205,6 +219,21 @@ for j in range(90, 23719):
         average2 += observed_data_list[j+k].F10_7_obs/81
     observed_data_list[j].lst81_obs = average2   
 
+for j in range(90, 23719):
+    average1 = 0
+    if j<23719-40:
+        for k in range(-40, 41):
+            average1 += observed_data_list[j+k].F10_7_adj/81
+    else:
+        for k in range(-40, 23719-j):
+            average1 += observed_data_list[j+k].F10_7_adj/(40+23719-j)
+            #print(j+k, k, 23719-j)
+    observed_data_list[j].ctr81_adj = average1
+    average2 = 0
+    for k in range(-80, 1):
+        average2 += observed_data_list[j+k].F10_7_adj/81
+    observed_data_list[j].lst81_adj = average2
+
 # Open the file for reading and writing
 with open('SW-NEW.txt', 'r+') as file:
     # Read the contents of the file
@@ -212,6 +241,7 @@ with open('SW-NEW.txt', 'r+') as file:
     # Iterate over each line
     dum=0
     removalarray = []
+    saveline1 = 0
     for i, line in enumerate(lines):
         # Check if the line has at least 46 characters
         if i >= 17 and i <= 17+23718:
@@ -254,12 +284,12 @@ with open('SW-NEW.txt', 'r+') as file:
 
             # Update the line in the list of lines
             lines[i] = line
-        
         if i>17+23719 and dum==0:
             if list(lines[i]) != ['E', 'N', 'D', ' ', 'O', 'B', 'S', 'E', 'R', 'V', 'E', 'D', '\n']:
                 removalarray.append(i-1)
             else:
                 removalarray.append(i-1)
+                saveline1 = i
                 dum=1
     # Move the file pointer to the beginning of the file
     #print(removalarray)
@@ -273,19 +303,38 @@ with open('SW-NEW.txt', 'r+') as file:
     dum3=0
     #print(list(lines[23739]))
     j=0
+    saveline2=0
     for i, line in enumerate(lines):
         #print(count1)
         if dum2==0:
             if list(line) == ['B', 'E', 'G', 'I', 'N', ' ', 'D', 'A', 'I', 'L', 'Y', '_', 'P', 'R', 'E', 'D', 'I', 'C', 'T', 'E', 'D', '\n']:
                 dum2=1
                 count1=i
+                lastdate = lines[i-4]
+                lastyear = int(lastdate[0:4])
+                lastmonth = int(lastdate[5:7])
+                lastday = int(lastdate[8:10])
+                lastdatetime = datetime.datetime(lastyear, lastmonth, lastday)
+                lastND = int(lastdate[16:19])
+                lastNDyear = int(lastdate[11:15])
+                print('lastdate', lastdatetime.year, lastdatetime.month, lastdatetime.day, lastND, lastNDyear)
         elif list(line) == ['E', 'N', 'D', ' ', 'D', 'A', 'I', 'L', 'Y', '_', 'P', 'R', 'E', 'D', 'I', 'C', 'T', 'E', 'D', '\n']:
+            saveline2=i
             dum3=1
         if i > count1  and dum3==0 and dum2==1:
             #print(line)
             linelist = list(line)
             nostring = " "
+            newdatetime = (lastdatetime+datetime.timedelta(days=j+1))
+            newND = (lastND+j)%27 + 1
+            newNDyear = lastNDyear + (lastND+j)//27 
+            print(newdatetime.year, newdatetime.month, newdatetime.day, newND)
             #print(linelist[19:21], [f"{daily_predicted_data_list[j].kp[0]//10 if daily_predicted_data_list[j].kp[0]//10 !=0 else nostring}", f"{daily_predicted_data_list[j].kp[0]%10}"])
+            linelist[0:4] = [f"{newdatetime.year//1000}", f"{newdatetime.year%1000//100}", f"{newdatetime.year%100//10}", f"{newdatetime.year%10}"]
+            linelist[5:7] = [f"{newdatetime.month//10}", f"{newdatetime.month%10}"]
+            linelist[8:10] = [f"{newdatetime.day//10}", f"{newdatetime.day%10}"]
+            linelist[16:18] = [f"{newND//10  if newND//10 != 0 else nostring}", f"{newND%10}"]
+            linelist[11:15] = [f"{newNDyear//1000}", f"{newNDyear%1000//100}", f"{newNDyear%100//10}", f"{newNDyear%10}"]
             linelist[19:21] = [f"{daily_predicted_data_list[j].kp[0]//10 if daily_predicted_data_list[j].kp[0]//10 !=0 else nostring}", f"{daily_predicted_data_list[j].kp[0]%10}"]
             linelist[22:24] = [f"{daily_predicted_data_list[j].kp[1]//10  if daily_predicted_data_list[j].kp[1]//10 !=0 else nostring}", f"{daily_predicted_data_list[j].kp[1]%10}"]
             linelist[25:27] = [f"{daily_predicted_data_list[j].kp[2]//10  if daily_predicted_data_list[j].kp[2]//10 !=0 else nostring}", f"{daily_predicted_data_list[j].kp[2]%10}"]
@@ -309,13 +358,13 @@ with open('SW-NEW.txt', 'r+') as file:
             linelist[89:92] = [f"{daily_predicted_data_list[j].ISN//100 if daily_predicted_data_list[j].ISN//100 !=0 else nostring}", f"{daily_predicted_data_list[j].ISN%100//10 if (daily_predicted_data_list[j].ISN)%100//10 !=0 or daily_predicted_data_list[j].ISN//100 !=0 else nostring}", f"{(daily_predicted_data_list[j].ISN)%10}"]
             linelist[93:98] = [f"{int(daily_predicted_data_list[j].F10_7_adj//100) if int(daily_predicted_data_list[j].F10_7_adj//100) !=0 else nostring}", f"{int(daily_predicted_data_list[j].F10_7_adj%100//10) if int((daily_predicted_data_list[j].F10_7_adj)%100//10) !=0 or int(daily_predicted_data_list[j].F10_7_adj//100) !=0 else nostring}", f"{int((daily_predicted_data_list[j].F10_7_adj)%10)}",".", f"{int((daily_predicted_data_list[j].F10_7_adj-int(daily_predicted_data_list[j].F10_7_adj))*10)}"]
             linelist[99] = f"{daily_predicted_data_list[j].Q//1 if type(daily_predicted_data_list[j].Q) == int else nostring}"
-            if j>100:
-                linelist[101:106] = [f"{int(daily_predicted_data_list[j].ctr81_adj//100) if int(daily_predicted_data_list[j].ctr81_adj//100) !=0 else nostring}", f"{int(daily_predicted_data_list[j].ctr81_adj%100//10) if int((daily_predicted_data_list[j].ctr81_adj)%100//10) !=0 or int(daily_predicted_data_list[j].ctr81_adj//100) !=0 else nostring}", f"{int((daily_predicted_data_list[j].ctr81_adj)%10)}",".", f"{int((daily_predicted_data_list[j].ctr81_adj-int(daily_predicted_data_list[j].ctr81_adj))*10)}"]
-                linelist[107:112] = [f"{int(daily_predicted_data_list[j].lst81_adj//100) if int(daily_predicted_data_list[j].lst81_adj//100) !=0 else nostring}", f"{int(daily_predicted_data_list[j].lst81_adj%100//10) if int((daily_predicted_data_list[j].lst81_adj)%100//10) !=0 or int(daily_predicted_data_list[j].lst81_adj//100) !=0 else nostring}", f"{int((daily_predicted_data_list[j].lst81_adj)%10)}",".", f"{int((daily_predicted_data_list[j].lst81_adj-int(daily_predicted_data_list[j].lst81_adj))*10)}"]
+            
+            linelist[101:106] = [f"{int(daily_predicted_data_list[j].ctr81_adj//100) if int(daily_predicted_data_list[j].ctr81_adj//100) !=0 else nostring}", f"{int(daily_predicted_data_list[j].ctr81_adj%100//10) if int((daily_predicted_data_list[j].ctr81_adj)%100//10) !=0 or int(daily_predicted_data_list[j].ctr81_adj//100) !=0 else nostring}", f"{int((daily_predicted_data_list[j].ctr81_adj)%10)}",".", f"{int((daily_predicted_data_list[j].ctr81_adj-int(daily_predicted_data_list[j].ctr81_adj))*10)}"]
+            linelist[107:112] = [f"{int(daily_predicted_data_list[j].lst81_adj//100) if int(daily_predicted_data_list[j].lst81_adj//100) !=0 else nostring}", f"{int(daily_predicted_data_list[j].lst81_adj%100//10) if int((daily_predicted_data_list[j].lst81_adj)%100//10) !=0 or int(daily_predicted_data_list[j].lst81_adj//100) !=0 else nostring}", f"{int((daily_predicted_data_list[j].lst81_adj)%10)}",".", f"{int((daily_predicted_data_list[j].lst81_adj-int(daily_predicted_data_list[j].lst81_adj))*10)}"]
             linelist[113:118] = [f"{int(daily_predicted_data_list[j].F10_7_obs//100) if int(daily_predicted_data_list[j].F10_7_obs//100) !=0 else nostring}", f"{int(daily_predicted_data_list[j].F10_7_obs%100//10) if (int(daily_predicted_data_list[j].F10_7_obs)%100//10) !=0 or int(daily_predicted_data_list[j].F10_7_obs//100) !=0 else nostring}", f"{int((daily_predicted_data_list[j].F10_7_obs)%10)}",".", f"{int((daily_predicted_data_list[j].F10_7_obs-int(daily_predicted_data_list[j].F10_7_obs))*10)}"]
-            if j>100:
-                linelist[119:124] = [f"{int(daily_predicted_data_list[j].ctr81_obs//100) if int(daily_predicted_data_list[j].ctr81_obs//100) !=0 else nostring}", f"{int(daily_predicted_data_list[j].ctr81_obs%100//10) if int((daily_predicted_data_list[j].ctr81_obs)%100//10) !=0 or int(daily_predicted_data_list[j].ctr81_obs//100) !=0 else nostring}", f"{int((daily_predicted_data_list[j].ctr81_obs)%10)}",".", f"{int((daily_predicted_data_list[j].ctr81_obs-int(daily_predicted_data_list[j].ctr81_obs))*10)}"]
-                linelist[125:130] = [f"{int(daily_predicted_data_list[j].lst81_obs//100) if int(daily_predicted_data_list[j].lst81_obs//100) !=0 else nostring}", f"{int(daily_predicted_data_list[j].lst81_obs%100//10) if int((daily_predicted_data_list[j].lst81_obs)%100//10) !=0 or int(daily_predicted_data_list[j].lst81_obs//100) !=0 else nostring}", f"{int((daily_predicted_data_list[j].lst81_obs)%10)}",".", f"{int((daily_predicted_data_list[j].lst81_obs-int(daily_predicted_data_list[j].lst81_obs))*10)}"]
+            
+            linelist[119:124] = [f"{int(daily_predicted_data_list[j].ctr81_obs//100) if int(daily_predicted_data_list[j].ctr81_obs//100) !=0 else nostring}", f"{int(daily_predicted_data_list[j].ctr81_obs%100//10) if int((daily_predicted_data_list[j].ctr81_obs)%100//10) !=0 or int(daily_predicted_data_list[j].ctr81_obs//100) !=0 else nostring}", f"{int((daily_predicted_data_list[j].ctr81_obs)%10)}",".", f"{int((daily_predicted_data_list[j].ctr81_obs-int(daily_predicted_data_list[j].ctr81_obs))*10)}"]
+            linelist[125:130] = [f"{int(daily_predicted_data_list[j].lst81_obs//100) if int(daily_predicted_data_list[j].lst81_obs//100) !=0 else nostring}", f"{int(daily_predicted_data_list[j].lst81_obs%100//10) if int((daily_predicted_data_list[j].lst81_obs)%100//10) !=0 or int(daily_predicted_data_list[j].lst81_obs//100) !=0 else nostring}", f"{int((daily_predicted_data_list[j].lst81_obs)%10)}",".", f"{int((daily_predicted_data_list[j].lst81_obs-int(daily_predicted_data_list[j].lst81_obs))*10)}"]
             line = ''.join(linelist)
             j+=1
             
@@ -335,21 +384,40 @@ with open('SW-NEW.txt', 'r+') as file:
             if list(line) == ['B', 'E', 'G', 'I', 'N', ' ', 'M', 'O', 'N', 'T', 'H', 'L', 'Y', '_', 'P', 'R', 'E', 'D', 'I', 'C', 'T', 'E', 'D', '\n']:
                 dum4=1
                 count3=i
+                lastdate = lines[i-4]
+                lastyear = int(lastdate[0:4])
+                lastmonth = int(lastdate[5:7])
+                lastday = int(lastdate[8:10])
+                lastdatetime = datetime.datetime(lastyear, lastmonth, lastday)
+                lastND = int(lastdate[16:19])
+                lastNDyear = int(lastdate[11:15])
+                print('lastdate', lastdatetime.year, lastdatetime.month, lastdatetime.day, lastND, lastNDyear)
         elif list(line) == ['E', 'N', 'D', ' ', 'M', 'O', 'N', 'T', 'H', 'L', 'Y', '_', 'P', 'R', 'E', 'D', 'I', 'C', 'T', 'E', 'D', '\n']:
             dum5=1
         if i > count3  and dum5==0 and dum4==1:
             linelist = list(line)
             nostring = " "
+            newdatetime = (lastdatetime+relativedelta(months=j+1)+relativedelta(days=-lastdatetime.day+1))
+            newND = ((newdatetime-lastdatetime).days + lastND - 1)%27 +1
+            newNDyear = lastNDyear + ((newdatetime-lastdatetime).days + lastND)//27
+            print(newdatetime.year, newdatetime.month, newdatetime.day, newND)
+            linelist[0:4] = [f"{newdatetime.year//1000}", f"{newdatetime.year%1000//100}", f"{newdatetime.year%100//10}", f"{newdatetime.year%10}"]
+            linelist[5:7] = [f"{newdatetime.month//10}", f"{newdatetime.month%10}"]
+            linelist[8:10] = [f"{newdatetime.day//10}", f"{newdatetime.day%10}"]
+            linelist[16:18] = [f"{newND//10  if newND//10 != 0 else nostring}", f"{newND%10}"]
+            linelist[11:15] = [f"{newNDyear//1000}", f"{newNDyear%1000//100}", f"{newNDyear%100//10}", f"{newNDyear%10}"]
+
+
             linelist[89:92] = [f"{monthly_predicted_data_list[j].ISN//100 if monthly_predicted_data_list[j].ISN//100 !=0 else nostring}", f"{monthly_predicted_data_list[j].ISN%100//10 if (monthly_predicted_data_list[j].ISN)%100//10 !=0 or monthly_predicted_data_list[j].ISN//100 !=0 else nostring}", f"{(monthly_predicted_data_list[j].ISN)%10}"]
             linelist[93:98] = [f"{int(monthly_predicted_data_list[j].F10_7_adj//100) if int(monthly_predicted_data_list[j].F10_7_adj//100) !=0 else nostring}", f"{int(monthly_predicted_data_list[j].F10_7_adj%100//10) if int((monthly_predicted_data_list[j].F10_7_adj)%100//10) !=0 or int(monthly_predicted_data_list[j].F10_7_adj//100) !=0 else nostring}", f"{int((monthly_predicted_data_list[j].F10_7_adj)%10)}",".", f"{int((monthly_predicted_data_list[j].F10_7_adj-int(monthly_predicted_data_list[j].F10_7_adj))*10)}"]
             #linelist[99] = f"{monthly_predicted_data_list[j].Q//1 if type(monthly_predicted_data_list[j].Q) == int else nostring}"
-            if j>100:
-                linelist[101:106] = [f"{int(monthly_predicted_data_list[j].ctr81_adj//100) if int(monthly_predicted_data_list[j].ctr81_adj//100) !=0 else nostring}", f"{int(monthly_predicted_data_list[j].ctr81_adj%100//10) if int((monthly_predicted_data_list[j].ctr81_adj)%100//10) !=0 or int(monthly_predicted_data_list[j].ctr81_adj//100) !=0 else nostring}", f"{int((monthly_predicted_data_list[j].ctr81_adj)%10)}",".", f"{int((monthly_predicted_data_list[j].ctr81_adj-int(monthly_predicted_data_list[j].ctr81_adj))*10)}"]
-                linelist[107:112] = [f"{int(monthly_predicted_data_list[j].lst81_adj//100) if int(monthly_predicted_data_list[j].lst81_adj//100) !=0 else nostring}", f"{int(monthly_predicted_data_list[j].lst81_adj%100//10) if int((monthly_predicted_data_list[j].lst81_adj)%100//10) !=0 or int(monthly_predicted_data_list[j].lst81_adj//100) !=0 else nostring}", f"{int((monthly_predicted_data_list[j].lst81_adj)%10)}",".", f"{int((monthly_predicted_data_list[j].lst81_adj-int(monthly_predicted_data_list[j].lst81_adj))*10)}"]
+            
+            linelist[101:106] = [f"{int(monthly_predicted_data_list[j].ctr81_adj//100) if int(monthly_predicted_data_list[j].ctr81_adj//100) !=0 else nostring}", f"{int(monthly_predicted_data_list[j].ctr81_adj%100//10) if int((monthly_predicted_data_list[j].ctr81_adj)%100//10) !=0 or int(monthly_predicted_data_list[j].ctr81_adj//100) !=0 else nostring}", f"{int((monthly_predicted_data_list[j].ctr81_adj)%10)}",".", f"{int((monthly_predicted_data_list[j].ctr81_adj-int(monthly_predicted_data_list[j].ctr81_adj))*10)}"]
+            linelist[107:112] = [f"{int(monthly_predicted_data_list[j].lst81_adj//100) if int(monthly_predicted_data_list[j].lst81_adj//100) !=0 else nostring}", f"{int(monthly_predicted_data_list[j].lst81_adj%100//10) if int((monthly_predicted_data_list[j].lst81_adj)%100//10) !=0 or int(monthly_predicted_data_list[j].lst81_adj//100) !=0 else nostring}", f"{int((monthly_predicted_data_list[j].lst81_adj)%10)}",".", f"{int((monthly_predicted_data_list[j].lst81_adj-int(monthly_predicted_data_list[j].lst81_adj))*10)}"]
             linelist[113:118] = [f"{int(monthly_predicted_data_list[j].F10_7_obs//100) if int(monthly_predicted_data_list[j].F10_7_obs//100) !=0 else nostring}", f"{int(monthly_predicted_data_list[j].F10_7_obs%100//10) if (int(monthly_predicted_data_list[j].F10_7_obs)%100//10) !=0 or int(monthly_predicted_data_list[j].F10_7_obs//100) !=0 else nostring}", f"{int((monthly_predicted_data_list[j].F10_7_obs)%10)}",".", f"{int((monthly_predicted_data_list[j].F10_7_obs-int(monthly_predicted_data_list[j].F10_7_obs))*10)}"]
-            if j>100:
-                linelist[119:124] = [f"{int(monthly_predicted_data_list[j].ctr81_obs//100) if int(monthly_predicted_data_list[j].ctr81_obs//100) !=0 else nostring}", f"{int(monthly_predicted_data_list[j].ctr81_obs%100//10) if int((monthly_predicted_data_list[j].ctr81_obs)%100//10) !=0 or int(monthly_predicted_data_list[j].ctr81_obs//100) !=0 else nostring}", f"{int((monthly_predicted_data_list[j].ctr81_obs)%10)}",".", f"{int((monthly_predicted_data_list[j].ctr81_obs-int(monthly_predicted_data_list[j].ctr81_obs))*10)}"]
-                linelist[125:130] = [f"{int(monthly_predicted_data_list[j].lst81_obs//100) if int(monthly_predicted_data_list[j].lst81_obs//100) !=0 else nostring}", f"{int(monthly_predicted_data_list[j].lst81_obs%100//10) if int((monthly_predicted_data_list[j].lst81_obs)%100//10) !=0 or int(monthly_predicted_data_list[j].lst81_obs//100) !=0 else nostring}", f"{int((monthly_predicted_data_list[j].lst81_obs)%10)}",".", f"{int((monthly_predicted_data_list[j].lst81_obs-int(monthly_predicted_data_list[j].lst81_obs))*10)}"]
+            
+            linelist[119:124] = [f"{int(monthly_predicted_data_list[j].ctr81_obs//100) if int(monthly_predicted_data_list[j].ctr81_obs//100) !=0 else nostring}", f"{int(monthly_predicted_data_list[j].ctr81_obs%100//10) if int((monthly_predicted_data_list[j].ctr81_obs)%100//10) !=0 or int(monthly_predicted_data_list[j].ctr81_obs//100) !=0 else nostring}", f"{int((monthly_predicted_data_list[j].ctr81_obs)%10)}",".", f"{int((monthly_predicted_data_list[j].ctr81_obs-int(monthly_predicted_data_list[j].ctr81_obs))*10)}"]
+            linelist[125:130] = [f"{int(monthly_predicted_data_list[j].lst81_obs//100) if int(monthly_predicted_data_list[j].lst81_obs//100) !=0 else nostring}", f"{int(monthly_predicted_data_list[j].lst81_obs%100//10) if int((monthly_predicted_data_list[j].lst81_obs)%100//10) !=0 or int(monthly_predicted_data_list[j].lst81_obs//100) !=0 else nostring}", f"{int((monthly_predicted_data_list[j].lst81_obs)%10)}",".", f"{int((monthly_predicted_data_list[j].lst81_obs-int(monthly_predicted_data_list[j].lst81_obs))*10)}"]
             line = ''.join(linelist)
             j+=1
             #print(line)
@@ -373,3 +441,4 @@ file.close()
 
 kp_indeces.close()
 SW_F10_predicted.close()
+
