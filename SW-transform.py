@@ -166,7 +166,7 @@ for i in range(0, q):      #23719
 ############ AVG #############################################
 
 for i in range(0, q):     #23719 
-    observed_data_list[i].avg = np.mean(observed_data_list[i].Ap)
+    observed_data_list[i].avg = int(np.mean(observed_data_list[i].Ap))
 
 #print(observed_data_list[5].Ap)
 #print (observed_data_list[5].avg)
@@ -248,6 +248,9 @@ for i in range(0, q):      #23719
     if 2.0 <= observed_data_list[i].cp <= 2.5:
         observed_data_list[i].c9 = 9
 
+# for i in range(0, q):      #23719
+#     observed_data_list[i].cp = np.round(average_Ap[i],2)
+
 sum_Ap = []
 for i in range(0, q):      #23719
     sum_Ap.append(np.sum(observed_data_list[i].Ap))
@@ -260,6 +263,7 @@ for i in range(0, q):      #23719
 with open('SW-kp-indeces.txt', 'r') as kp_indeces2:
     lines2 = kp_indeces2.readlines()
     f107_list = []
+    ISN_list = []
     for i in range(185, 23904):
         f107 = list(lines2[i])[11:14]
         for j in range(len(f107)):
@@ -267,11 +271,17 @@ with open('SW-kp-indeces.txt', 'r') as kp_indeces2:
         f107num = f107[0]*100 + f107[1]*10 + f107[2]    
         f107_list.append(f107num)
         observed_data_list[i-185].F10_7_obs=f107num
+        ISN = list(lines2[i])[19:22]
+        for j in range(len(ISN)):
+            ISN[j] = int(ISN[j])
+        ISNnum = ISN[0]*100 + ISN[1]*10 + ISN[2]
+        ISN_list.append(ISNnum)
+        observed_data_list[i-185].ISN = ISNnum
 
     with open('SW-All.txt', 'r') as swall:
         lines3 = swall.readlines()
         f107ratiolist = []
-        for i in range(0, 23719):
+        for i in range(0, 23719): # lines from which the ratios are calculated
             f107ratioa = list(lines3[i+17])[93:98]
             for j in range(len(f107ratioa)):
                 if f107ratioa[j] != "." and f107ratioa[j] != " ":
@@ -296,6 +306,7 @@ with open('SW-kp-indeces.txt', 'r') as kp_indeces2:
     print(observed_data_list[19].F10_7_obs)
 
     f107predicted_list = []
+    k=0
     for i in range(0, 45):
         if i + 23904 < len(lines2):
             f107predicted = list(lines2[i+23904])[11:14]
@@ -303,8 +314,188 @@ with open('SW-kp-indeces.txt', 'r') as kp_indeces2:
                 f107predicted[j] = int(f107predicted[j])
             f107predictednum = f107predicted[0]*100 + f107predicted[1]*10 + f107predicted[2]    
             f107predicted_list.append(f107predictednum)
+        else :
+            with open('SW-montlypred', 'r') as monthlypred:
+                lines4 = monthlypred.readlines()
+                f107predicteda = list(lines4[len(lines2)-23904-794-520])[31:36] # f107 at 1-10-2022
+                f107predictedb = list(lines4[len(lines2)-23904-794-520+1])[31:36]   # f107 at 1-11-2022
+                
+                for j in range(len(f107predicteda)):
+                    if f107predicteda[j] != "." and f107predicteda[j] != " ":
+                        f107predicteda[j] = int(f107predicteda[j])
+                    else:
+                        f107predicteda[j] = 0
+                f107predicteda = f107predicteda[0]*100 + f107predicteda[1]*10 + f107predicteda[2] + f107predicteda[4]/10
+                for j in range(len(f107predictedb)):
+                    if f107predictedb[j] != "." and f107predictedb[j] != " ":
+                        f107predictedb[j] = int(f107predictedb[j])
+                    else:
+                        f107predictedb[j] = 0
+                f107predictedb = f107predictedb[0]*100 + f107predictedb[1]*10 + f107predictedb[2] + f107predictedb[4]/10
+                #print('pred', f107predicteda, f107predictedb)
+                #interpolate:
+                day1 = 6 # 6-1-2022 (First interpolated day)
+                f107predicted_list.append(np.round(f107predicteda + (f107predictedb-f107predicteda)/(31) * (k + day1-1),1))
+                k+=1
+
+with open('SW-montlypred', 'r') as monthlypred:
+    lines4 = monthlypred.readlines()
+    for i in range(0, 209):
+        f107predicted = list(lines4[i+795-1])[31:36] # f107 at 1-11-2022
         
-print('list', f107predicted_list)
+        for j in range(len(f107predicted)):
+            if f107predicted[j] != "." and f107predicted[j] != " ":
+                f107predicted[j] = int(f107predicted[j])
+            else:
+                f107predicted[j] = 0
+        f107predictednum = f107predicted[0]*100 + f107predicted[1]*10 + f107predicted[2] + f107predicted[4]/10
+        #print(f107predictednum)
+        monthly_predicted_data_list[i].F10_7_obs = f107predictednum
+
+    with open('SW-all.txt', 'r') as swall:
+        lines3 = swall.readlines()
+        f107ratiolist = []
+        for m in range(0,209): 
+            i = 23790 + int(m *30.4375) -1 # lines from which the ratios are calculated
+            if i <= 24300:
+                f107ratioa = list(lines3[i])[93:98]
+                #print(f107ratioa, i, m, list(lines3[i])[0:10])
+                for j in range(len(f107ratioa)):
+                    if f107ratioa[j] != "." and f107ratioa[j] != " ":
+                        f107ratioa[j] = int(f107ratioa[j])
+                    else:
+                        f107ratioa[j] = 0
+                f107ratioanum = f107ratioa[0]*100 + f107ratioa[1]*10 + f107ratioa[2] + f107ratioa[4]/10
+                f107ratiob = list(lines3[i])[113:118]
+                for j in range(len(f107ratiob)):
+                    if f107ratiob[j] != "." and f107ratiob[j] != " ":
+                        f107ratiob[j] = int(f107ratiob[j])
+                    else:
+                        f107ratiob[j] = 0
+                f107ratiobnum = f107ratiob[0]*100 + f107ratiob[1]*10 + f107ratiob[2] + f107ratiob[4]/10
+                ratio = f107ratioanum/f107ratiobnum
+                monthly_predicted_data_list[m].F10_7_adj = monthly_predicted_data_list[m].F10_7_obs*ratio
+                #print(f107ratioanum, f107ratiobnum)
+            elif i > 24305:
+                if i < 24350:
+                    f107ratioa = list(lines3[i+5])[93:98]
+                    for j in range(len(f107ratioa)):
+                        if f107ratioa[j] != "." and f107ratioa[j] != " ":
+                            f107ratioa[j] = int(f107ratioa[j])
+                        else:
+                            f107ratioa[j] = 0
+                    f107ratioanum = f107ratioa[0]*100 + f107ratioa[1]*10 + f107ratioa[2] + f107ratioa[4]/10
+                    f107ratiob = list(lines3[i+5])[113:118]
+                    for j in range(len(f107ratiob)):
+                        if f107ratiob[j] != "." and f107ratiob[j] != " ":
+                            f107ratiob[j] = int(f107ratiob[j])
+                        else:
+                            f107ratiob[j] = 0
+                    f107ratiobnum = f107ratiob[0]*100 + f107ratiob[1]*10 + f107ratiob[2] + f107ratiob[4]/10
+                    ratio = f107ratioanum/f107ratiobnum
+                    monthly_predicted_data_list[m].F10_7_adj = monthly_predicted_data_list[m].F10_7_obs*ratio
+                    #print(m, list(lines3[i+5])[0:10])
+                else:
+                    f107ratioa = list(lines3[len(lines3)-8 - (209 -m)])[93:98] # last line in SW-new in SW-all
+                    for j in range(len(f107ratioa)):
+                        if f107ratioa[j] != "." and f107ratioa[j] != " ":
+                            f107ratioa[j] = int(f107ratioa[j])
+                        else:
+                            f107ratioa[j] = 0
+                    #print(f107ratioa, len(lines3)-8 - (209 - m), m, list(lines3[len(lines3)-8 - (209 - m)])[0:10])
+                    f107ratioanum = f107ratioa[0]*100 + f107ratioa[1]*10 + f107ratioa[2] + f107ratioa[4]/10
+                    f107ratiob = list(lines3[len(lines3)-8 - (209 - m)])[113:118]
+                    #print(f107ratiob, len(lines3)-8 - (209 - m), m)
+                    for j in range(len(f107ratiob)):
+                        if f107ratiob[j] != "." and f107ratiob[j] != " ":
+                            f107ratiob[j] = int(f107ratiob[j])
+                        else:
+                            f107ratiob[j] = 0
+                    f107ratiobnum = f107ratiob[0]*100 + f107ratiob[1]*10 + f107ratiob[2] + f107ratiob[4]/10
+                    ratio = f107ratioanum/f107ratiobnum
+                    monthly_predicted_data_list[m].F10_7_adj = monthly_predicted_data_list[m].F10_7_obs*ratio
+                    #print(f107ratioanum, f107ratiobnum)
+
+#print('list', f107predicted_list)
+for i, f107 in enumerate(f107predicted_list):
+    daily_predicted_data_list[i].F10_7_obs = f107
+
+with open('SW-all.txt', 'r') as swall:
+    lines3 = swall.readlines()
+    f107ratiolist = []
+    k=0
+    for i in range(23736, 23781): # lines from which the ratios are calculated
+        #print(lines3[i])
+        f107ratioa = list(lines3[i])[93:98]
+        for j in range(len(f107ratioa)):
+            if f107ratioa[j] != "." and f107ratioa[j] != " ":
+                #print(j, f107ratioa[j], i)
+                f107ratioa[j] = int(f107ratioa[j])
+            else:
+                f107ratioa[j] = 0
+        f107ratioanum = f107ratioa[0]*100 + f107ratioa[1]*10 + f107ratioa[2] + f107ratioa[4]/10
+        f107ratiob = list(lines3[i])[113:118]
+        for j in range(len(f107ratiob)):
+            if f107ratiob[j] != "." and f107ratiob[j] != " ":
+                f107ratiob[j] = int(f107ratiob[j])
+            else:
+                f107ratiob[j] = 0
+        f107ratiobnum = f107ratiob[0]*100 + f107ratiob[1]*10 + f107ratiob[2] + f107ratiob[4]/10
+        ratio = f107ratioanum/f107ratiobnum
+        daily_predicted_data_list[k].F10_7_adj = daily_predicted_data_list[k].F10_7_obs*ratio
+        k+=1
+        #print(f107ratioanum, f107ratiobnum)
+
+
+###### Averaging stuff:
+
+
+for i in range(0, 45):
+    average1 = 0
+    if i<45-40:
+        for j in range(-40, 41):
+            if i+j>=0:
+                average1 += daily_predicted_data_list[i+j].F10_7_obs/81
+            else:
+                average1 += observed_data_list[i+j+23719].F10_7_obs/81 # 23719 is the index of the last on the observed data list
+    else:
+        for j in range(-40, 45-i):
+            if i+j>=0:
+                average1 += daily_predicted_data_list[i+j].F10_7_obs/(40+45-i)
+            else:
+                average1 += observed_data_list[i+j+23719].F10_7_obs/(40+45-i)
+    daily_predicted_data_list[i].ctr81_obs = average1
+    average2 = 0
+    for j in range(-80, 1):
+        if i+j>=0:
+            average2 += daily_predicted_data_list[i+j].F10_7_obs/81
+        else:
+            average2 += observed_data_list[i+j+23719].F10_7_obs/81
+    daily_predicted_data_list[i].lst81_obs = average2
+        
+for i in range(0, 45):
+    average1 = 0
+    if i<45-40:
+        for j in range(-40, 41):
+            if i+j>=0:
+                average1 += daily_predicted_data_list[i+j].F10_7_adj/81
+            else:
+                average1 += observed_data_list[i+j+23719].F10_7_adj/81
+    else:
+        for j in range(-40, 45-i):
+            if i+j>=0:
+                average1 += daily_predicted_data_list[i+j].F10_7_adj/(40+45-i)
+            else:
+                average1 += observed_data_list[i+j+23719].F10_7_adj/(40+45-i)
+    daily_predicted_data_list[i].ctr81_adj = average1
+    average2 = 0
+    for j in range(-80, 1):
+        if i+j>=0:
+            average2 += daily_predicted_data_list[i+j].F10_7_adj/81
+        else:
+            average2 += observed_data_list[i+j+23719].F10_7_adj/81
+    daily_predicted_data_list[i].lst81_adj = average2
+
 for j in range(90, 23719):
     average1 = 0
     if j<23719-40:
@@ -334,6 +525,55 @@ for j in range(90, 23719):
     for k in range(-80, 1):
         average2 += observed_data_list[j+k].F10_7_adj/81
     observed_data_list[j].lst81_adj = average2
+
+for i in range(0, 209):
+    average1 = 0
+    if i<209-40:
+        for j in range(-40, 41):
+            if i+j>=0:
+                average1 += monthly_predicted_data_list[i+j].F10_7_obs/81
+            else:
+                average1 += daily_predicted_data_list[i+j+45].F10_7_obs/81
+    else:
+        for j in range(-40, 209-i):
+            if i+j>=0:
+                average1 += monthly_predicted_data_list[i+j].F10_7_obs/(40+209-i)
+            else:
+                average1 += daily_predicted_data_list[i+j+45].F10_7_obs/(40+209-i)
+    monthly_predicted_data_list[i].ctr81_obs = average1
+    average2 = 0
+    for j in range(-80, 1):
+        if i+j>=0:
+            average2 += monthly_predicted_data_list[i+j].F10_7_obs/81
+        else:
+            average2 += observed_data_list[i+j+23719].F10_7_obs/81
+    monthly_predicted_data_list[i].lst81_obs = average2
+
+for i in range(0, 209): 
+    average1 = 0
+    if i<209-40:
+        for j in range(-40, 41):
+            if i+j>=0:
+                average1 += monthly_predicted_data_list[i+j].F10_7_adj/81
+            else:
+                average1 += daily_predicted_data_list[i+j+45].F10_7_adj/81
+    else:
+        for j in range(-40, 209-i):
+            if i+j>=0:
+                average1 += monthly_predicted_data_list[i+j].F10_7_adj/(40+209-i)
+            else:
+                average1 += daily_predicted_data_list[i+j+45].F10_7_adj/(40+209-i)
+    monthly_predicted_data_list[i].ctr81_adj = average1
+    average2 = 0
+    for j in range(-80, 1):
+        if i+j>=0:
+            average2 += monthly_predicted_data_list[i+j].F10_7_adj/81
+        else:
+            average2 += observed_data_list[i+j+23719].F10_7_adj/81
+    monthly_predicted_data_list[i].lst81_adj = average2
+
+
+
 
 # Open the file for reading and writing
 with open('SW-NEW.txt', 'r+') as file:
@@ -368,7 +608,7 @@ with open('SW-NEW.txt', 'r+') as file:
             linelist[71:74] = [f"{observed_data_list[j].Ap[6]//100 if observed_data_list[j].Ap[6]//100 != 0 else nostring}",f"{(observed_data_list[j].Ap[6])%100//10 if (observed_data_list[j].Ap[6])%100//10 !=0 or observed_data_list[j].Ap[6]//100 != 0 else nostring}", f"{observed_data_list[j].Ap[6]%10}"]
             linelist[75:78] = [f"{observed_data_list[j].Ap[7]//100 if observed_data_list[j].Ap[7]//100 != 0 else nostring}",f"{(observed_data_list[j].Ap[7])%100//10 if (observed_data_list[j].Ap[7])%100//10 !=0 or observed_data_list[j].Ap[7]//100 != 0 else nostring}", f"{observed_data_list[j].Ap[7]%10}"]
             linelist[79:82] = [f"{observed_data_list[j].avg//100 if observed_data_list[j].avg//100 !=0 else nostring}", f"{observed_data_list[j].avg%100//10 if observed_data_list[j].avg%100//10 !=0 or observed_data_list[j].avg//100 !=0 else nostring}", f"{observed_data_list[j].avg%10}" ]
-            linelist[83:86] = [f"{observed_data_list[j].cp//1}",".", f"{np.round(observed_data_list[j].cp-observed_data_list[j].cp-int(observed_data_list[j].cp), decimals=1)}"]
+            linelist[83:86] = [f"{int(observed_data_list[j].cp//1)}",".", f"{int(10*(observed_data_list[j].cp-int(observed_data_list[j].cp)))}"]
             linelist[87] = f"{observed_data_list[j].c9//1}"
             linelist[89:92] = [f"{observed_data_list[j].ISN//100 if observed_data_list[j].ISN//100 !=0 else nostring}", f"{observed_data_list[j].ISN%100//10 if (observed_data_list[j].ISN)%100//10 !=0 or observed_data_list[j].ISN//100 !=0 else nostring}", f"{(observed_data_list[j].ISN)%10}"]
             linelist[93:98] = [f"{int(observed_data_list[j].F10_7_adj//100) if int(observed_data_list[j].F10_7_adj//100) !=0 else nostring}", f"{int(observed_data_list[j].F10_7_adj%100//10) if int((observed_data_list[j].F10_7_adj)%100//10) !=0 or int(observed_data_list[j].F10_7_adj//100) !=0 else nostring}", f"{int((observed_data_list[j].F10_7_adj)%10)}",".", f"{int((observed_data_list[j].F10_7_adj-int(observed_data_list[j].F10_7_adj))*10)}"]
@@ -382,7 +622,6 @@ with open('SW-NEW.txt', 'r+') as file:
                 linelist[125:130] = [f"{int(observed_data_list[j].lst81_obs//100) if int(observed_data_list[j].lst81_obs//100) !=0 else nostring}", f"{int(observed_data_list[j].lst81_obs%100//10) if int((observed_data_list[j].lst81_obs)%100//10) !=0 or int(observed_data_list[j].lst81_obs//100) !=0 else nostring}", f"{int((observed_data_list[j].lst81_obs)%10)}",".", f"{int((observed_data_list[j].lst81_obs-int(observed_data_list[j].lst81_obs))*10)}"]
             line = ''.join(linelist)
             
-
             # Update the line in the list of lines
             lines[i] = line
         if i>17+23719 and dum==0:
@@ -418,7 +657,7 @@ with open('SW-NEW.txt', 'r+') as file:
                 lastdatetime = datetime.datetime(lastyear, lastmonth, lastday)
                 lastND = int(lastdate[16:19])
                 lastNDyear = int(lastdate[11:15])
-                print('lastdate', lastdatetime.year, lastdatetime.month, lastdatetime.day, lastND, lastNDyear)
+                #print('lastdate', lastdatetime.year, lastdatetime.month, lastdatetime.day, lastND, lastNDyear)
         elif list(line) == ['E', 'N', 'D', ' ', 'D', 'A', 'I', 'L', 'Y', '_', 'P', 'R', 'E', 'D', 'I', 'C', 'T', 'E', 'D', '\n']:
             saveline2=i
             dum3=1
@@ -429,7 +668,7 @@ with open('SW-NEW.txt', 'r+') as file:
             newdatetime = (lastdatetime+datetime.timedelta(days=j+1))
             newND = (lastND+j)%27 + 1
             newNDyear = lastNDyear + (lastND+j)//27 
-            print(newdatetime.year, newdatetime.month, newdatetime.day, newND)
+            #print(newdatetime.year, newdatetime.month, newdatetime.day, newND)
             #print(linelist[19:21], [f"{daily_predicted_data_list[j].kp[0]//10 if daily_predicted_data_list[j].kp[0]//10 !=0 else nostring}", f"{daily_predicted_data_list[j].kp[0]%10}"])
             linelist[0:4] = [f"{newdatetime.year//1000}", f"{newdatetime.year%1000//100}", f"{newdatetime.year%100//10}", f"{newdatetime.year%10}"]
             linelist[5:7] = [f"{newdatetime.month//10}", f"{newdatetime.month%10}"]
@@ -453,7 +692,7 @@ with open('SW-NEW.txt', 'r+') as file:
             linelist[67:70] = [f"{daily_predicted_data_list[j].Ap[5]//100 if daily_predicted_data_list[j].Ap[5]//100 != 0 else nostring}",f"{(daily_predicted_data_list[j].Ap[5])%100//10 if (daily_predicted_data_list[j].Ap[5])%100//10 !=0 or daily_predicted_data_list[j].Ap[5]//100 != 0 else nostring}", f"{daily_predicted_data_list[j].Ap[5]%10}"]
             linelist[71:74] = [f"{daily_predicted_data_list[j].Ap[6]//100 if daily_predicted_data_list[j].Ap[6]//100 != 0 else nostring}",f"{(daily_predicted_data_list[j].Ap[6])%100//10 if (daily_predicted_data_list[j].Ap[6])%100//10 !=0 or daily_predicted_data_list[j].Ap[6]//100 != 0 else nostring}", f"{daily_predicted_data_list[j].Ap[6]%10}"]
             linelist[75:78] = [f"{daily_predicted_data_list[j].Ap[7]//100 if daily_predicted_data_list[j].Ap[7]//100 != 0 else nostring}",f"{(daily_predicted_data_list[j].Ap[7])%100//10 if (daily_predicted_data_list[j].Ap[7])%100//10 !=0 or daily_predicted_data_list[j].Ap[7]//100 != 0 else nostring}", f"{daily_predicted_data_list[j].Ap[7]%10}"]
-            linelist[79:82] = [f"{daily_predicted_data_list[j].avg//100 if daily_predicted_data_list[j].avg//100 !=0 else nostring}", f"{daily_predicted_data_list[j].avg%100//10 if daily_predicted_data_list[j].avg%100//10 !=0 or daily_predicted_data_list[j].avg//100 !=0 else nostring}", f"{daily_predicted_data_list[j].avg%10}" ]
+            linelist[79:82] = [f"{daily_predicted_data_list[j].avg//100 if daily_predicted_data_list[j].avg//100 !=0 else nostring}", f"{(int(daily_predicted_data_list[j].avg))%100//10 if daily_predicted_data_list[j].avg%100//10 !=0 or daily_predicted_data_list[j].avg//100 !=0 else nostring}", f"{(int(daily_predicted_data_list[j].avg))%10}" ]
             linelist[83:86] = [f"{daily_predicted_data_list[j].cp//1}",".", f"{np.round(daily_predicted_data_list[j].cp-daily_predicted_data_list[j].cp-int(daily_predicted_data_list[j].cp), decimals=1)}"]
             linelist[87] = f"{daily_predicted_data_list[j].c9//1}"
             linelist[89:92] = [f"{daily_predicted_data_list[j].ISN//100 if daily_predicted_data_list[j].ISN//100 !=0 else nostring}", f"{daily_predicted_data_list[j].ISN%100//10 if (daily_predicted_data_list[j].ISN)%100//10 !=0 or daily_predicted_data_list[j].ISN//100 !=0 else nostring}", f"{(daily_predicted_data_list[j].ISN)%10}"]
@@ -492,7 +731,7 @@ with open('SW-NEW.txt', 'r+') as file:
                 lastdatetime = datetime.datetime(lastyear, lastmonth, lastday)
                 lastND = int(lastdate[16:19])
                 lastNDyear = int(lastdate[11:15])
-                print('lastdate', lastdatetime.year, lastdatetime.month, lastdatetime.day, lastND, lastNDyear)
+                #print('lastdate', lastdatetime.year, lastdatetime.month, lastdatetime.day, lastND, lastNDyear)
         elif list(line) == ['E', 'N', 'D', ' ', 'M', 'O', 'N', 'T', 'H', 'L', 'Y', '_', 'P', 'R', 'E', 'D', 'I', 'C', 'T', 'E', 'D', '\n']:
             dum5=1
         if i > count3  and dum5==0 and dum4==1:
@@ -501,7 +740,7 @@ with open('SW-NEW.txt', 'r+') as file:
             newdatetime = (lastdatetime+relativedelta(months=j+1)+relativedelta(days=-lastdatetime.day+1))
             newND = ((newdatetime-lastdatetime).days + lastND - 1)%27 +1
             newNDyear = lastNDyear + ((newdatetime-lastdatetime).days + lastND)//27
-            print(newdatetime.year, newdatetime.month, newdatetime.day, newND)
+            #print(newdatetime.year, newdatetime.month, newdatetime.day, newND)
             linelist[0:4] = [f"{newdatetime.year//1000}", f"{newdatetime.year%1000//100}", f"{newdatetime.year%100//10}", f"{newdatetime.year%10}"]
             linelist[5:7] = [f"{newdatetime.month//10}", f"{newdatetime.month%10}"]
             linelist[8:10] = [f"{newdatetime.day//10}", f"{newdatetime.day%10}"]
