@@ -277,6 +277,39 @@ with open('SW-kp-indeces.txt', 'r') as kp_indeces2:
         ISNnum = ISN[0]*100 + ISN[1]*10 + ISN[2]
         ISN_list.append(ISNnum)
         observed_data_list[i-185].ISN = ISNnum
+    mm=0
+    for i in range(23904, 23931):
+        ISN = list(lines2[i])[19:22]
+        for j in range(len(ISN)):
+            ISN[j] = int(ISN[j])
+        ISNnum = ISN[0]*100 + ISN[1]*10 + ISN[2]
+        ISN_list.append(ISNnum)
+        daily_predicted_data_list[mm].ISN = ISNnum
+        mm+=1
+
+    for i in range(0, 18):
+        # interpolate
+        with open('SW-montlypred', 'r') as monthlypred:
+            lines4 = monthlypred.readlines()
+            ISNa = list(lines4[794-1])[17:22]	# ISN at 1-10-2022
+            ISNb = list(lines4[794])[17:22]	# ISN at 1-11-2022
+            for j in range(len(ISNa)):
+                if ISNa[j] != "." and ISNa[j] != " ":
+                    ISNa[j] = int(ISNa[j])
+                else:
+                    ISNa[j] = 0
+            ISNanum = ISNa[0]*100 + ISNa[1]*10 + ISNa[2] + ISNa[4]/10
+            for j in range(len(ISNb)):
+                if ISNb[j] != "." and ISNb[j] != " ":
+                    ISNb[j] = int(ISNb[j])
+                else:
+                    ISNb[j] = 0
+            ISNbnum = ISNb[0]*100 + ISNb[1]*10 + ISNb[2] + ISNb[4]/10
+            dayshift = 6
+            daily_predicted_data_list[mm].ISN=int(np.round(ISNanum + (ISNbnum-ISNanum)/(31) * (i + dayshift),1))
+        mm+=1
+
+
 
     with open('SW-All.txt', 'r') as swall:
         lines3 = swall.readlines()
@@ -351,6 +384,14 @@ with open('SW-montlypred', 'r') as monthlypred:
         f107predictednum = f107predicted[0]*100 + f107predicted[1]*10 + f107predicted[2] + f107predicted[4]/10
         #print(f107predictednum)
         monthly_predicted_data_list[i].F10_7_obs = f107predictednum
+        SSN_pred = list(lines4[i+795-1])[17:22] 
+        for j in range(len(SSN_pred)):
+            if SSN_pred[j] != "." and SSN_pred[j] != " ":
+                SSN_pred[j] = int(SSN_pred[j])
+            else:
+                SSN_pred[j] = 0
+        SSN_prednum = SSN_pred[0]*100 + SSN_pred[1]*10 + SSN_pred[2] + SSN_pred[4]/10
+        monthly_predicted_data_list[i].ISN = int(SSN_prednum)
 
     with open('SW-all.txt', 'r') as swall:
         lines3 = swall.readlines()
