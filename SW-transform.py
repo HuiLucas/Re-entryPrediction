@@ -59,12 +59,12 @@ monthly_predicted_data_list = [monthly_predicted_data() for i in range(0, 209)]
 
 observed_data_list[0].kp = [0,0,0,0,0,0,0,0]
 
-q = 23719  #change for the number of lines in the file
+q = 10 #2000 #23719 #23 #change for the number of lines in the file
 
 ############ Kp #############################################
 lines = kp_indeces.readlines()
 last_15_chars_list = []
-for line in lines[11:q+12]:      #23719 +3 for right range
+for line in lines[185:q+186]:      #23719 +3 for right range
     last_15_chars = line[-17:].strip()
     last_15_chars_list.append(last_15_chars)
     seperate_row = []
@@ -218,6 +218,22 @@ for i in range(len(average_Ap)):
             average_Ap[i] = 1.6
         elif 454 <= average_Ap[i] <= 561:
             average_Ap[i] = 1.7
+        elif 562 <= average_Ap[i] <= 729:
+            average_Ap[i] = 1.8
+        elif 730 <= average_Ap[i] <= 1119:
+            average_Ap[i] = 1.9
+        elif 1120 <= average_Ap[i] <= 1399:
+            average_Ap[i] = 2.0
+        elif 1400 <= average_Ap[i] <= 1699:
+            average_Ap[i] = 2.1
+        elif 1700 <= average_Ap[i] <= 1999:
+            average_Ap[i] = 2.2
+        elif 2000 <= average_Ap[i] <= 2399:
+            average_Ap[i] = 2.3
+        elif 2400 <= average_Ap[i] <= 3199:
+            average_Ap[i] = 2.4
+        elif 3200 <= average_Ap[i]: 
+            average_Ap[i] = 2.5
 
 
 
@@ -277,6 +293,39 @@ with open('SW-kp-indeces.txt', 'r') as kp_indeces2:
         ISNnum = ISN[0]*100 + ISN[1]*10 + ISN[2]
         ISN_list.append(ISNnum)
         observed_data_list[i-185].ISN = ISNnum
+    mm=0
+    for i in range(23904, 23931):
+        ISN = list(lines2[i])[19:22]
+        for j in range(len(ISN)):
+            ISN[j] = int(ISN[j])
+        ISNnum = ISN[0]*100 + ISN[1]*10 + ISN[2]
+        ISN_list.append(ISNnum)
+        daily_predicted_data_list[mm].ISN = ISNnum
+        mm+=1
+
+    for i in range(0, 18):
+        # interpolate
+        with open('SW-montlypred', 'r') as monthlypred:
+            lines4 = monthlypred.readlines()
+            ISNa = list(lines4[794-1])[17:22]	# ISN at 1-10-2022
+            ISNb = list(lines4[794])[17:22]	# ISN at 1-11-2022
+            for j in range(len(ISNa)):
+                if ISNa[j] != "." and ISNa[j] != " ":
+                    ISNa[j] = int(ISNa[j])
+                else:
+                    ISNa[j] = 0
+            ISNanum = ISNa[0]*100 + ISNa[1]*10 + ISNa[2] + ISNa[4]/10
+            for j in range(len(ISNb)):
+                if ISNb[j] != "." and ISNb[j] != " ":
+                    ISNb[j] = int(ISNb[j])
+                else:
+                    ISNb[j] = 0
+            ISNbnum = ISNb[0]*100 + ISNb[1]*10 + ISNb[2] + ISNb[4]/10
+            dayshift = 6
+            daily_predicted_data_list[mm].ISN=int(np.round(ISNanum + (ISNbnum-ISNanum)/(31) * (i + dayshift),1))
+        mm+=1
+
+
 
     with open('SW-All.txt', 'r') as swall:
         lines3 = swall.readlines()
@@ -351,6 +400,14 @@ with open('SW-montlypred', 'r') as monthlypred:
         f107predictednum = f107predicted[0]*100 + f107predicted[1]*10 + f107predicted[2] + f107predicted[4]/10
         #print(f107predictednum)
         monthly_predicted_data_list[i].F10_7_obs = f107predictednum
+        SSN_pred = list(lines4[i+795-1])[17:22] 
+        for j in range(len(SSN_pred)):
+            if SSN_pred[j] != "." and SSN_pred[j] != " ":
+                SSN_pred[j] = int(SSN_pred[j])
+            else:
+                SSN_pred[j] = 0
+        SSN_prednum = SSN_pred[0]*100 + SSN_pred[1]*10 + SSN_pred[2] + SSN_pred[4]/10
+        monthly_predicted_data_list[i].ISN = int(SSN_prednum)
 
     with open('SW-all.txt', 'r') as swall:
         lines3 = swall.readlines()
@@ -415,6 +472,290 @@ with open('SW-montlypred', 'r') as monthlypred:
                     ratio = f107ratioanum/f107ratiobnum
                     monthly_predicted_data_list[m].F10_7_adj = monthly_predicted_data_list[m].F10_7_obs*ratio
                     #print(f107ratioanum, f107ratiobnum)
+
+with open('SW-kp-indeces.txt', 'r') as kp_indeces2:
+    mmm=0
+    lines5 = kp_indeces2.readlines()
+    for j in range(23904, 23931):
+        ap_avg = list(lines5[j])[22:26]
+        for i in range(len(ap_avg)):
+            if ap_avg[i] != "." and ap_avg[i] != " ":
+                ap_avg[i] = int(ap_avg[i])
+            else:
+                ap_avg[i] = 0
+        ap_avgnum = ap_avg[0]*1000 + ap_avg[1]*100 + ap_avg[2]*10 + ap_avg[3]
+        daily_predicted_data_list[mmm].avg = int(ap_avgnum)
+        for k in range(8): 
+            daily_predicted_data_list[mmm].Ap[k] = ap_avgnum
+        
+        ### KP berekenen:
+        for k in range(8):
+            daily_predicted_data_list[mmm].kp[k] = daily_predicted_data_list[mmm].Ap[k]  
+
+        for i2, row in enumerate(daily_predicted_data_list[mmm].kp):
+            row = [str(row)]
+            for i in range(len(row)):
+                row[i] = row[i].replace( "0","0")
+                row[i] = row[i].replace("2","3")
+                row[i] = row[i].replace("3","7")
+                row[i] = row[i].replace("4","10")
+                row[i] = row[i].replace("5","13")
+                row[i] = row[i].replace("6","17")
+                row[i] = row[i].replace("7","20")
+                row[i] = row[i].replace("9","23")
+                row[i] = row[i].replace("12","27")
+                row[i] = row[i].replace("15","30")
+                row[i] = row[i].replace("18","33")
+                row[i] = row[i].replace("22","37")
+                row[i] = row[i].replace("27","40")
+                row[i] = row[i].replace("32","43")
+                row[i] = row[i].replace("39","47")
+                row[i] = row[i].replace("48","50")
+                row[i] = row[i].replace("56","53")
+                row[i] = row[i].replace("67","57")
+                row[i] = row[i].replace("80","60")
+                row[i] = row[i].replace("94","63")
+                row[i] = row[i].replace("111","67")
+                row[i] = row[i].replace("132","70")
+                row[i] = row[i].replace("154","73")
+                row[i] = row[i].replace("179","77")
+                row[i] = row[i].replace("207","80")
+                row[i] = row[i].replace("236","83")
+                row[i] = row[i].replace("300","87")
+                row[i] = row[i].replace("400","90")
+                row[i] = row[i].replace("500","93")
+            row = list(row[0])
+            for j in range(len(row)):
+                if row[j] != "." and row[j] != " ":
+                    row[j] = int(row[j])
+                else:
+                    row[j] = 0
+            rownum = row[0]*10 + row[1]
+            daily_predicted_data_list[mmm].kp[i2] = rownum
+                
+            ### Cp & C9 berekenen:
+        
+
+        ### Cp & C9 berekenen:
+        if 0 <= daily_predicted_data_list[mmm].avg <= 22:
+            Cp_new = 0.0
+        elif 23 <= daily_predicted_data_list[mmm].avg <= 34:
+            Cp_new = 0.1
+        elif 35 <= daily_predicted_data_list[mmm].avg <= 44: 
+            Cp_new = 0.2
+        elif 45 <= daily_predicted_data_list[mmm].avg <= 55:
+            Cp_new = 0.3
+        elif 56 <= daily_predicted_data_list[mmm].avg <= 66:
+            Cp_new = 0.4
+        elif 67 <= daily_predicted_data_list[mmm].avg <= 78:
+            Cp_new = 0.5
+        elif 79 <= daily_predicted_data_list[mmm].avg <= 90:
+            Cp_new = 0.6
+        elif 91 <= daily_predicted_data_list[mmm].avg <= 104:
+            Cp_new = 0.7
+        elif 105 <= daily_predicted_data_list[mmm].avg <= 120:
+            Cp_new = 0.8
+        elif 121 <= daily_predicted_data_list[mmm].avg <= 139:
+            Cp_new = 0.9
+        elif 140 <= daily_predicted_data_list[mmm].avg <= 164:
+            Cp_new = 1.0
+        elif 165 <= daily_predicted_data_list[mmm].avg <= 190:
+            Cp_new = 1.1
+        elif 191 <= daily_predicted_data_list[mmm].avg <= 228:
+            Cp_new = 1.2
+        elif 229 <= daily_predicted_data_list[mmm].avg <= 273:
+            Cp_new = 1.3
+        elif 274 <= daily_predicted_data_list[mmm].avg <= 320:
+            Cp_new = 1.4
+        elif 321 <= daily_predicted_data_list[mmm].avg <= 379:
+            Cp_new = 1.5
+        elif 380 <= daily_predicted_data_list[mmm].avg <= 453:
+            Cp_new = 1.6
+        elif 454 <= daily_predicted_data_list[mmm].avg <= 561:
+            Cp_new = 1.7
+        elif 562 <= daily_predicted_data_list[mmm].avg <= 729:
+            Cp_new = 1.8
+        elif 730 <= daily_predicted_data_list[mmm].avg <= 1119:
+            Cp_new = 1.9
+        elif 1120 <= daily_predicted_data_list[mmm].avg <= 1399:
+            Cp_new = 2.0
+        elif 1400 <= daily_predicted_data_list[mmm].avg <= 1699:
+            Cp_new = 2.1
+        elif 1700 <= daily_predicted_data_list[mmm].avg <= 1999:
+            Cp_new = 2.2
+        elif 2000 <= daily_predicted_data_list[mmm].avg <= 2399:
+            Cp_new = 2.3
+        elif 2400 <= daily_predicted_data_list[mmm].avg <= 3199:
+            Cp_new = 2.4
+        elif 3200 <= daily_predicted_data_list[mmm].avg: 
+            Cp_new = 2.5
+        daily_predicted_data_list[mmm].cp = np.round(Cp_new, decimals=1)
+        if 0.0 <= daily_predicted_data_list[mmm].cp <= 0.1:
+            daily_predicted_data_list[mmm].c9 = 0
+        if 0.2 <= daily_predicted_data_list[mmm].cp <= 0.3:
+            daily_predicted_data_list[mmm].c9 = 1
+        if 0.4 <= daily_predicted_data_list[mmm].cp <= 0.5:
+            daily_predicted_data_list[mmm].c9 = 2
+        if 0.6 <= daily_predicted_data_list[mmm].cp <= 0.7:
+            daily_predicted_data_list[mmm].c9 = 3
+        if 0.8 <= daily_predicted_data_list[mmm].cp <= 0.9:
+            daily_predicted_data_list[mmm].c9 = 4
+        if 1.0 <= daily_predicted_data_list[mmm].cp <= 1.1:
+            daily_predicted_data_list[mmm].c9 = 5
+        if 1.2 <= daily_predicted_data_list[mmm].cp <= 1.4:
+            daily_predicted_data_list[mmm].c9 = 6
+        if 1.5 <= daily_predicted_data_list[mmm].cp <= 1.8:
+            daily_predicted_data_list[mmm].c9 = 7
+        if daily_predicted_data_list[mmm].cp == 1.9:
+            daily_predicted_data_list[mmm].c9 = 8
+        if 2.0 <= daily_predicted_data_list[mmm].cp <= 2.5:
+            daily_predicted_data_list[mmm].c9 = 9
+        mmm+=1
+
+
+for j in range(0, 18):
+    #interpolation
+    with open('SW-montlypred') as monthlypred:
+        lines4 = monthlypred.readlines()
+        avga = list(lines4[794-1])[66:71]	# avg at 1-10-2022
+        avgb = list(lines4[794])[66:71]	# avg at 1-11-2022
+        for i in range(len(avga)):
+            if avga[i] != "." and avga[i] != " ":
+                avga[i] = int(avga[i])
+            else:
+                avga[i] = 0
+        avganum = avga[0]*100 + avga[1]*10 + avga[2] + avga[4]/10
+        for i in range(len(avgb)):
+            if avgb[i] != "." and avgb[i] != " ":
+                avgb[i] = int(avgb[i])
+            else:
+                avgb[i] = 0
+        avgbnum = avgb[0]*100 + avgb[1]*10 + avgb[2] + avgb[4]/10
+        dayshift = 6
+        #print(avganum, avgbnum,'avg')
+        daily_predicted_data_list[mmm+j].avg=int(np.round(avganum + (avgbnum-avganum)/(31) * (j + dayshift),1))
+        for k in range(8):
+            daily_predicted_data_list[mmm+j].Ap[k] = daily_predicted_data_list[mmm+j].avg
+         ### KP berekenen:
+        for k in range(8):
+            daily_predicted_data_list[mmm+j].kp[k] = daily_predicted_data_list[mmm+j].Ap[k]  
+
+        for i2, row in enumerate(daily_predicted_data_list[mmm+j].kp):
+            row = [str(row)]
+            for i in range(len(row)):
+                row[i] = row[i].replace( "0","0")
+                row[i] = row[i].replace("2","3")
+                row[i] = row[i].replace("3","7")
+                row[i] = row[i].replace("4","10")
+                row[i] = row[i].replace("5","13")
+                row[i] = row[i].replace("6","17")
+                row[i] = row[i].replace("7","20")
+                row[i] = row[i].replace("9","23")
+                row[i] = row[i].replace("12","27")
+                row[i] = row[i].replace("15","30")
+                row[i] = row[i].replace("18","33")
+                row[i] = row[i].replace("22","37")
+                row[i] = row[i].replace("27","40")
+                row[i] = row[i].replace("32","43")
+                row[i] = row[i].replace("39","47")
+                row[i] = row[i].replace("48","50")
+                row[i] = row[i].replace("56","53")
+                row[i] = row[i].replace("67","57")
+                row[i] = row[i].replace("80","60")
+                row[i] = row[i].replace("94","63")
+                row[i] = row[i].replace("111","67")
+                row[i] = row[i].replace("132","70")
+                row[i] = row[i].replace("154","73")
+                row[i] = row[i].replace("179","77")
+                row[i] = row[i].replace("207","80")
+                row[i] = row[i].replace("236","83")
+                row[i] = row[i].replace("300","87")
+                row[i] = row[i].replace("400","90")
+                row[i] = row[i].replace("500","93")
+            row = list(row[0])
+            for j in range(len(row)):
+                if row[j] != "." and row[j] != " ":
+                    row[j] = int(row[j])
+                else:
+                    row[j] = 0
+            rownum = row[0]*10 + row[1]
+            daily_predicted_data_list[mmm+j].kp[i2] = rownum
+
+        ### Cp & C9 berekenen:
+        if 0 <= daily_predicted_data_list[j+mmm].avg <= 22:
+            Cp_new = 0.0
+        elif 23 <= daily_predicted_data_list[j+mmm].avg <= 34:
+            Cp_new = 0.1
+        elif 35 <= daily_predicted_data_list[j+mmm].avg <= 44: 
+            Cp_new = 0.2
+        elif 45 <= daily_predicted_data_list[j+mmm].avg <= 55:
+            Cp_new = 0.3
+        elif 56 <= daily_predicted_data_list[j+mmm].avg <= 66:
+            Cp_new = 0.4
+        elif 67 <= daily_predicted_data_list[j+mmm].avg <= 78:
+            Cp_new = 0.5
+        elif 79 <= daily_predicted_data_list[j+mmm].avg <= 90:
+            Cp_new = 0.6
+        elif 91 <= daily_predicted_data_list[j+mmm].avg <= 104:
+            Cp_new = 0.7
+        elif 105 <= daily_predicted_data_list[j+mmm].avg <= 120:
+            Cp_new = 0.8
+        elif 121 <= daily_predicted_data_list[j+mmm].avg <= 139:
+            Cp_new = 0.9
+        elif 140 <= daily_predicted_data_list[j+mmm].avg <= 164:
+            Cp_new = 1.0
+        elif 165 <= daily_predicted_data_list[j+mmm].avg <= 190:
+            Cp_new = 1.1
+        elif 191 <= daily_predicted_data_list[j+mmm].avg <= 228:
+            Cp_new = 1.2
+        elif 229 <= daily_predicted_data_list[j+mmm].avg <= 273:
+            Cp_new = 1.3
+        elif 274 <= daily_predicted_data_list[j+mmm].avg <= 320:
+            Cp_new = 1.4
+        elif 321 <= daily_predicted_data_list[j+mmm].avg <= 379:
+            Cp_new = 1.5
+        elif 380 <= daily_predicted_data_list[j+mmm].avg <= 453:
+            Cp_new = 1.6
+        elif 454 <= daily_predicted_data_list[j+mmm].avg <= 561:
+            Cp_new = 1.7
+        elif 562 <= daily_predicted_data_list[j+mmm].avg <= 729:
+            Cp_new = 1.8
+        elif 730 <= daily_predicted_data_list[j+mmm].avg <= 1119:
+            Cp_new = 1.9
+        elif 1120 <= daily_predicted_data_list[j+mmm].avg <= 1399:
+            Cp_new = 2.0
+        elif 1400 <= daily_predicted_data_list[j+mmm].avg <= 1699:
+            Cp_new = 2.1
+        elif 1700 <= daily_predicted_data_list[j+mmm].avg <= 1999:
+            Cp_new = 2.2
+        elif 2000 <= daily_predicted_data_list[j+mmm].avg <= 2399:
+            Cp_new = 2.3
+        elif 2400 <= daily_predicted_data_list[j+mmm].avg <= 3199:
+            Cp_new = 2.4
+        elif 3200 <= daily_predicted_data_list[j+mmm].avg: 
+            Cp_new = 2.5
+        daily_predicted_data_list[j+mmm].cp = np.round(Cp_new, decimals=1)
+        if 0.0 <= daily_predicted_data_list[j+mmm].cp <= 0.1:
+            daily_predicted_data_list[j+mmm].c9 = 0
+        if 0.2 <= daily_predicted_data_list[j+mmm].cp <= 0.3:
+            daily_predicted_data_list[j+mmm].c9 = 1
+        if 0.4 <= daily_predicted_data_list[j+mmm].cp <= 0.5:
+            daily_predicted_data_list[j+mmm].c9 = 2
+        if 0.6 <= daily_predicted_data_list[j+mmm].cp <= 0.7:
+            daily_predicted_data_list[j+mmm].c9 = 3
+        if 0.8 <= daily_predicted_data_list[j+mmm].cp <= 0.9:
+            daily_predicted_data_list[j+mmm].c9 = 4
+        if 1.0 <= daily_predicted_data_list[j+mmm].cp <= 1.1:
+            daily_predicted_data_list[j+mmm].c9 = 5
+        if 1.2 <= daily_predicted_data_list[j+mmm].cp <= 1.4:
+            daily_predicted_data_list[j+mmm].c9 = 6
+        if 1.5 <= daily_predicted_data_list[j+mmm].cp <= 1.8:
+            daily_predicted_data_list[j+mmm].c9 = 7
+        if daily_predicted_data_list[j+mmm].cp == 1.9:
+            daily_predicted_data_list[j+mmm].c9 = 8
+        if 2.0 <= daily_predicted_data_list[j+mmm].cp <= 2.5:
+            daily_predicted_data_list[j+mmm].c9 = 9
+
 
 #print('list', f107predicted_list)
 for i, f107 in enumerate(f107predicted_list):
@@ -684,8 +1025,8 @@ with open('SW-NEW.txt', 'r+') as file:
             linelist[37:39] = [f"{daily_predicted_data_list[j].kp[6]//10  if daily_predicted_data_list[j].kp[6]//10 !=0 else nostring}", f"{daily_predicted_data_list[j].kp[6]%10}"]
             linelist[40:42] = [f"{daily_predicted_data_list[j].kp[7]//10  if daily_predicted_data_list[j].kp[7]//10 !=0 else nostring}", f"{daily_predicted_data_list[j].kp[7]%10}"]
             linelist[43:46] = [f"{(daily_predicted_data_list[j].sum)//100 if daily_predicted_data_list[j].sum//100 !=0 else nostring}", f"{(daily_predicted_data_list[j].sum)%100//10 if (daily_predicted_data_list[j].sum)%100//10 !=0 or daily_predicted_data_list[j].sum//100 !=0 else nostring}", f"{(daily_predicted_data_list[j].sum)%10}"]
-            linelist[47:50] = [f"{daily_predicted_data_list[j].Ap[0]//100 if daily_predicted_data_list[j].Ap[0]//100 != 0 else nostring}",f"{(daily_predicted_data_list[j].Ap[0])%100//10 if (daily_predicted_data_list[j].Ap[0])%100//10 !=0 or daily_predicted_data_list[j].Ap[0]//100 != 0 else nostring}", f"{daily_predicted_data_list[j].Ap[0]%10}"]
             linelist[51:54] = [f"{daily_predicted_data_list[j].Ap[1]//100 if daily_predicted_data_list[j].Ap[1]//100 != 0 else nostring}",f"{(daily_predicted_data_list[j].Ap[1])%100//10 if (daily_predicted_data_list[j].Ap[1])%100//10 !=0 or daily_predicted_data_list[j].Ap[1]//100 != 0 else nostring}", f"{daily_predicted_data_list[j].Ap[1]%10}"]
+            linelist[47:50] = [f"{daily_predicted_data_list[j].Ap[0]//100 if daily_predicted_data_list[j].Ap[0]//100 != 0 else nostring}",f"{(daily_predicted_data_list[j].Ap[0])%100//10 if (daily_predicted_data_list[j].Ap[0])%100//10 !=0 or daily_predicted_data_list[j].Ap[0]//100 != 0 else nostring}", f"{daily_predicted_data_list[j].Ap[0]%10}"]
             linelist[55:58] = [f"{daily_predicted_data_list[j].Ap[2]//100 if daily_predicted_data_list[j].Ap[2]//100 != 0 else nostring}",f"{(daily_predicted_data_list[j].Ap[2])%100//10 if (daily_predicted_data_list[j].Ap[2])%100//10 !=0 or daily_predicted_data_list[j].Ap[2]//100 != 0 else nostring}", f"{daily_predicted_data_list[j].Ap[2]%10}"]
             linelist[59:62] = [f"{daily_predicted_data_list[j].Ap[3]//100 if daily_predicted_data_list[j].Ap[3]//100 != 0 else nostring}",f"{(daily_predicted_data_list[j].Ap[3])%100//10 if (daily_predicted_data_list[j].Ap[3])%100//10 !=0 or daily_predicted_data_list[j].Ap[3]//100 != 0 else nostring}", f"{daily_predicted_data_list[j].Ap[3]%10}"]
             linelist[63:66] = [f"{daily_predicted_data_list[j].Ap[4]//100 if daily_predicted_data_list[j].Ap[4]//100 != 0 else nostring}",f"{(daily_predicted_data_list[j].Ap[4])%100//10 if (daily_predicted_data_list[j].Ap[4])%100//10 !=0 or daily_predicted_data_list[j].Ap[4]//100 != 0 else nostring}", f"{daily_predicted_data_list[j].Ap[4]%10}"]
