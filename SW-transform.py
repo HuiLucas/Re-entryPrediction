@@ -59,12 +59,13 @@ monthly_predicted_data_list = [monthly_predicted_data() for i in range(0, 209)]
 
 observed_data_list[0].kp = [0,0,0,0,0,0,0,0]
 
-q = 10 #2000 #23719 #23 #change for the number of lines in the file
+q = 23719 # 10 #2000 #23719 #23 #change for the number of lines in the file
 
 ############ Kp #############################################
 lines = kp_indeces.readlines()
 last_15_chars_list = []
-for line in lines[185:q+186]:      #23719 +3 for right range
+for counter, line in enumerate(lines[185:q+186]):      #23719 +3 for right range
+    print(counter)
     last_15_chars = line[-17:].strip()
     last_15_chars_list.append(last_15_chars)
     seperate_row = []
@@ -93,6 +94,7 @@ for line in lines[185:q+186]:      #23719 +3 for right range
 
 for i in range(0, q):         #23719
     observed_data_list[i].kp = seperate_row[i]
+    print(i)
 #print(seperate_row[0])
 #print (last_15_chars_list[0])
 
@@ -150,6 +152,7 @@ for row in seperate_AP:
 #print(len(seperate_AP))
 for i in range(0, q):      #23719
     observed_data_list[i].Ap = seperate_AP[i]
+    print(i)
 
 #print (observed_data_list[5].kp)
 #print (observed_data_list[5].Ap)
@@ -160,6 +163,7 @@ for i in range(0, q):      #23719
 
 for i in range(0, q):      #23719
     observed_data_list[i].sum = sum(observed_data_list[i].kp)
+    print(i)
 
 #print (observed_data_list[5].sum)
 
@@ -167,6 +171,7 @@ for i in range(0, q):      #23719
 
 for i in range(0, q):     #23719 
     observed_data_list[i].avg = int(np.mean(observed_data_list[i].Ap))
+    print(i)
 
 #print(observed_data_list[5].Ap)
 #print (observed_data_list[5].avg)
@@ -176,12 +181,13 @@ for i in range(0, q):     #23719
 average_Ap = []
 for i in range(0, q):      #23719
     average_Ap.append(np.sum(observed_data_list[i].Ap))
+    print(i)
 
 #print(observed_data_list[0].Ap,observed_data_list[1].Ap,observed_data_list[2].Ap,observed_data_list[3].Ap,observed_data_list[4].Ap)
 #print (average_Ap[5])
 
 for i in range(len(average_Ap)):
-        
+        print(i)
         if 0 <= average_Ap[i] <= 22:
             average_Ap[i] = 0.0
         elif 23 <= average_Ap[i] <= 34:
@@ -239,6 +245,7 @@ for i in range(len(average_Ap)):
 
 for i in range(0, q):      #23719
     observed_data_list[i].cp = average_Ap[i]
+    print(i)
 
 ############ C9 ############################################
 
@@ -263,6 +270,7 @@ for i in range(0, q):      #23719
         observed_data_list[i].c9 = 8
     if 2.0 <= observed_data_list[i].cp <= 2.5:
         observed_data_list[i].c9 = 9
+    print(i)
 
 # for i in range(0, q):      #23719
 #     observed_data_list[i].cp = np.round(average_Ap[i],2)
@@ -270,6 +278,7 @@ for i in range(0, q):      #23719
 sum_Ap = []
 for i in range(0, q):      #23719
     sum_Ap.append(np.sum(observed_data_list[i].Ap))
+    print(i)
 
 #k = 236
 #print(f'sum={sum_Ap[k]}, cp={observed_data_list[k].cp},c9={observed_data_list[k].c9}')
@@ -494,36 +503,220 @@ with open('SW-kp-indeces.txt', 'r') as kp_indeces2:
 
         for i2, row in enumerate(daily_predicted_data_list[mmm].kp):
             row = [str(row)]
+            rownew = row
+            print("first", row)
             for i in range(len(row)):
-                row[i] = row[i].replace( "0","0")
-                row[i] = row[i].replace("2","3")
-                row[i] = row[i].replace("3","7")
-                row[i] = row[i].replace("4","10")
-                row[i] = row[i].replace("5","13")
-                row[i] = row[i].replace("6","17")
-                row[i] = row[i].replace("7","20")
-                row[i] = row[i].replace("9","23")
-                row[i] = row[i].replace("12","27")
-                row[i] = row[i].replace("15","30")
-                row[i] = row[i].replace("18","33")
-                row[i] = row[i].replace("22","37")
-                row[i] = row[i].replace("27","40")
-                row[i] = row[i].replace("32","43")
-                row[i] = row[i].replace("39","47")
-                row[i] = row[i].replace("48","50")
-                row[i] = row[i].replace("56","53")
-                row[i] = row[i].replace("67","57")
-                row[i] = row[i].replace("80","60")
-                row[i] = row[i].replace("94","63")
-                row[i] = row[i].replace("111","67")
-                row[i] = row[i].replace("132","70")
-                row[i] = row[i].replace("154","73")
-                row[i] = row[i].replace("179","77")
-                row[i] = row[i].replace("207","80")
-                row[i] = row[i].replace("236","83")
-                row[i] = row[i].replace("300","87")
-                row[i] = row[i].replace("400","90")
-                row[i] = row[i].replace("500","93")
+                row = ["0" if r == "0" else r for r in row]
+                if row != rownew : print('row', row); break
+                row = ["0" if r == "1" else r for r in row]
+                if row != rownew : print('row', row); break
+                row = ["3" if r == "2" else r for r in   row]
+                if row != rownew : print('row', row); break 
+                row = ["7" if r == "3" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["10" if r == "4" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["13" if r == "5" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["17" if r == "6" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["20" if r == "7" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["23" if r == "8" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["23" if r == "9" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["23" if r == "10" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["27" if r == "11" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["27" if r == "12" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["27" if r == "13" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["30" if r == "14" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["30" if r == "15" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["30" if r == "16" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["33" if r == "17" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["33" if r == "18" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["33" if r == "19" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["33" if r == "20" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["37" if r == "21" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["37" if r == "22" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["37" if r == "23" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["37" if r == "24" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["40" if r == "25" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["40" if r == "26" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["40" if r == "27" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["40" if r == "28" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["40" if r == "29" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["43" if r == "30" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["43" if r == "31" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["43" if r == "32" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["43" if r == "33" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["43" if r == "34" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["43" if r == "35" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["43" if r == "36" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["47" if r == "37" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["47" if r == "38" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["47" if r == "39" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["47" if r == "40" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["47" if r == "41" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["47" if r == "42" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["47" if r == "43" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["50" if r == "44" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["50" if r == "45" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["50" if r == "46" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["50" if r == "47" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["50" if r == "48" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["50" if r == "49" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["50" if r == "50" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["50" if r == "51" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["50" if r == "52" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["50" if r == "53" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["53" if r == "54" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["53" if r == "55" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["53" if r == "56" else r for r in  row]
+                if row != rownew : print('row', row); break
+                for n in range(57, 60):
+                    row = ["53" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                for n in range(60, 67):
+                    row = ["57" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                row = ["57" if r == "67" else r for r in  row]
+                if row != rownew : print('row', row); break
+                for n in range(68, 74):
+                    row = ["57" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                for n in range(74, 80):
+                    row = ["60" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                row = ["60" if r == "80" else r for r in  row]
+                if row != rownew : print('row', row); break
+                for n in range(81, 87):
+                    row = ["60" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                for n in range(87, 94):
+                    row = ["63" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                row = ["63" if r == "94" else r for r in  row]
+                if row != rownew : print('row', row); break
+                for n in range(95, 103):
+                    row = ["63" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                for n in range(103, 111):
+                    row = ["67" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                row = ["67" if r == "111" else r for r in  row]
+                if row != rownew : print('row', row); break
+                for n in range(112, 122):
+                    row = ["67" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                for n in range(122, 132):
+                    row = ["67" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                row = ["70" if r == "132" else r for r in  row]
+                if row != rownew : print('row', row); break
+                for n in range(133, 144):
+                    row = ["70" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                for n in range(144, 154):
+                    row = ["73" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                row = ["73" if r == "154" else r for r in  row]
+                if row != rownew : print('row', row); break
+                for n in range(155, 166):
+                    row = ["73" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                for n in range(166, 179):
+                    row = ["77" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                row = ["77" if r == "179" else r for r in  row]
+                if row != rownew : print('row', row); break
+                for n in range(180, 193):
+                    row = ["77" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                for n in range(193, 207):
+                    row = ["80" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                row = ["80" if r == "207" else r for r in  row]
+                if row != rownew : print('row', row); break
+                for n in range(208, 223):
+                    row = ["80" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                for n in range(223, 236):
+                    row = ["83" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                row = ["83" if r == "236" else r for r in  row]
+                if row != rownew : print('row', row); break
+                for n in range(237, 269):
+                    row = ["83" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                for n in range(269, 300):
+                    row = ["87" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                row = ["87" if r == "300" else r for r in  row]
+                if row != rownew : print('row', row); break
+                for n in range(301, 350):
+                    row = ["87" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                for n in range(350, 400):
+                    row = ["90" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                row = ["90" if r == "400" else r for r in  row]
+                if row != rownew : print('row', row); break
+                for n in range(401, 450):
+                    row = ["90" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                for n in range(450, 500):
+                    row = ["93" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                row = ["93" if r == "500" else r for r in  row]
+                if row != rownew : print('row', row); break
+            print("second", row)
             row = list(row[0])
             for j in range(len(row)):
                 if row[j] != "." and row[j] != " ":
@@ -532,7 +725,8 @@ with open('SW-kp-indeces.txt', 'r') as kp_indeces2:
                     row[j] = 0
             rownum = row[0]*10 + row[1]
             daily_predicted_data_list[mmm].kp[i2] = rownum
-                
+            print('print', daily_predicted_data_list[mmm].kp[i2], daily_predicted_data_list[mmm].Ap[i2] , rownum, )
+            
             ### Cp & C9 berekenen:
         
 
@@ -611,9 +805,11 @@ with open('SW-kp-indeces.txt', 'r') as kp_indeces2:
         if 2.0 <= daily_predicted_data_list[mmm].cp <= 2.5:
             daily_predicted_data_list[mmm].c9 = 9
         mmm+=1
+        print('mmm', mmm)
 
 
-for j in range(0, 18):
+for jj in range(0, 18):
+    print('jj', jj)   
     #interpolation
     with open('SW-montlypred') as monthlypred:
         lines4 = monthlypred.readlines()
@@ -633,130 +829,321 @@ for j in range(0, 18):
         avgbnum = avgb[0]*100 + avgb[1]*10 + avgb[2] + avgb[4]/10
         dayshift = 6
         #print(avganum, avgbnum,'avg')
-        daily_predicted_data_list[mmm+j].avg=int(np.round(avganum + (avgbnum-avganum)/(31) * (j + dayshift),1))
+        daily_predicted_data_list[mmm+jj].avg=int(np.round(avganum + (avgbnum-avganum)/(31) * (jj + dayshift),1))
         for k in range(8):
-            daily_predicted_data_list[mmm+j].Ap[k] = daily_predicted_data_list[mmm+j].avg
+            daily_predicted_data_list[mmm+jj].Ap[k] = daily_predicted_data_list[mmm+jj].avg
          ### KP berekenen:
         for k in range(8):
-            daily_predicted_data_list[mmm+j].kp[k] = daily_predicted_data_list[mmm+j].Ap[k]  
+            daily_predicted_data_list[mmm+jj].kp[k] = daily_predicted_data_list[mmm+jj].Ap[k]  
 
-        for i2, row in enumerate(daily_predicted_data_list[mmm+j].kp):
+        for i2, row in enumerate(daily_predicted_data_list[mmm+jj].kp):
+            
             row = [str(row)]
+            rownew = row
+            print("first", row)
             for i in range(len(row)):
-                row[i] = row[i].replace( "0","0")
-                row[i] = row[i].replace("2","3")
-                row[i] = row[i].replace("3","7")
-                row[i] = row[i].replace("4","10")
-                row[i] = row[i].replace("5","13")
-                row[i] = row[i].replace("6","17")
-                row[i] = row[i].replace("7","20")
-                row[i] = row[i].replace("9","23")
-                row[i] = row[i].replace("12","27")
-                row[i] = row[i].replace("15","30")
-                row[i] = row[i].replace("18","33")
-                row[i] = row[i].replace("22","37")
-                row[i] = row[i].replace("27","40")
-                row[i] = row[i].replace("32","43")
-                row[i] = row[i].replace("39","47")
-                row[i] = row[i].replace("48","50")
-                row[i] = row[i].replace("56","53")
-                row[i] = row[i].replace("67","57")
-                row[i] = row[i].replace("80","60")
-                row[i] = row[i].replace("94","63")
-                row[i] = row[i].replace("111","67")
-                row[i] = row[i].replace("132","70")
-                row[i] = row[i].replace("154","73")
-                row[i] = row[i].replace("179","77")
-                row[i] = row[i].replace("207","80")
-                row[i] = row[i].replace("236","83")
-                row[i] = row[i].replace("300","87")
-                row[i] = row[i].replace("400","90")
-                row[i] = row[i].replace("500","93")
+                row = ["0" if r == "0" else r for r in row]
+                if row != rownew : print('row', row); break
+                row = ["0" if r == "1" else r for r in row]
+                if row != rownew : print('row', row); break
+                row = ["3" if r == "2" else r for r in   row]
+                if row != rownew : print('row', row); break 
+                row = ["7" if r == "3" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["10" if r == "4" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["13" if r == "5" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["17" if r == "6" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["20" if r == "7" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["23" if r == "8" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["23" if r == "9" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["23" if r == "10" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["27" if r == "11" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["27" if r == "12" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["27" if r == "13" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["30" if r == "14" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["30" if r == "15" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["30" if r == "16" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["33" if r == "17" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["33" if r == "18" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["33" if r == "19" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["33" if r == "20" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["37" if r == "21" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["37" if r == "22" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["37" if r == "23" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["37" if r == "24" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["40" if r == "25" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["40" if r == "26" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["40" if r == "27" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["40" if r == "28" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["40" if r == "29" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["43" if r == "30" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["43" if r == "31" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["43" if r == "32" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["43" if r == "33" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["43" if r == "34" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["43" if r == "35" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["43" if r == "36" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["47" if r == "37" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["47" if r == "38" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["47" if r == "39" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["47" if r == "40" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["47" if r == "41" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["47" if r == "42" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["47" if r == "43" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["50" if r == "44" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["50" if r == "45" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["50" if r == "46" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["50" if r == "47" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["50" if r == "48" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["50" if r == "49" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["50" if r == "50" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["50" if r == "51" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["50" if r == "52" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["50" if r == "53" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["53" if r == "54" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["53" if r == "55" else r for r in  row]
+                if row != rownew : print('row', row); break
+                row = ["53" if r == "56" else r for r in  row]
+                if row != rownew : print('row', row); break
+                for n in range(57, 60):
+                    row = ["53" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                for n in range(60, 67):
+                    row = ["57" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                row = ["57" if r == "67" else r for r in  row]
+                if row != rownew : print('row', row); break
+                for n in range(68, 74):
+                    row = ["57" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                for n in range(74, 80):
+                    row = ["60" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                row = ["60" if r == "80" else r for r in  row]
+                if row != rownew : print('row', row); break
+                for n in range(81, 87):
+                    row = ["60" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                for n in range(87, 94):
+                    row = ["63" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                row = ["63" if r == "94" else r for r in  row]
+                if row != rownew : print('row', row); break
+                for n in range(95, 103):
+                    row = ["63" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                for n in range(103, 111):
+                    row = ["67" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                row = ["67" if r == "111" else r for r in  row]
+                if row != rownew : print('row', row); break
+                for n in range(112, 122):
+                    row = ["67" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                for n in range(122, 132):
+                    row = ["67" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                row = ["70" if r == "132" else r for r in  row]
+                if row != rownew : print('row', row); break
+                for n in range(133, 144):
+                    row = ["70" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                for n in range(144, 154):
+                    row = ["73" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                row = ["73" if r == "154" else r for r in  row]
+                if row != rownew : print('row', row); break
+                for n in range(155, 166):
+                    row = ["73" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                for n in range(166, 179):
+                    row = ["77" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                row = ["77" if r == "179" else r for r in  row]
+                if row != rownew : print('row', row); break
+                for n in range(180, 193):
+                    row = ["77" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                for n in range(193, 207):
+                    row = ["80" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                row = ["80" if r == "207" else r for r in  row]
+                if row != rownew : print('row', row); break
+                for n in range(208, 223):
+                    row = ["80" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                for n in range(223, 236):
+                    row = ["83" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                row = ["83" if r == "236" else r for r in  row]
+                if row != rownew : print('row', row); break
+                for n in range(237, 269):
+                    row = ["83" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                for n in range(269, 300):
+                    row = ["87" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                row = ["87" if r == "300" else r for r in  row]
+                if row != rownew : print('row', row); break
+                for n in range(301, 350):
+                    row = ["87" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                for n in range(350, 400):
+                    row = ["90" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                row = ["90" if r == "400" else r for r in  row]
+                if row != rownew : print('row', row); break
+                for n in range(401, 450):
+                    row = ["90" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                for n in range(450, 500):
+                    row = ["93" if r == str(n) else r for r in  row]
+                    if row != rownew : print('row', row); break
+                row = ["93" if r == "500" else r for r in  row]
+                if row != rownew : print('row', row); break
+            print("second", row)
             row = list(row[0])
             for j in range(len(row)):
                 if row[j] != "." and row[j] != " ":
                     row[j] = int(row[j])
                 else:
                     row[j] = 0
-            rownum = row[0]*10 + row[1]
-            daily_predicted_data_list[mmm+j].kp[i2] = rownum
+            if len(row) == 1:
+                rownum = row[0]
+            else:
+                rownum = row[0]*10 + row[1]
+            
+            daily_predicted_data_list[mmm+jj].kp[i2] = rownum
+            print('rownum', daily_predicted_data_list[mmm+jj].kp[i2])
 
         ### Cp & C9 berekenen:
-        if 0 <= daily_predicted_data_list[j+mmm].avg <= 22:
+        if 0 <= daily_predicted_data_list[mmm+jj].avg <= 22:
             Cp_new = 0.0
-        elif 23 <= daily_predicted_data_list[j+mmm].avg <= 34:
+        elif 23 <= daily_predicted_data_list[mmm+jj].avg <= 34:
             Cp_new = 0.1
-        elif 35 <= daily_predicted_data_list[j+mmm].avg <= 44: 
+        elif 35 <= daily_predicted_data_list[mmm+jj].avg <= 44: 
             Cp_new = 0.2
-        elif 45 <= daily_predicted_data_list[j+mmm].avg <= 55:
+        elif 45 <= daily_predicted_data_list[mmm+jj].avg <= 55:
             Cp_new = 0.3
-        elif 56 <= daily_predicted_data_list[j+mmm].avg <= 66:
+        elif 56 <= daily_predicted_data_list[mmm+jj].avg <= 66:
             Cp_new = 0.4
-        elif 67 <= daily_predicted_data_list[j+mmm].avg <= 78:
+        elif 67 <= daily_predicted_data_list[mmm+jj].avg <= 78:
             Cp_new = 0.5
-        elif 79 <= daily_predicted_data_list[j+mmm].avg <= 90:
+        elif 79 <= daily_predicted_data_list[mmm+jj].avg <= 90:
             Cp_new = 0.6
-        elif 91 <= daily_predicted_data_list[j+mmm].avg <= 104:
+        elif 91 <= daily_predicted_data_list[mmm+jj].avg <= 104:
             Cp_new = 0.7
-        elif 105 <= daily_predicted_data_list[j+mmm].avg <= 120:
+        elif 105 <= daily_predicted_data_list[mmm+jj].avg <= 120:
             Cp_new = 0.8
-        elif 121 <= daily_predicted_data_list[j+mmm].avg <= 139:
+        elif 121 <= daily_predicted_data_list[mmm+jj].avg <= 139:
             Cp_new = 0.9
-        elif 140 <= daily_predicted_data_list[j+mmm].avg <= 164:
+        elif 140 <= daily_predicted_data_list[mmm+jj].avg <= 164:
             Cp_new = 1.0
-        elif 165 <= daily_predicted_data_list[j+mmm].avg <= 190:
+        elif 165 <= daily_predicted_data_list[mmm+jj].avg <= 190:
             Cp_new = 1.1
-        elif 191 <= daily_predicted_data_list[j+mmm].avg <= 228:
+        elif 191 <= daily_predicted_data_list[mmm+jj].avg <= 228:
             Cp_new = 1.2
-        elif 229 <= daily_predicted_data_list[j+mmm].avg <= 273:
+        elif 229 <= daily_predicted_data_list[mmm+jj].avg <= 273:
             Cp_new = 1.3
-        elif 274 <= daily_predicted_data_list[j+mmm].avg <= 320:
+        elif 274 <= daily_predicted_data_list[mmm+jj].avg <= 320:
             Cp_new = 1.4
-        elif 321 <= daily_predicted_data_list[j+mmm].avg <= 379:
+        elif 321 <= daily_predicted_data_list[mmm+jj].avg <= 379:
             Cp_new = 1.5
-        elif 380 <= daily_predicted_data_list[j+mmm].avg <= 453:
+        elif 380 <= daily_predicted_data_list[mmm+jj].avg <= 453:
             Cp_new = 1.6
-        elif 454 <= daily_predicted_data_list[j+mmm].avg <= 561:
+        elif 454 <= daily_predicted_data_list[mmm+jj].avg <= 561:
             Cp_new = 1.7
-        elif 562 <= daily_predicted_data_list[j+mmm].avg <= 729:
+        elif 562 <= daily_predicted_data_list[mmm+jj].avg <= 729:
             Cp_new = 1.8
-        elif 730 <= daily_predicted_data_list[j+mmm].avg <= 1119:
+        elif 730 <= daily_predicted_data_list[mmm+jj].avg <= 1119:
             Cp_new = 1.9
-        elif 1120 <= daily_predicted_data_list[j+mmm].avg <= 1399:
+        elif 1120 <= daily_predicted_data_list[mmm+jj].avg <= 1399:
             Cp_new = 2.0
-        elif 1400 <= daily_predicted_data_list[j+mmm].avg <= 1699:
+        elif 1400 <= daily_predicted_data_list[mmm+jj].avg <= 1699:
             Cp_new = 2.1
-        elif 1700 <= daily_predicted_data_list[j+mmm].avg <= 1999:
+        elif 1700 <= daily_predicted_data_list[mmm+jj].avg <= 1999:
             Cp_new = 2.2
-        elif 2000 <= daily_predicted_data_list[j+mmm].avg <= 2399:
+        elif 2000 <= daily_predicted_data_list[mmm+jj].avg <= 2399:
             Cp_new = 2.3
-        elif 2400 <= daily_predicted_data_list[j+mmm].avg <= 3199:
+        elif 2400 <= daily_predicted_data_list[mmm+jj].avg <= 3199:
             Cp_new = 2.4
-        elif 3200 <= daily_predicted_data_list[j+mmm].avg: 
+        elif 3200 <= daily_predicted_data_list[mmm+jj].avg: 
             Cp_new = 2.5
-        daily_predicted_data_list[j+mmm].cp = np.round(Cp_new, decimals=1)
-        if 0.0 <= daily_predicted_data_list[j+mmm].cp <= 0.1:
-            daily_predicted_data_list[j+mmm].c9 = 0
-        if 0.2 <= daily_predicted_data_list[j+mmm].cp <= 0.3:
-            daily_predicted_data_list[j+mmm].c9 = 1
-        if 0.4 <= daily_predicted_data_list[j+mmm].cp <= 0.5:
-            daily_predicted_data_list[j+mmm].c9 = 2
-        if 0.6 <= daily_predicted_data_list[j+mmm].cp <= 0.7:
-            daily_predicted_data_list[j+mmm].c9 = 3
-        if 0.8 <= daily_predicted_data_list[j+mmm].cp <= 0.9:
-            daily_predicted_data_list[j+mmm].c9 = 4
-        if 1.0 <= daily_predicted_data_list[j+mmm].cp <= 1.1:
-            daily_predicted_data_list[j+mmm].c9 = 5
-        if 1.2 <= daily_predicted_data_list[j+mmm].cp <= 1.4:
-            daily_predicted_data_list[j+mmm].c9 = 6
-        if 1.5 <= daily_predicted_data_list[j+mmm].cp <= 1.8:
-            daily_predicted_data_list[j+mmm].c9 = 7
-        if daily_predicted_data_list[j+mmm].cp == 1.9:
-            daily_predicted_data_list[j+mmm].c9 = 8
-        if 2.0 <= daily_predicted_data_list[j+mmm].cp <= 2.5:
-            daily_predicted_data_list[j+mmm].c9 = 9
+        daily_predicted_data_list[mmm+jj].cp = np.round(Cp_new, decimals=1)
+        if 0.0 <= daily_predicted_data_list[mmm+jj].cp <= 0.1:
+            daily_predicted_data_list[mmm+jj].c9 = 0
+        if 0.2 <= daily_predicted_data_list[mmm+jj].cp <= 0.3:
+            daily_predicted_data_list[mmm+jj].c9 = 1
+        if 0.4 <= daily_predicted_data_list[mmm+jj].cp <= 0.5:
+            daily_predicted_data_list[mmm+jj].c9 = 2
+        if 0.6 <= daily_predicted_data_list[mmm+jj].cp <= 0.7:
+            daily_predicted_data_list[mmm+jj].c9 = 3
+        if 0.8 <= daily_predicted_data_list[mmm+jj].cp <= 0.9:
+            daily_predicted_data_list[mmm+jj].c9 = 4
+        if 1.0 <= daily_predicted_data_list[mmm+jj].cp <= 1.1:
+            daily_predicted_data_list[mmm+jj].c9 = 5
+        if 1.2 <= daily_predicted_data_list[mmm+jj].cp <= 1.4:
+            daily_predicted_data_list[mmm+jj].c9 = 6
+        if 1.5 <= daily_predicted_data_list[mmm+jj].cp <= 1.8:
+            daily_predicted_data_list[mmm+jj].c9 = 7
+        if daily_predicted_data_list[mmm+jj].cp == 1.9:
+            daily_predicted_data_list[mmm+jj].c9 = 8
+        if 2.0 <= daily_predicted_data_list[mmm+jj].cp <= 2.5:
+            daily_predicted_data_list[mmm+jj].c9 = 9
+    print('rownum2', daily_predicted_data_list[mmm+j].kp, mmm+jj, j)
 
-
+#print('rownum2', daily_predicted_data_list[45].kp, 45)
 #print('list', f107predicted_list)
 for i, f107 in enumerate(f107predicted_list):
     daily_predicted_data_list[i].F10_7_obs = f107
@@ -790,6 +1177,8 @@ with open('SW-all.txt', 'r') as swall:
 
 ###### Averaging stuff:
 
+for i in range(0, 45):
+    daily_predicted_data_list[i].sum = 8 * daily_predicted_data_list[i].kp[0]
 
 for i in range(0, 45):
     average1 = 0
