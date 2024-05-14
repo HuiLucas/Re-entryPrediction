@@ -30,17 +30,19 @@ satellite = "Delfi-n3Xt"
 TLE_Data = 'TLE-Data_n3Xt.txt'
 
 Folder = "Error vs Cd Delfi-n3Xt/"
+#Folder = "Test/"
 
-TLE1_number = 6180
-TLE2_number = 6480
+
+TLE1_number = 5080
+TLE2_number = 7280
 
 Mass = 2.8
 
 reference_area = 0.087  # Average projection area of a 3U CubeSat
-drag_coefficient_lower = 2.5
-drag_coefficient_upper = 3.3
+drag_coefficient_lower = 2
+drag_coefficient_upper = 3.5
 
-iterations = 17
+iterations = 8
 
 radiation_pressure_coefficient = 1.1
 
@@ -430,17 +432,10 @@ for i in range(iterations):
         indices_in_sim_epochs.append(np.where(sim_epochs == element)[0][0])
 
 
-    kepler_elements = dep_vars_array[:,4:10]
-    SMA = kepler_elements[:,0]
-    eccentricity = kepler_elements[:,1]
-    inclination = np.rad2deg(kepler_elements[:,2])
-    argument_of_periapsis = np.rad2deg(kepler_elements[:,3])
-    raan = np.rad2deg(kepler_elements[:,4])
-    true_anomaly = np.rad2deg(kepler_elements[:,5])
-
-
 #This makes a list of the predicted semi-major axis at the epochs that are compared to the TLE data
     SM_Comp_lst = []
+    kepler_elements = dep_vars_array[:,4:10]
+    SMA = kepler_elements[:,0]
     for i in range(len(indices_in_Output_Epochs)):
         SM_Comp_lst.append(SMA[indices_in_Output_Epochs[i]])
 
@@ -454,7 +449,7 @@ for i in range(iterations):
 
 # Plot the predicted semi-major axis vs the actual semi-major axis
     plt.figure(figsize=(9, 5))
-    plt.title("Semi major axis prediction vs actual semi major axis for a drag coefficient of " + str(drag_coefficient))
+    plt.title("Real vs Predicted Semi-Major Axis for a drag coefficient of " + str(drag_coefficient))
     plt.plot(range(len(SM_Comp_lst)), SM_Comp_lst, label="Predicted Semi-Major Axis")
     plt.plot(range(len(ACT_Semi_major_lst)), ACT_Semi_major_lst, label="Real Semi-Major Axis")
     plt.xlabel('Epoch Number')
