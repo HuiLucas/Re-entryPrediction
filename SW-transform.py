@@ -566,6 +566,110 @@ with open('SW-kp-indeces.txt', 'r') as kp_indeces2:
         if 2.0 <= daily_predicted_data_list[mmm].cp <= 2.5:
             daily_predicted_data_list[mmm].c9 = 9
         mmm+=1
+
+
+for j in range(0, 18):
+    #interpolation
+    with open('SW-montlypred') as monthlypred:
+        lines4 = monthlypred.readlines()
+        avga = list(lines4[794-1])[66:71]	# avg at 1-10-2022
+        avgb = list(lines4[794])[66:71]	# avg at 1-11-2022
+        for i in range(len(avga)):
+            if avga[i] != "." and avga[i] != " ":
+                avga[i] = int(avga[i])
+            else:
+                avga[i] = 0
+        avganum = avga[0]*100 + avga[1]*10 + avga[2] + avga[4]/10
+        for i in range(len(avgb)):
+            if avgb[i] != "." and avgb[i] != " ":
+                avgb[i] = int(avgb[i])
+            else:
+                avgb[i] = 0
+        avgbnum = avgb[0]*100 + avgb[1]*10 + avgb[2] + avgb[4]/10
+        dayshift = 6
+        #print(avganum, avgbnum,'avg')
+        daily_predicted_data_list[mmm+j].avg=int(np.round(avganum + (avgbnum-avganum)/(31) * (j + dayshift),1))
+        for k in range(8):
+            daily_predicted_data_list[mmm+j].Ap[k] = daily_predicted_data_list[mmm+j].avg
+         ### KP berekenen:
+
+
+        ### Cp & C9 berekenen:
+        if 0 <= daily_predicted_data_list[j+mmm].avg <= 22:
+            Cp_new = 0.0
+        elif 23 <= daily_predicted_data_list[j+mmm].avg <= 34:
+            Cp_new = 0.1
+        elif 35 <= daily_predicted_data_list[j+mmm].avg <= 44: 
+            Cp_new = 0.2
+        elif 45 <= daily_predicted_data_list[j+mmm].avg <= 55:
+            Cp_new = 0.3
+        elif 56 <= daily_predicted_data_list[j+mmm].avg <= 66:
+            Cp_new = 0.4
+        elif 67 <= daily_predicted_data_list[j+mmm].avg <= 78:
+            Cp_new = 0.5
+        elif 79 <= daily_predicted_data_list[j+mmm].avg <= 90:
+            Cp_new = 0.6
+        elif 91 <= daily_predicted_data_list[j+mmm].avg <= 104:
+            Cp_new = 0.7
+        elif 105 <= daily_predicted_data_list[j+mmm].avg <= 120:
+            Cp_new = 0.8
+        elif 121 <= daily_predicted_data_list[j+mmm].avg <= 139:
+            Cp_new = 0.9
+        elif 140 <= daily_predicted_data_list[j+mmm].avg <= 164:
+            Cp_new = 1.0
+        elif 165 <= daily_predicted_data_list[j+mmm].avg <= 190:
+            Cp_new = 1.1
+        elif 191 <= daily_predicted_data_list[j+mmm].avg <= 228:
+            Cp_new = 1.2
+        elif 229 <= daily_predicted_data_list[j+mmm].avg <= 273:
+            Cp_new = 1.3
+        elif 274 <= daily_predicted_data_list[j+mmm].avg <= 320:
+            Cp_new = 1.4
+        elif 321 <= daily_predicted_data_list[j+mmm].avg <= 379:
+            Cp_new = 1.5
+        elif 380 <= daily_predicted_data_list[j+mmm].avg <= 453:
+            Cp_new = 1.6
+        elif 454 <= daily_predicted_data_list[j+mmm].avg <= 561:
+            Cp_new = 1.7
+        elif 562 <= daily_predicted_data_list[j+mmm].avg <= 729:
+            Cp_new = 1.8
+        elif 730 <= daily_predicted_data_list[j+mmm].avg <= 1119:
+            Cp_new = 1.9
+        elif 1120 <= daily_predicted_data_list[j+mmm].avg <= 1399:
+            Cp_new = 2.0
+        elif 1400 <= daily_predicted_data_list[j+mmm].avg <= 1699:
+            Cp_new = 2.1
+        elif 1700 <= daily_predicted_data_list[j+mmm].avg <= 1999:
+            Cp_new = 2.2
+        elif 2000 <= daily_predicted_data_list[j+mmm].avg <= 2399:
+            Cp_new = 2.3
+        elif 2400 <= daily_predicted_data_list[j+mmm].avg <= 3199:
+            Cp_new = 2.4
+        elif 3200 <= daily_predicted_data_list[j+mmm].avg: 
+            Cp_new = 2.5
+        daily_predicted_data_list[j+mmm].cp = np.round(Cp_new, decimals=1)
+        if 0.0 <= daily_predicted_data_list[j+mmm].cp <= 0.1:
+            daily_predicted_data_list[j+mmm].c9 = 0
+        if 0.2 <= daily_predicted_data_list[j+mmm].cp <= 0.3:
+            daily_predicted_data_list[j+mmm].c9 = 1
+        if 0.4 <= daily_predicted_data_list[j+mmm].cp <= 0.5:
+            daily_predicted_data_list[j+mmm].c9 = 2
+        if 0.6 <= daily_predicted_data_list[j+mmm].cp <= 0.7:
+            daily_predicted_data_list[j+mmm].c9 = 3
+        if 0.8 <= daily_predicted_data_list[j+mmm].cp <= 0.9:
+            daily_predicted_data_list[j+mmm].c9 = 4
+        if 1.0 <= daily_predicted_data_list[j+mmm].cp <= 1.1:
+            daily_predicted_data_list[j+mmm].c9 = 5
+        if 1.2 <= daily_predicted_data_list[j+mmm].cp <= 1.4:
+            daily_predicted_data_list[j+mmm].c9 = 6
+        if 1.5 <= daily_predicted_data_list[j+mmm].cp <= 1.8:
+            daily_predicted_data_list[j+mmm].c9 = 7
+        if daily_predicted_data_list[j+mmm].cp == 1.9:
+            daily_predicted_data_list[j+mmm].c9 = 8
+        if 2.0 <= daily_predicted_data_list[j+mmm].cp <= 2.5:
+            daily_predicted_data_list[j+mmm].c9 = 9
+
+
 #print('list', f107predicted_list)
 for i, f107 in enumerate(f107predicted_list):
     daily_predicted_data_list[i].F10_7_obs = f107
