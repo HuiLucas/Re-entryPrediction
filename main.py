@@ -87,7 +87,7 @@ def simulate(CD=1.8):
         global_frame_origin,
         global_frame_orientation)
 
-    body_settings.get("Earth").atmosphere_settings = environment_setup.atmosphere.nrlmsise00(space_weather_file ="SW-All.txt")
+    body_settings.get("Earth").atmosphere_settings = environment_setup.atmosphere.nrlmsise00(space_weather_file ="SW-20220906-Final.txt")
 
     # Create system of selected celestial bodies
     bodies = environment_setup.create_system_of_bodies(body_settings)
@@ -499,7 +499,7 @@ if False == True:
 
 if __name__ == "__main__":
     # Number of simulations to run
-    N = 200 #int(input("Number of MC cycles")) #3 #200
+    N = 1 #int(input("Number of MC cycles")) #3 #200
     print(N)
     # CD values to test
     CD_values = np.array([1.5, 1.65, 1.8]) # np.random.normal(1.8, 0.1, N)
