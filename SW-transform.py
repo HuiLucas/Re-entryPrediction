@@ -64,8 +64,9 @@ q = 23719 # 10 #2000 #23719 #23 #change for the number of lines in the file
 ############ Kp #############################################
 lines = kp_indeces.readlines()
 last_15_chars_list = []
-for counter, line in enumerate(lines[185:q+186]):      #23719 +3 for right range
+for counter, line in enumerate(lines[185:q+185]):      #23719 +3 for right range
     print(counter)
+    
     last_15_chars = line[-17:].strip()
     last_15_chars_list.append(last_15_chars)
     seperate_row = []
@@ -73,24 +74,24 @@ for counter, line in enumerate(lines[185:q+186]):      #23719 +3 for right range
         new_row = [item[i:i+2] for i in range(0, len(item), 2)]
         seperate_row.append(new_row)
 
+    if True:
+        for row in seperate_row:
+            for i in range(len(row)):
+                row[i] = row[i].replace("o", "0")
+                row[i] = row[i].replace("+", "3")
+                row[i] = row[i].replace("4-", "37")
+                row[i] = row[i].replace("5-", "47")
+                row[i] = row[i].replace("6-", "57")
+                row[i] = row[i].replace("7-", "67")
+                row[i] = row[i].replace("8-", "77")
+                row[i] = row[i].replace("9-", "87")
+                row[i] = row[i].replace("2-", "17")
+                row[i] = row[i].replace("3-", "27")
+                row[i] = row[i].replace("1-", "7")
     
-    for row in seperate_row:
-        for i in range(len(row)):
-            row[i] = row[i].replace("o", "0")
-            row[i] = row[i].replace("+", "3")
-            row[i] = row[i].replace("4-", "37")
-            row[i] = row[i].replace("5-", "47")
-            row[i] = row[i].replace("6-", "57")
-            row[i] = row[i].replace("7-", "67")
-            row[i] = row[i].replace("8-", "77")
-            row[i] = row[i].replace("9-", "87")
-            row[i] = row[i].replace("2-", "17")
-            row[i] = row[i].replace("3-", "27")
-            row[i] = row[i].replace("1-", "7")
-    
-    for row in seperate_row:
-        for i in range(len(row)):
-            row[i] = int(row[i])
+        for row in seperate_row:
+            for i in range(len(row)):
+                row[i] = int(row[i])
 
 for i in range(0, q):         #23719
     observed_data_list[i].kp = seperate_row[i]
@@ -169,7 +170,7 @@ for i in range(0, q):      #23719
 
 ############ AVG #############################################
 
-for i in range(0, q):     #23719 
+for i in range(0, q-1):     #23719 
     observed_data_list[i].avg = int(np.mean(observed_data_list[i].Ap))
     print(i)
 
@@ -243,7 +244,7 @@ for i in range(len(average_Ap)):
 
 
 
-for i in range(0, q):      #23719
+for i in range(0, q-1):      #23719
     observed_data_list[i].cp = average_Ap[i]
     print(i)
 
