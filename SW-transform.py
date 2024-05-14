@@ -493,7 +493,7 @@ with open('SW-kp-indeces.txt', 'r') as kp_indeces2:
             daily_predicted_data_list[mmm].kp[k] = daily_predicted_data_list[mmm].Ap[k]  
 
         for i2, row in enumerate(daily_predicted_data_list[mmm].kp):
-            row = list(str(row))
+            row = [str(row)]
             for i in range(len(row)):
                 row[i] = row[i].replace( "0","0")
                 row[i] = row[i].replace("2","3")
@@ -524,6 +524,7 @@ with open('SW-kp-indeces.txt', 'r') as kp_indeces2:
                 row[i] = row[i].replace("300","87")
                 row[i] = row[i].replace("400","90")
                 row[i] = row[i].replace("500","93")
+            row = list(row[0])
             for j in range(len(row)):
                 if row[j] != "." and row[j] != " ":
                     row[j] = int(row[j])
@@ -640,7 +641,7 @@ for j in range(0, 18):
             daily_predicted_data_list[mmm+j].kp[k] = daily_predicted_data_list[mmm+j].Ap[k]  
 
         for i2, row in enumerate(daily_predicted_data_list[mmm+j].kp):
-            row = list(str(row))
+            row = [str(row)]
             for i in range(len(row)):
                 row[i] = row[i].replace( "0","0")
                 row[i] = row[i].replace("2","3")
@@ -671,6 +672,7 @@ for j in range(0, 18):
                 row[i] = row[i].replace("300","87")
                 row[i] = row[i].replace("400","90")
                 row[i] = row[i].replace("500","93")
+            row = list(row[0])
             for j in range(len(row)):
                 if row[j] != "." and row[j] != " ":
                     row[j] = int(row[j])
