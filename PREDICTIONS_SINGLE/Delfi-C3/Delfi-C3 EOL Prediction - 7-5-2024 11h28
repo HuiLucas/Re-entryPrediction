@@ -1,0 +1,27 @@
+============== End-of-Life Prediction for Delfi-C3 ==============
+### File creation on 2024-05-07 11:28:08.421289 
+### Associated graph: Delfi-C3 altitude, starting from 2022-05-20. - 7-5-2024 11h28 
+
+============================ INPUTS ============================ 
+Satellite name:                    Delfi-C3 
+NORAD Catalog ID:                  32789 
+Propagation starting date:         2022-05-20 
+Satellite mass:                    2.2 [kg] 
+Aerodynamic reference area:        0.08 [m^2] 
+Drag coefficient:                  1.6 
+Radiation Pressure reference area: 0.08 [m^2] 
+Radiation pressure coefficient:    1.1 
+
+TLE: 1 32789U 08021G   22140.38419881  .00019970  00000-0  11274-2 0  9994 
+     2 32789  97.3407 167.7079 0012202  69.4583 290.7957 15.13102146767687 
+
+=========================== SETTINGS =========================== 
+Integrator used:           Runge-Kutta 78, fixed time step 
+Time step:                 100.0 [s] 
+Atmospheric model used:    NRLMSISE-00 
+Solar radiation data used: Historical
+=========================== OUTPUTS =========================== 
+Remaining lifetime estimate: 547.7638888888889 [days] 
+                             1.50072298325723 [years] 
+Estimated re-entry:          2023-11-19 
+Runtime:                     4.304357926050822 [min] 
