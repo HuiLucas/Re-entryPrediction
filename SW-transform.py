@@ -64,7 +64,7 @@ q = 23 #change for the number of lines in the file
 ############ Kp #############################################
 lines = kp_indeces.readlines()
 last_15_chars_list = []
-for line in lines[11:q+12]:      #23719 +3 for right range
+for line in lines[185:q+186]:      #23719 +3 for right range
     last_15_chars = line[-17:].strip()
     last_15_chars_list.append(last_15_chars)
     seperate_row = []
