@@ -37,8 +37,8 @@ def get_tle(norad_cat_id, date):
 
     # Define the login data
     login_data = {
-        'identity': 'wschaerlaecken@gmail.com',
-        'password': 'groupd03123456789'}
+        'identity': '',
+        'password': ''}
     
     NORAD_CAT_ID = norad_cat_id
     DATE = date

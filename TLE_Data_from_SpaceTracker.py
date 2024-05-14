@@ -13,8 +13,8 @@ import matplotlib.pyplot as plt
 
 # Define the login data
 login_data = {
-    'identity': 'wschaerlaecken@gmail.com',
-    'password': 'groupd03123456789'}
+    'identity': '',
+    'password': ''}
 
 NORAD_CAT_ID = 32789 #Delfi C3
 DATE = "2023-11-12--2023-11-14"
