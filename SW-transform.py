@@ -59,7 +59,7 @@ monthly_predicted_data_list = [monthly_predicted_data() for i in range(0, 209)]
 
 observed_data_list[0].kp = [0,0,0,0,0,0,0,0]
 
-q = 23719  #change for the number of lines in the file
+q = 23 #change for the number of lines in the file
 
 ############ Kp #############################################
 lines = kp_indeces.readlines()
