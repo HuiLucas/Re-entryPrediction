@@ -475,8 +475,9 @@ with open('SW-montlypred', 'r') as monthlypred:
 
 with open('SW-kp-indeces.txt', 'r') as kp_indeces2:
     mmm=0
+    lines5 = kp_indeces2.readlines()
     for j in range(23904, 23931):
-        ap_avg = list(lines2[j])[22:26]
+        ap_avg = list(lines5[j])[22:26]
         for i in range(len(ap_avg)):
             if ap_avg[i] != "." and ap_avg[i] != " ":
                 ap_avg[i] = int(ap_avg[i])
@@ -491,7 +492,59 @@ with open('SW-kp-indeces.txt', 'r') as kp_indeces2:
 
 
         ### Cp & C9 berekenen:
-        
+        if 0 <= daily_predicted_data_list[mmm].avg <= 22:
+            Cp_new = 0.0
+        elif 23 <= daily_predicted_data_list[mmm].avg <= 34:
+            Cp_new = 0.1
+        elif 35 <= daily_predicted_data_list[mmm].avg <= 44: 
+            Cp_new = 0.2
+        elif 45 <= daily_predicted_data_list[mmm].avg <= 55:
+            Cp_new = 0.3
+        elif 56 <= daily_predicted_data_list[mmm].avg <= 66:
+            Cp_new = 0.4
+        elif 67 <= daily_predicted_data_list[mmm].avg <= 78:
+            Cp_new = 0.5
+        elif 79 <= daily_predicted_data_list[mmm].avg <= 90:
+            Cp_new = 0.6
+        elif 91 <= daily_predicted_data_list[mmm].avg <= 104:
+            Cp_new = 0.7
+        elif 105 <= daily_predicted_data_list[mmm].avg <= 120:
+            Cp_new = 0.8
+        elif 121 <= daily_predicted_data_list[mmm].avg <= 139:
+            Cp_new = 0.9
+        elif 140 <= daily_predicted_data_list[mmm].avg <= 164:
+            Cp_new = 1.0
+        elif 165 <= daily_predicted_data_list[mmm].avg <= 190:
+            Cp_new = 1.1
+        elif 191 <= daily_predicted_data_list[mmm].avg <= 228:
+            Cp_new = 1.2
+        elif 229 <= daily_predicted_data_list[mmm].avg <= 273:
+            Cp_new = 1.3
+        elif 274 <= daily_predicted_data_list[mmm].avg <= 320:
+            Cp_new = 1.4
+        elif 321 <= daily_predicted_data_list[mmm].avg <= 379:
+            Cp_new = 1.5
+        elif 380 <= daily_predicted_data_list[mmm].avg <= 453:
+            Cp_new = 1.6
+        elif 454 <= daily_predicted_data_list[mmm].avg <= 561:
+            Cp_new = 1.7
+        elif 562 <= daily_predicted_data_list[mmm].avg <= 729:
+            Cp_new = 1.8
+        elif 730 <= daily_predicted_data_list[mmm].avg <= 1119:
+            Cp_new = 1.9
+        elif 1120 <= daily_predicted_data_list[mmm].avg <= 1399:
+            Cp_new = 2.0
+        elif 1400 <= daily_predicted_data_list[mmm].avg <= 1699:
+            Cp_new = 2.1
+        elif 1700 <= daily_predicted_data_list[mmm].avg <= 1999:
+            Cp_new = 2.2
+        elif 2000 <= daily_predicted_data_list[mmm].avg <= 2399:
+            Cp_new = 2.3
+        elif 2400 <= daily_predicted_data_list[mmm].avg <= 3199:
+            Cp_new = 2.4
+        elif 3200 <= daily_predicted_data_list[mmm].avg: 
+            Cp_new = 2.5
+        daily_predicted_data_list[mmm].cp = Cp_new
 
 #print('list', f107predicted_list)
 for i, f107 in enumerate(f107predicted_list):
