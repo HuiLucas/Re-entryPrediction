@@ -89,14 +89,14 @@ spice.load_standard_kernels()
 
 
 # Useful datasets: [name, norad_cat_id, mass, reference area, drag coefficient, radiation pressure coefficient, launch date]
-C3_data =   ["Delfi-C3",   32789, 2.2, 0.080, 1.65, 1.1,  "2008-04-28"] # True C3 re-entry: 2023-11-13 (433 days after 2022-09-06)(799 days after 2021-09-06)(4086 days after 2012-09-06)
+C3_data =   ["Delfi-C3",   32789, 2.2, 0.080, 1.6, 1.1,  "2008-04-28"] # True C3 re-entry: 2023-11-13 (433 days after 2022-09-06)(799 days after 2021-09-06)(4086 days after 2012-09-06)
 N3XT_data = ["Delfi-N3XT", 39428, 2.8, 0.087, 3.1, 1.1,  "2013-11-21"] 
-PQ_data =   ["Delfi-PQ",   51074, 0.6, 0.011, 2.385, 1.1,  "2022-01-13"] # True PQ re-entry: 2024-01-09 (491 days after 2022-09-06)
+PQ_data =   ["Delfi-PQ",   51074, 0.6, 0.011, 2.44, 1.1,  "2022-01-13"] # True PQ re-entry: 2024-01-09 (491 days after 2022-09-06)
 
 ###########################################################################################
 ##### SETUP VARIABLES #####################################################################
 dataset = C3_data                                   # For automatic data input
-tle_date = "2018-09-06--2018-09-07"                 # Date for TLE (One-day interval, takes first TLE in it)
+tle_date = "2022-05-20--2022-05-21"                 # Date for TLE (One-day interval, takes first TLE in it)
 propagation_duration = 9999                         # How long to propagate for at most [days] (in case something goes wrong, so that the code doesn't keep running until the end of time)
 fixed_step_size = 100.0                             # Step size for integrator
 

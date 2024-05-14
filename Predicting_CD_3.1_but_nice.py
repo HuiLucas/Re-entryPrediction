@@ -25,16 +25,16 @@ import os
 """-----------Inputs--------------"""
 """-------------------------------"""
 
-satellite = "Delfi-n3Xt"
+satellite = "Delfi-PQ"
 
-TLE_Data = 'TLE-Data_n3Xt.txt'
+TLE_Data = 'TLE-Data_PQ.txt'
 
-Folder = "Error vs Cd Delfi-n3Xt/"
+Folder = "Error vs Cd Delfi-PQ/"
 #Folder = "Test/"
 
 
-TLE1_number = 5080
-TLE2_number = 7280
+TLE1_number = 400 
+TLE2_number = 800
 
 Mass = 2.8
 
