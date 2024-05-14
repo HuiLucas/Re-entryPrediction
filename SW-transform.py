@@ -487,7 +487,7 @@ with open('SW-kp-indeces.txt', 'r') as kp_indeces2:
         daily_predicted_data_list[mmm].avg = int(ap_avgnum)
         for k in range(8): 
             daily_predicted_data_list[mmm].Ap[k] = ap_avgnum
-        mmm+=1
+        
         ### KP berekenen:
 
 
@@ -544,8 +544,28 @@ with open('SW-kp-indeces.txt', 'r') as kp_indeces2:
             Cp_new = 2.4
         elif 3200 <= daily_predicted_data_list[mmm].avg: 
             Cp_new = 2.5
-        daily_predicted_data_list[mmm].cp = Cp_new
-
+        daily_predicted_data_list[mmm].cp = np.round(Cp_new, decimals=1)
+        if 0.0 <= daily_predicted_data_list[mmm].cp <= 0.1:
+            daily_predicted_data_list[mmm].c9 = 0
+        if 0.2 <= daily_predicted_data_list[mmm].cp <= 0.3:
+            daily_predicted_data_list[mmm].c9 = 1
+        if 0.4 <= daily_predicted_data_list[mmm].cp <= 0.5:
+            daily_predicted_data_list[mmm].c9 = 2
+        if 0.6 <= daily_predicted_data_list[mmm].cp <= 0.7:
+            daily_predicted_data_list[mmm].c9 = 3
+        if 0.8 <= daily_predicted_data_list[mmm].cp <= 0.9:
+            daily_predicted_data_list[mmm].c9 = 4
+        if 1.0 <= daily_predicted_data_list[mmm].cp <= 1.1:
+            daily_predicted_data_list[mmm].c9 = 5
+        if 1.2 <= daily_predicted_data_list[mmm].cp <= 1.4:
+            daily_predicted_data_list[mmm].c9 = 6
+        if 1.5 <= daily_predicted_data_list[mmm].cp <= 1.8:
+            daily_predicted_data_list[mmm].c9 = 7
+        if daily_predicted_data_list[mmm].cp == 1.9:
+            daily_predicted_data_list[mmm].c9 = 8
+        if 2.0 <= daily_predicted_data_list[mmm].cp <= 2.5:
+            daily_predicted_data_list[mmm].c9 = 9
+        mmm+=1
 #print('list', f107predicted_list)
 for i, f107 in enumerate(f107predicted_list):
     daily_predicted_data_list[i].F10_7_obs = f107
