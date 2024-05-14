@@ -30,17 +30,19 @@ satellite = "Delfi-n3Xt"
 TLE_Data = 'TLE-Data_n3Xt.txt'
 
 Folder = "Error vs Cd Delfi-n3Xt/"
+#Folder = "Test/"
 
-TLE1_number = 6180
-TLE2_number = 6480
+
+TLE1_number = 5080
+TLE2_number = 7280
 
 Mass = 2.8
 
 reference_area = 0.087  # Average projection area of a 3U CubeSat
-drag_coefficient_lower = 2.5
-drag_coefficient_upper = 3.3
+drag_coefficient_lower = 2
+drag_coefficient_upper = 3.5
 
-iterations = 17
+iterations = 8
 
 radiation_pressure_coefficient = 1.1
 
