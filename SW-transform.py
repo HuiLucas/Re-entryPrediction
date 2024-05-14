@@ -59,7 +59,7 @@ monthly_predicted_data_list = [monthly_predicted_data() for i in range(0, 209)]
 
 observed_data_list[0].kp = [0,0,0,0,0,0,0,0]
 
-q = 23 #change for the number of lines in the file
+q = 10 #2000 #23719 #23 #change for the number of lines in the file
 
 ############ Kp #############################################
 lines = kp_indeces.readlines()
@@ -218,6 +218,22 @@ for i in range(len(average_Ap)):
             average_Ap[i] = 1.6
         elif 454 <= average_Ap[i] <= 561:
             average_Ap[i] = 1.7
+        elif 562 <= average_Ap[i] <= 729:
+            average_Ap[i] = 1.8
+        elif 730 <= average_Ap[i] <= 1119:
+            average_Ap[i] = 1.9
+        elif 1120 <= average_Ap[i] <= 1399:
+            average_Ap[i] = 2.0
+        elif 1400 <= average_Ap[i] <= 1699:
+            average_Ap[i] = 2.1
+        elif 1700 <= average_Ap[i] <= 1999:
+            average_Ap[i] = 2.2
+        elif 2000 <= average_Ap[i] <= 2399:
+            average_Ap[i] = 2.3
+        elif 2400 <= average_Ap[i] <= 3199:
+            average_Ap[i] = 2.4
+        elif 3200 <= average_Ap[i]: 
+            average_Ap[i] = 2.5
 
 
 
@@ -456,6 +472,26 @@ with open('SW-montlypred', 'r') as monthlypred:
                     ratio = f107ratioanum/f107ratiobnum
                     monthly_predicted_data_list[m].F10_7_adj = monthly_predicted_data_list[m].F10_7_obs*ratio
                     #print(f107ratioanum, f107ratiobnum)
+
+with open('SW-kp-indeces.txt', 'r') as kp_indeces2:
+    mmm=0
+    for j in range(23904, 23931):
+        ap_avg = list(lines2[j])[22:26]
+        for i in range(len(ap_avg)):
+            if ap_avg[i] != "." and ap_avg[i] != " ":
+                ap_avg[i] = int(ap_avg[i])
+            else:
+                ap_avg[i] = 0
+        ap_avgnum = ap_avg[0]*1000 + ap_avg[1]*100 + ap_avg[2]*10 + ap_avg[3]
+        daily_predicted_data_list[mmm].avg = int(ap_avgnum)
+        for k in range(8): 
+            daily_predicted_data_list[mmm].Ap[k] = ap_avgnum
+        mmm+=1
+        ### KP berekenen:
+
+
+        ### Cp & C9 berekenen:
+        
 
 #print('list', f107predicted_list)
 for i, f107 in enumerate(f107predicted_list):
@@ -725,8 +761,8 @@ with open('SW-NEW.txt', 'r+') as file:
             linelist[37:39] = [f"{daily_predicted_data_list[j].kp[6]//10  if daily_predicted_data_list[j].kp[6]//10 !=0 else nostring}", f"{daily_predicted_data_list[j].kp[6]%10}"]
             linelist[40:42] = [f"{daily_predicted_data_list[j].kp[7]//10  if daily_predicted_data_list[j].kp[7]//10 !=0 else nostring}", f"{daily_predicted_data_list[j].kp[7]%10}"]
             linelist[43:46] = [f"{(daily_predicted_data_list[j].sum)//100 if daily_predicted_data_list[j].sum//100 !=0 else nostring}", f"{(daily_predicted_data_list[j].sum)%100//10 if (daily_predicted_data_list[j].sum)%100//10 !=0 or daily_predicted_data_list[j].sum//100 !=0 else nostring}", f"{(daily_predicted_data_list[j].sum)%10}"]
-            linelist[47:50] = [f"{daily_predicted_data_list[j].Ap[0]//100 if daily_predicted_data_list[j].Ap[0]//100 != 0 else nostring}",f"{(daily_predicted_data_list[j].Ap[0])%100//10 if (daily_predicted_data_list[j].Ap[0])%100//10 !=0 or daily_predicted_data_list[j].Ap[0]//100 != 0 else nostring}", f"{daily_predicted_data_list[j].Ap[0]%10}"]
             linelist[51:54] = [f"{daily_predicted_data_list[j].Ap[1]//100 if daily_predicted_data_list[j].Ap[1]//100 != 0 else nostring}",f"{(daily_predicted_data_list[j].Ap[1])%100//10 if (daily_predicted_data_list[j].Ap[1])%100//10 !=0 or daily_predicted_data_list[j].Ap[1]//100 != 0 else nostring}", f"{daily_predicted_data_list[j].Ap[1]%10}"]
+            linelist[47:50] = [f"{daily_predicted_data_list[j].Ap[0]//100 if daily_predicted_data_list[j].Ap[0]//100 != 0 else nostring}",f"{(daily_predicted_data_list[j].Ap[0])%100//10 if (daily_predicted_data_list[j].Ap[0])%100//10 !=0 or daily_predicted_data_list[j].Ap[0]//100 != 0 else nostring}", f"{daily_predicted_data_list[j].Ap[0]%10}"]
             linelist[55:58] = [f"{daily_predicted_data_list[j].Ap[2]//100 if daily_predicted_data_list[j].Ap[2]//100 != 0 else nostring}",f"{(daily_predicted_data_list[j].Ap[2])%100//10 if (daily_predicted_data_list[j].Ap[2])%100//10 !=0 or daily_predicted_data_list[j].Ap[2]//100 != 0 else nostring}", f"{daily_predicted_data_list[j].Ap[2]%10}"]
             linelist[59:62] = [f"{daily_predicted_data_list[j].Ap[3]//100 if daily_predicted_data_list[j].Ap[3]//100 != 0 else nostring}",f"{(daily_predicted_data_list[j].Ap[3])%100//10 if (daily_predicted_data_list[j].Ap[3])%100//10 !=0 or daily_predicted_data_list[j].Ap[3]//100 != 0 else nostring}", f"{daily_predicted_data_list[j].Ap[3]%10}"]
             linelist[63:66] = [f"{daily_predicted_data_list[j].Ap[4]//100 if daily_predicted_data_list[j].Ap[4]//100 != 0 else nostring}",f"{(daily_predicted_data_list[j].Ap[4])%100//10 if (daily_predicted_data_list[j].Ap[4])%100//10 !=0 or daily_predicted_data_list[j].Ap[4]//100 != 0 else nostring}", f"{daily_predicted_data_list[j].Ap[4]%10}"]
