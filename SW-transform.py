@@ -59,12 +59,12 @@ monthly_predicted_data_list = [monthly_predicted_data() for i in range(0, 209)]
 
 observed_data_list[0].kp = [0,0,0,0,0,0,0,0]
 
-q = 237  #change for the number of lines in the file
+q = 23719  #change for the number of lines in the file
 
 ############ Kp #############################################
 lines = kp_indeces.readlines()
 last_15_chars_list = []
-for line in lines[2:q+3]:      #23719 +3 for right range
+for line in lines[11:q+12]:      #23719 +3 for right range
     last_15_chars = line[-17:].strip()
     last_15_chars_list.append(last_15_chars)
     seperate_row = []

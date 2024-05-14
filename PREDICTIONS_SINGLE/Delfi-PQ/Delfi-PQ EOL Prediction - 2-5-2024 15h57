@@ -16,10 +16,11 @@ TLE: 1 51074U 22002CU  22249.18023138  .00012168  00000-0  58828-3 0  9990
      2 51074  97.5004 316.5593 0014003 167.5224 192.6359 15.18675220 35708 
 
 =========================== SETTINGS =========================== 
-Integrator used:     Runge-Kutta 78, fixed time step 
-(Initial) time step: 100.0 [s] 
+Integrator used:        Runge-Kutta 78, fixed time step 
+(Initial) time step:    100.0 [s] 
 Atmospheric model used: NRLMSISE-00
 =========================== OUTPUTS =========================== 
 Remaining lifetime estimate: 483.40972222222223 [days] 
                              1.324410197869102 [years] 
-Estimated re-entry:          2024-01-02Runtime:          3.6669420043627423 [min] 
+Estimated re-entry:          2024-01-02
+Runtime:                     3.6669420043627423 [min] 
