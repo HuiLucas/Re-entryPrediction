@@ -493,6 +493,7 @@ with open('SW-kp-indeces.txt', 'r') as kp_indeces2:
             daily_predicted_data_list[mmm].kp[k] = daily_predicted_data_list[mmm].Ap[k]  
 
         for i2, row in enumerate(daily_predicted_data_list[mmm].kp):
+            row = list(str(row))
             for i in range(len(row)):
                 row[i] = row[i].replace( "0","0")
                 row[i] = row[i].replace("2","3")
@@ -523,7 +524,13 @@ with open('SW-kp-indeces.txt', 'r') as kp_indeces2:
                 row[i] = row[i].replace("300","87")
                 row[i] = row[i].replace("400","90")
                 row[i] = row[i].replace("500","93")
-            daily_predicted_data_list[mmm].kp[i2] = row
+            for j in range(len(row)):
+                if row[j] != "." and row[j] != " ":
+                    row[j] = int(row[j])
+                else:
+                    row[j] = 0
+            rownum = row[0]*10 + row[1]
+            daily_predicted_data_list[mmm].kp[i2] = rownum
                 
             ### Cp & C9 berekenen:
         
@@ -629,7 +636,48 @@ for j in range(0, 18):
         for k in range(8):
             daily_predicted_data_list[mmm+j].Ap[k] = daily_predicted_data_list[mmm+j].avg
          ### KP berekenen:
+        for k in range(8):
+            daily_predicted_data_list[mmm+j].kp[k] = daily_predicted_data_list[mmm+j].Ap[k]  
 
+        for i2, row in enumerate(daily_predicted_data_list[mmm+j].kp):
+            row = list(str(row))
+            for i in range(len(row)):
+                row[i] = row[i].replace( "0","0")
+                row[i] = row[i].replace("2","3")
+                row[i] = row[i].replace("3","7")
+                row[i] = row[i].replace("4","10")
+                row[i] = row[i].replace("5","13")
+                row[i] = row[i].replace("6","17")
+                row[i] = row[i].replace("7","20")
+                row[i] = row[i].replace("9","23")
+                row[i] = row[i].replace("12","27")
+                row[i] = row[i].replace("15","30")
+                row[i] = row[i].replace("18","33")
+                row[i] = row[i].replace("22","37")
+                row[i] = row[i].replace("27","40")
+                row[i] = row[i].replace("32","43")
+                row[i] = row[i].replace("39","47")
+                row[i] = row[i].replace("48","50")
+                row[i] = row[i].replace("56","53")
+                row[i] = row[i].replace("67","57")
+                row[i] = row[i].replace("80","60")
+                row[i] = row[i].replace("94","63")
+                row[i] = row[i].replace("111","67")
+                row[i] = row[i].replace("132","70")
+                row[i] = row[i].replace("154","73")
+                row[i] = row[i].replace("179","77")
+                row[i] = row[i].replace("207","80")
+                row[i] = row[i].replace("236","83")
+                row[i] = row[i].replace("300","87")
+                row[i] = row[i].replace("400","90")
+                row[i] = row[i].replace("500","93")
+            for j in range(len(row)):
+                if row[j] != "." and row[j] != " ":
+                    row[j] = int(row[j])
+                else:
+                    row[j] = 0
+            rownum = row[0]*10 + row[1]
+            daily_predicted_data_list[mmm+j].kp[i2] = rownum
 
         ### Cp & C9 berekenen:
         if 0 <= daily_predicted_data_list[j+mmm].avg <= 22:
