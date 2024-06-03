@@ -505,11 +505,12 @@ plt.tight_layout()
 plt.savefig(f'{dir_name}/Error vs Cd.png')
 
 
-plt.figure(figsize=(12, 7))  # Adjust the figure size
+plt.figure(figsize=(15, 12))  # Adjust the figure size
 plt.plot(range(len(SM_Comp_lst)), Diff_1_6, label="Difference for Cd=1.62", linewidth=2)
 plt.plot(range(len(ACT_Semi_major_lst)), Diff_2_2 , label="Difference for Cd=2.2", linewidth=2)
 plt.xlabel('Epoch Number', fontsize=35)
-plt.ylabel('Difference between predicted and actual semi-major axis [km]', fontsize=35) 
+plt.ylabel('Difference between predicted'
+           'and actual semi-major axis [km]', fontsize=35) 
 plt.legend(loc='lower left', fontsize=30)  # Increase legend fontsize
 plt.grid(True)
 plt.xticks(fontsize=30)
