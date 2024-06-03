@@ -461,6 +461,16 @@ for i in range(iterations):
     SM_Comp_lst_km = [i / 10**3 for i in SM_Comp_lst]
     ACT_Semi_major_lst_km = [i / 10**3 for i in ACT_Semi_major_lst]
 
+
+    if drag_coefficient == 1.6:
+        SM_Comp_lst_1_6 = SM_Comp_lst
+        ACT_Semi_major_lst_1_6 = ACT_Semi_major_lst
+        Diff_1_6 = [ACT_Semi_major_lst[i] - SM_Comp_lst[i] for i in range(len(ACT_Semi_major_lst))]
+    if drag_coefficient == 2.2:
+        SM_Comp_lst_2_2 = SM_Comp_lst
+        ACT_Semi_major_lst_2_2 = ACT_Semi_major_lst
+        Diff_2_2 = [ACT_Semi_major_lst[i] - SM_Comp_lst[i] for i in range(len(ACT_Semi_major_lst))]
+
 # Plot the predicted semi-major axis vs the actual semi-major axis
     plt.figure(figsize=(12, 7))  # Adjust the figure size
     plt.plot(range(len(SM_Comp_lst)), SM_Comp_lst_km, label="Predicted Semi-Major Axis", linewidth=2)
@@ -493,3 +503,18 @@ plt.xticks(fontsize=30)
 plt.yticks(fontsize=30)
 plt.tight_layout()
 plt.savefig(f'{dir_name}/Error vs Cd.png')
+
+
+plt.figure(figsize=(12, 7))  # Adjust the figure size
+plt.plot(range(len(SM_Comp_lst)), Diff_1_6, label="Difference for Cd=1.62", linewidth=2)
+plt.plot(range(len(ACT_Semi_major_lst)), Diff_2_2 , label="Difference for Cd=2.2", linewidth=2)
+plt.xlabel('Epoch Number', fontsize=35)
+plt.ylabel('Difference between predicted and actual semi-major axis [km]', fontsize=35) 
+plt.legend(loc='lower left', fontsize=30)  # Increase legend fontsize
+plt.grid(True)
+plt.xticks(fontsize=30)
+plt.yticks(fontsize=30)
+plt.tight_layout()  # Adjust the layout to make sure everything fits
+plt.savefig(f'{dir_name}/Difference between real and predicted semi-major axis.png')
+
+
