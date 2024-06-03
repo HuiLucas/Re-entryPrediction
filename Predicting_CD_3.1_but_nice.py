@@ -465,11 +465,11 @@ for i in range(iterations):
     if drag_coefficient == 1.6:
         SM_Comp_lst_1_6 = SM_Comp_lst
         ACT_Semi_major_lst_1_6 = ACT_Semi_major_lst
-        Diff_1_6 = [ACT_Semi_major_lst[i] - SM_Comp_lst[i] for i in range(len(ACT_Semi_major_lst))]
+        Diff_1_6 = [(ACT_Semi_major_lst[i] - SM_Comp_lst[i])/1000 for i in range(len(ACT_Semi_major_lst))]
     if drag_coefficient == 2.2:
         SM_Comp_lst_2_2 = SM_Comp_lst
         ACT_Semi_major_lst_2_2 = ACT_Semi_major_lst
-        Diff_2_2 = [ACT_Semi_major_lst[i] - SM_Comp_lst[i] for i in range(len(ACT_Semi_major_lst))]
+        Diff_2_2 = [(ACT_Semi_major_lst[i] - SM_Comp_lst[i])/1000 for i in range(len(ACT_Semi_major_lst))]
 
 # Plot the predicted semi-major axis vs the actual semi-major axis
     plt.figure(figsize=(12, 7))  # Adjust the figure size
