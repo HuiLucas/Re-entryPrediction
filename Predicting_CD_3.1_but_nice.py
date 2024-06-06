@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 import math
 import matplotlib
 from matplotlib import pyplot as plt
+import matplotlib.ticker as ticker
 
 
 # Load tudatpy modules
@@ -21,6 +22,10 @@ from tudatpy.astro.time_conversion import DateTime
 import sys
 import os
 
+
+
+
+
 """-------------------------------"""
 """-----------Inputs--------------"""
 """-------------------------------"""
@@ -29,8 +34,8 @@ satellite = "Delfi-C3"
 
 TLE_Data = 'TLE-Data_C3.txt'
 
-Folder = "Error vs Cd Delfi-C3/"
-#Folder = "Test/"
+#Folder = "Error vs Cd Delfi-C3/"
+Folder = "Good Graphs/"
 
 
 TLE1_number = 5350
@@ -39,10 +44,10 @@ TLE2_number = 5650
 Mass = 2.2
 
 reference_area = 0.08 # Average projection area of a 3U CubeSat
-drag_coefficient_lower = 1.56
-drag_coefficient_upper = 1.7
+drag_coefficient_lower = 1
+drag_coefficient_upper = 2.2
 
-iterations = 8
+iterations = 25
 
 radiation_pressure_coefficient = 1.1
 
@@ -55,6 +60,12 @@ Comparisons = 100 #Number of Epochs you compare to the TLE data
 """-------------------------------"""
 """-----------TLE Code------------"""
 """-------------------------------"""
+
+
+# Create a function that converts large numbers to a more readable format
+def format_func(value, tick_number):
+    return f'{value / 1e6} *10^3'
+
 
 if (TLE2_number - TLE1_number)%Comparisons != 0:
     print("\n")
@@ -446,27 +457,65 @@ for i in range(iterations):
         MSE = MSE + ((ACT_Semi_major_lst[i] - SM_Comp_lst[i])**2)
     MSE = MSE/(len(SM_Comp_lst)*10**6)
     Error.append(MSE)
+    
+    SM_Comp_lst_km = [i / 10**3 for i in SM_Comp_lst]
+    ACT_Semi_major_lst_km = [i / 10**3 for i in ACT_Semi_major_lst]
+
+
+    if drag_coefficient == 1.6:
+        SM_Comp_lst_1_6 = SM_Comp_lst
+        ACT_Semi_major_lst_1_6 = ACT_Semi_major_lst
+        Diff_1_6 = [(ACT_Semi_major_lst[i] - SM_Comp_lst[i])/1000 for i in range(len(ACT_Semi_major_lst))]
+    if drag_coefficient == 2.2:
+        SM_Comp_lst_2_2 = SM_Comp_lst
+        ACT_Semi_major_lst_2_2 = ACT_Semi_major_lst
+        Diff_2_2 = [(ACT_Semi_major_lst[i] - SM_Comp_lst[i])/1000 for i in range(len(ACT_Semi_major_lst))]
 
 # Plot the predicted semi-major axis vs the actual semi-major axis
-    plt.figure(figsize=(9, 5))
-    plt.title("Real vs Predicted Semi-Major Axis for a drag coefficient of " + str(drag_coefficient))
-    plt.plot(range(len(SM_Comp_lst)), SM_Comp_lst, label="Predicted Semi-Major Axis")
-    plt.plot(range(len(ACT_Semi_major_lst)), ACT_Semi_major_lst, label="Real Semi-Major Axis")
-    plt.xlabel('Epoch Number')
-    plt.ylabel('Semi-Major Axis')
-    plt.legend(loc = 'lower left')
+    plt.figure(figsize=(12, 7))  # Adjust the figure size
+    plt.plot(range(len(SM_Comp_lst)), SM_Comp_lst_km, label="Predicted Semi-Major Axis", linewidth=2)
+    plt.plot(range(len(ACT_Semi_major_lst)), ACT_Semi_major_lst_km , label="Real Semi-Major Axis", linewidth=2)
+
+    # Apply the function to the y-axis
+    #ax = plt.gca()
+    #ax.yaxis.set_major_formatter(ticker.FuncFormatter(format_func))
+
+    plt.xlabel('Epoch Number', fontsize=35)
+    plt.ylabel('Semi-Major Axis [km]', fontsize=35)  # Change 'm' to 'M' for million
+    plt.legend(loc='lower left', fontsize=30)  # Increase legend fontsize
     plt.grid(True)
+    plt.xticks(fontsize=30)
+    plt.yticks(fontsize=30)
+    plt.tight_layout()  # Adjust the layout to make sure everything fits
     plt.savefig(f'{dir_name}/Real vs Predicted Semi-Major Axis {round(drag_coefficient, 3)}.png')
 
     print("the Mean Squared Error is:",MSE)
 
 
 # Plot the error vs the drag coefficient 
-plt.figure(figsize=(9, 5))
-plt.title("DC vs Error.")
-plt.plot(DC, Error)
-plt.xlabel('DC')
-plt.ylabel('Error')
-plt.grid()
+plt.figure(figsize=(12, 7))  # Adjust the figure size
+#plt.title("DC vs Error.", fontsize=30)
+plt.plot(DC, Error, linewidth=3)
+plt.xlabel('Cd', fontsize=35)
+plt.ylabel('Error [km^2]', fontsize=35)  # Corrected 'frontsize' to 'fontsize'
+plt.grid(True)  # Adjust the layout to make sure everything fits
+plt.xticks(fontsize=30)
+plt.yticks(fontsize=30)
 plt.tight_layout()
 plt.savefig(f'{dir_name}/Error vs Cd.png')
+
+
+plt.figure(figsize=(15, 12))  # Adjust the figure size
+plt.plot(range(len(SM_Comp_lst)), Diff_1_6, label="Difference for Cd=1.62", linewidth=2)
+plt.plot(range(len(ACT_Semi_major_lst)), Diff_2_2 , label="Difference for Cd=2.2", linewidth=2)
+plt.xlabel('Epoch Number', fontsize=35)
+plt.ylabel('Difference between predicted'
+           'and actual semi-major axis [km]', fontsize=35) 
+plt.legend(loc='lower left', fontsize=30)  # Increase legend fontsize
+plt.grid(True)
+plt.xticks(fontsize=30)
+plt.yticks(fontsize=30)
+plt.tight_layout()  # Adjust the layout to make sure everything fits
+plt.savefig(f'{dir_name}/Difference between real and predicted semi-major axis.png')
+
+
