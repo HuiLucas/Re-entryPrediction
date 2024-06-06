@@ -37,8 +37,8 @@ def get_tle(norad_cat_id, date):
 
     # Define the login data
     login_data = {
-        'identity': '',
-        'password': ''}
+        'identity': 'robbe.truyts@icloud.com',
+        'password': 'STWw20230923!--'}
     
     NORAD_CAT_ID = norad_cat_id
     DATE = date
@@ -96,7 +96,7 @@ PQ_data =   ["Delfi-PQ",   51074, 0.6, 0.011, 2.44, 1.1,  "2022-01-13"] # True P
 ###########################################################################################
 ##### SETUP VARIABLES #####################################################################
 dataset = C3_data                                   # For automatic data input
-tle_date = "2022-05-20--2022-05-21"                 # Date for TLE (One-day interval, takes first TLE in it)
+tle_date = "2022-09-06--2022-09-07"                 # Date for TLE (One-day interval, takes first TLE in it)
 propagation_duration = 9999                         # How long to propagate for at most [days] (in case something goes wrong, so that the code doesn't keep running until the end of time)
 fixed_step_size = 100.0                             # Step size for integrator
 
@@ -108,7 +108,7 @@ reference_area = dataset[3]                         # Reference area for aerodyn
 drag_coefficient = dataset[4]                       # Drag coefficient [-]
 reference_area_radiation = dataset[3]               # Reference area for radiation pressure [m²]
 radiation_pressure_coefficient = dataset[5]         # Radiation pressure coefficient [-]
-solardata = "Historical"                            # Name of solar data file, if historical just historical
+solardata = "Old predictions"                       # Historical if historical, predicted if predicted
 #####^ SETUP VARIABLES ^###################################################################
 ###########################################################################################
 
@@ -149,6 +149,7 @@ body_settings = environment_setup.get_default_body_settings(
     global_frame_origin,
     global_frame_orientation)
 
+# Atmospheric model, INPUT SOLAR WEATHER DATA FILE HERE IF USING PREDICTED (space_weather_file ="SW-20220906-Final.txt")
 body_settings.get("Earth").atmosphere_settings = environment_setup.atmosphere.nrlmsise00(space_weather_file ="SW-20220906-Final.txt")
 atmomodel = "NRLMSISE-00"
 
@@ -262,11 +263,13 @@ dep_vars_array = result2array(dep_vars)
 
 # Plot altitude as function of time and save it
 Time = (dep_vars_array[:,0] - datetime_to_tudat(date1).epoch()) / (3600 * 24) #In days
+altitude = dep_vars_array[:, 1] / 1000
+now = datetime.now()
+np.save(f"PREDICTIONS_SINGLE\{satellite}\Time vector starting {date1.date()} - {now.day}-{now.month}-{now.year} {now.hour}h{now.minute}", Time)
+np.save(f"PREDICTIONS_SINGLE\{satellite}\Altitude vector - {now.day}-{now.month}-{now.year} {now.hour}h{now.minute}", altitude)
 EOL_estimate = Time[-1]
 EOL_date = datetime_to_python(date_time_from_epoch(EOL_estimate * (3600 * 24) + datetime_to_tudat(date1).epoch())).date()
-now = datetime.now()
 print(f"Final remaining lifetime estimate: {EOL_estimate} days. This estimates re-entry on {EOL_date}")
-altitude = dep_vars_array[:, 1] / 1000
 plt.figure(figsize=(9, 5))
 plt.title(f"{satellite} altitude, starting from {date1.date()}.")
 plt.plot(Time, altitude)
