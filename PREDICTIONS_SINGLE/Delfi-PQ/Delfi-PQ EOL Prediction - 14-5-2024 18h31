@@ -1,0 +1,27 @@
+============== End-of-Life Prediction for Delfi-PQ ==============
+### File creation on 2024-05-14 18:31:09.027722 
+### Associated graph: Delfi-PQ altitude, starting from 2022-09-06. - 14-5-2024 18h31 
+
+============================ INPUTS ============================ 
+Satellite name:                    Delfi-PQ 
+NORAD Catalog ID:                  51074 
+Propagation starting date:         2022-09-06 
+Satellite mass:                    0.6 [kg] 
+Aerodynamic reference area:        0.011 [m^2] 
+Drag coefficient:                  2.37 
+Radiation Pressure reference area: 0.011 [m^2] 
+Radiation pressure coefficient:    1.1 
+
+TLE: 1 51074U 22002CU  22249.18023138  .00012168  00000-0  58828-3 0  9990 
+     2 51074  97.5004 316.5593 0014003 167.5224 192.6359 15.18675220 35708 
+
+=========================== SETTINGS =========================== 
+Integrator used:           Runge-Kutta 78, fixed time step 
+Time step:                 100.0 [s] 
+Atmospheric model used:    NRLMSISE-00 
+Solar radiation data used: Old predictions
+=========================== OUTPUTS =========================== 
+Remaining lifetime estimate: 708.2488425925926 [days] 
+                             1.9404077879249113 [years] 
+Estimated re-entry:          2024-08-14 
+Runtime:                     5.565531357129415 [min] 
