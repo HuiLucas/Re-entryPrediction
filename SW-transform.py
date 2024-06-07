@@ -170,7 +170,7 @@ for i in range(0, q):      #23719
 
 ############ AVG #############################################
 
-for i in range(0, q-1):     #23719 
+for i in range(0, q):     #23719 
     observed_data_list[i].avg = int(np.mean(observed_data_list[i].Ap))
     print(i)
 
@@ -244,7 +244,7 @@ for i in range(len(average_Ap)):
 
 
 
-for i in range(0, q-1):      #23719
+for i in range(len(average_Ap)):      #23719
     observed_data_list[i].cp = average_Ap[i]
     print(i)
 
@@ -366,36 +366,61 @@ with open('SW-kp-indeces.txt', 'r') as kp_indeces2:
 
     f107predicted_list = []
     k=0
+    ko=0
     for i in range(0, 45):
-        if i + 23904 < len(lines2):
+        if i + 23904 < len(lines2) and False == True:
             f107predicted = list(lines2[i+23904])[11:14]
             for j in range(len(f107predicted)):
                 f107predicted[j] = int(f107predicted[j])
             f107predictednum = f107predicted[0]*100 + f107predicted[1]*10 + f107predicted[2]    
             f107predicted_list.append(f107predictednum)
         else :
-            with open('SW-montlypred', 'r') as monthlypred:
-                lines4 = monthlypred.readlines()
-                f107predicteda = list(lines4[len(lines2)-23904-794-520])[31:36] # f107 at 1-10-2022
-                f107predictedb = list(lines4[len(lines2)-23904-794-520+1])[31:36]   # f107 at 1-11-2022
-                
-                for j in range(len(f107predicteda)):
-                    if f107predicteda[j] != "." and f107predicteda[j] != " ":
-                        f107predicteda[j] = int(f107predicteda[j])
-                    else:
-                        f107predicteda[j] = 0
-                f107predicteda = f107predicteda[0]*100 + f107predicteda[1]*10 + f107predicteda[2] + f107predicteda[4]/10
-                for j in range(len(f107predictedb)):
-                    if f107predictedb[j] != "." and f107predictedb[j] != " ":
-                        f107predictedb[j] = int(f107predictedb[j])
-                    else:
-                        f107predictedb[j] = 0
-                f107predictedb = f107predictedb[0]*100 + f107predictedb[1]*10 + f107predictedb[2] + f107predictedb[4]/10
-                #print('pred', f107predicteda, f107predictedb)
-                #interpolate:
-                day1 = 6 # 6-1-2022 (First interpolated day)
-                f107predicted_list.append(np.round(f107predicteda + (f107predictedb-f107predicteda)/(31) * (k + day1-1),1))
-                k+=1
+            if i > 26:    
+                with open('SW-montlypred', 'r') as monthlypred:
+                    lines4 = monthlypred.readlines()
+                    f107predicteda = list(lines4[len(lines2)-23904-794-520])[31:36] # f107 at 1-10-2022
+                    f107predictedb = list(lines4[len(lines2)-23904-794-520+1])[31:36]   # f107 at 1-11-2022
+                    
+                    for j in range(len(f107predicteda)):
+                        if f107predicteda[j] != "." and f107predicteda[j] != " ":
+                            f107predicteda[j] = int(f107predicteda[j])
+                        else:
+                            f107predicteda[j] = 0
+                    f107predicteda = f107predicteda[0]*100 + f107predicteda[1]*10 + f107predicteda[2] + f107predicteda[4]/10
+                    for j in range(len(f107predictedb)):
+                        if f107predictedb[j] != "." and f107predictedb[j] != " ":
+                            f107predictedb[j] = int(f107predictedb[j])
+                        else:
+                            f107predictedb[j] = 0
+                    f107predictedb = f107predictedb[0]*100 + f107predictedb[1]*10 + f107predictedb[2] + f107predictedb[4]/10
+                    #print('pred', f107predicteda, f107predictedb)
+                    #interpolate:
+                    day1 = 6 #6 # 6-10-2022 (First interpolated day)
+                    f107predicted_list.append(np.round(f107predicteda + (f107predictedb-f107predicteda)/(31) * (k + day1-1),1))
+                    k+=1
+            else:
+                with open('SW-montlypred', 'r') as monthlypred:
+                    lines4 = monthlypred.readlines()
+                    f107predicteda = list(lines4[len(lines2)-23904-794-520-1])[31:36] # f107 at 1-9-2022
+                    f107predictedb = list(lines4[len(lines2)-23904-794-520])[31:36]   # f107 at 1-10-2022
+                    
+                    for j in range(len(f107predicteda)):
+                        if f107predicteda[j] != "." and f107predicteda[j] != " ":
+                            f107predicteda[j] = int(f107predicteda[j])
+                        else:
+                            f107predicteda[j] = 0
+                    f107predicteda = f107predicteda[0]*100 + f107predicteda[1]*10 + f107predicteda[2] + f107predicteda[4]/10
+                    for j in range(len(f107predictedb)):
+                        if f107predictedb[j] != "." and f107predictedb[j] != " ":
+                            f107predictedb[j] = int(f107predictedb[j])
+                        else:
+                            f107predictedb[j] = 0
+                    f107predictedb = f107predictedb[0]*100 + f107predictedb[1]*10 + f107predictedb[2] + f107predictedb[4]/10
+                    #print('pred', f107predicteda, f107predictedb)
+                    #interpolate:
+                    day1 = 1 #6 # 6-10-2022 (First interpolated day)
+                    f107predicted_list.append(np.round(f107predicteda + (f107predictedb-f107predicteda)/(30) * (ko + day1-1),1))
+                    ko+=1
 
 with open('SW-montlypred', 'r') as monthlypred:
     lines4 = monthlypred.readlines()
@@ -1259,48 +1284,48 @@ for j in range(90, 23719):
 
 for i in range(0, 209):
     average1 = 0
-    if i<209-40:
-        for j in range(-40, 41):
+    if i<209-1: #40:
+        for j in range(-1, 2): #range(-40, 41):
             if i+j>=0:
-                average1 += monthly_predicted_data_list[i+j].F10_7_obs/81
+                average1 += monthly_predicted_data_list[i+j].F10_7_obs/3 #81
             else:
-                average1 += daily_predicted_data_list[i+j+45].F10_7_obs/81
+                average1 += daily_predicted_data_list[i+j+45].F10_7_obs/3 #81
     else:
-        for j in range(-40, 209-i):
+        for j in range(-1, 209-i): #range(-40, 209-i):
             if i+j>=0:
-                average1 += monthly_predicted_data_list[i+j].F10_7_obs/(40+209-i)
+                average1 += monthly_predicted_data_list[i+j].F10_7_obs/(1+209-i) #(40+209-i)
             else:
-                average1 += daily_predicted_data_list[i+j+45].F10_7_obs/(40+209-i)
+                average1 += daily_predicted_data_list[i+j+45].F10_7_obs/(1+209-i) #(40+209-i)
     monthly_predicted_data_list[i].ctr81_obs = average1
     average2 = 0
-    for j in range(-80, 1):
+    for j in range(-2,1): #range(-80, 1):
         if i+j>=0:
-            average2 += monthly_predicted_data_list[i+j].F10_7_obs/81
+            average2 += monthly_predicted_data_list[i+j].F10_7_obs/3 #81
         else:
-            average2 += observed_data_list[i+j+23719].F10_7_obs/81
+            average2 += observed_data_list[i+j+23719].F10_7_obs/3 #81
     monthly_predicted_data_list[i].lst81_obs = average2
 
 for i in range(0, 209): 
     average1 = 0
     if i<209-40:
-        for j in range(-40, 41):
+        for j in range(-1, 2): #range(-40, 41):
             if i+j>=0:
-                average1 += monthly_predicted_data_list[i+j].F10_7_adj/81
+                average1 += monthly_predicted_data_list[i+j].F10_7_adj/3 #81
             else:
-                average1 += daily_predicted_data_list[i+j+45].F10_7_adj/81
+                average1 += daily_predicted_data_list[i+j+45].F10_7_adj/3 #81
     else:
-        for j in range(-40, 209-i):
+        for j in range(-1, 209-i): #range(-40, 209-i):
             if i+j>=0:
-                average1 += monthly_predicted_data_list[i+j].F10_7_adj/(40+209-i)
+                average1 += monthly_predicted_data_list[i+j].F10_7_adj/(1+209-i) #(40+209-i)
             else:
-                average1 += daily_predicted_data_list[i+j+45].F10_7_adj/(40+209-i)
+                average1 += daily_predicted_data_list[i+j+45].F10_7_adj/(1+209-i) #(40+209-i)
     monthly_predicted_data_list[i].ctr81_adj = average1
     average2 = 0
-    for j in range(-80, 1):
+    for j in range(-2,1): #range(-80, 1):
         if i+j>=0:
-            average2 += monthly_predicted_data_list[i+j].F10_7_adj/81
+            average2 += monthly_predicted_data_list[i+j].F10_7_adj/3 #81
         else:
-            average2 += observed_data_list[i+j+23719].F10_7_adj/81
+            average2 += observed_data_list[i+j+23719].F10_7_adj/3 #81
     monthly_predicted_data_list[i].lst81_adj = average2
 
 

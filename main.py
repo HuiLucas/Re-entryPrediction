@@ -39,7 +39,7 @@ import datetime
 import os
 import time
 from pyuploadcare import Uploadcare, File
-uploadcare = Uploadcare(public_key='bc7d47c3effc69b4eeb6', secret_key='b055eae9641402861ca4')
+# uploadcare = Uploadcare(public_key='bc7d47c3effc69b4eeb6', secret_key='b055eae9641402861ca4')
 # import inspect    # Extract coordinates
  
 
@@ -87,7 +87,7 @@ def simulate(CD=1.8):
         global_frame_origin,
         global_frame_orientation)
 
-    body_settings.get("Earth").atmosphere_settings = environment_setup.atmosphere.nrlmsise00(space_weather_file ="SW-20220906-Final.txt")
+    body_settings.get("Earth").atmosphere_settings = environment_setup.atmosphere.nrlmsise00(space_weather_file ="SW-20220906_V3.txt")
 
     # Create system of selected celestial bodies
     bodies = environment_setup.create_system_of_bodies(body_settings)
@@ -123,7 +123,7 @@ def simulate(CD=1.8):
 
     # Create radiation pressure settings, and add to vehicle
     reference_area_radiation = 0.08  # Average projection area of a 3U CubeSat
-    radiation_pressure_coefficient = 1.2
+    radiation_pressure_coefficient = 1.1
     occulting_bodies_dict = dict()
     occulting_bodies_dict[ "Sun" ] = [ "Earth" ]
     vehicle_target_settings = environment_setup.radiation_pressure.cannonball_radiation_target(
@@ -209,6 +209,8 @@ def simulate(CD=1.8):
     )
     # OVERRIDE THE INITIAL STATE!!
     initTLE = environment.Tle("1 32789U 08021G   22249.01876123  .00014642  00000-0  77860-3 0  9995", "2 32789  97.3369 272.4752 0011260  53.4348 306.7920 15.15311550784120")
+    # OVERRIDE AGAIN
+    #initTLE = environment.Tle("1 32789U 08021G   22249.01876123  .00014642  00000-0  77860-3 0  9995", "2 32789  97.3369 272.4752 0011260  53.4348 306.7920 15.15311550784120")
     initial_ephemeris = environment.TleEphemeris( "Earth", "J2000", initTLE, False )
     initial_state = initial_ephemeris.cartesian_state(simulation_start_epoch)
     #print(element_conversion.teme_state_to_j2000(simulation_start_epoch, initial_state), element_conversion.cartesian_to_keplerian(element_conversion.teme_state_to_eclipj2000(simulation_start_epoch, initial_state), bodies.get("Earth").gravitational_parameter))
@@ -367,8 +369,7 @@ def simulate(CD=1.8):
     # altitude over time
     altitude = dep_vars_array[:,19]
     dates = [time_conversion.julian_day_to_calendar_date(start_date.julian_day()) + datetime.timedelta(days=day) for day in time_days]
-    return dates[-1] 
-if False == True:
+     
     plt.figure(figsize=(9, 5))
     plt.title("Altitude of Delfi-C3 over the course of propagation.")
     plt.plot(dates, altitude)
@@ -448,7 +449,7 @@ if False == True:
         ax.set_xlim([min(time_days), max(time_days)])
         ax.grid()
     plt.tight_layout()
-    #plt.show()
+    plt.show()
 
 
     # ### Accelerations over time
@@ -494,7 +495,7 @@ if False == True:
     plt.grid()
     plt.tight_layout()
     #plt.show()
-
+    return dates[-1]
 
 
 if __name__ == "__main__":
@@ -502,7 +503,7 @@ if __name__ == "__main__":
     N = 1 #int(input("Number of MC cycles")) #3 #200
     print(N)
     # CD values to test
-    CD_values = np.array([1.5, 1.65, 1.8]) # np.random.normal(1.8, 0.1, N)
+    CD_values = np.array([1.62]) # np.random.normal(1.8, 0.1, N)
     n_cores = mp.cpu_count()//3
     with mp.get_context("spawn").Pool(n_cores) as pool:
         outputs = progress_starmap(simulate, [(CD,) for CD in CD_values])
@@ -524,8 +525,8 @@ if __name__ == "__main__":
             continue
         plt.savefig(newname)
         break
-    with open(newname, 'rb') as file_object:
-        ucare_file = uploadcare.upload(file_object)
+    #with open(newname, 'rb') as file_object:
+        #ucare_file = uploadcare.upload(file_object)
     time.sleep(180)
     #plt.savefig('reentry_times2.png')
     #plt.show()
