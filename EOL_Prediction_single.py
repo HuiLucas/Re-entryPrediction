@@ -89,16 +89,16 @@ spice.load_standard_kernels()
 
 
 # Useful datasets: [name, norad_cat_id, mass, reference area, drag coefficient, radiation pressure coefficient, launch date]
-C3_data =   ["Delfi-C3",   32789, 2.2, 0.080, 1.6, 1.1,  "2008-04-28"] # True C3 re-entry: 2023-11-13 (433 days after 2022-09-06)(799 days after 2021-09-06)(4086 days after 2012-09-06)
+C3_data =   ["Delfi-C3",   32789, 2.2, 0.080, 2.2, 1.1,  "2008-04-28"] # True C3 re-entry: 2023-11-13 (433 days after 2022-09-06)(799 days after 2021-09-06)(4086 days after 2012-09-06)
 N3XT_data = ["Delfi-N3XT", 39428, 2.8, 0.087, 3.1, 1.1,  "2013-11-21"] 
-PQ_data =   ["Delfi-PQ",   51074, 0.6, 0.011, 2.44, 1.1,  "2022-01-13"] # True PQ re-entry: 2024-01-09 (491 days after 2022-09-06)
+PQ_data =   ["Delfi-PQ",   51074, 0.6, 0.011, 2.37, 1.1,  "2022-01-13"] # True PQ re-entry: 2024-01-09 (491 days after 2022-09-06)
 
 ###########################################################################################
 ##### SETUP VARIABLES #####################################################################
 dataset = C3_data                                   # For automatic data input
 tle_date = "2022-09-06--2022-09-07"                 # Date for TLE (One-day interval, takes first TLE in it)
 propagation_duration = 9999                         # How long to propagate for at most [days] (in case something goes wrong, so that the code doesn't keep running until the end of time)
-fixed_step_size = 100.0                             # Step size for integrator
+fixed_step_size = 120.0                             # Step size for integrator
 
 # Set manually if needed, otherwise change dataset
 satellite = dataset[0]                              # Satellite name
@@ -108,7 +108,7 @@ reference_area = dataset[3]                         # Reference area for aerodyn
 drag_coefficient = dataset[4]                       # Drag coefficient [-]
 reference_area_radiation = dataset[3]               # Reference area for radiation pressure [m²]
 radiation_pressure_coefficient = dataset[5]         # Radiation pressure coefficient [-]
-solardata = "Old predictions"                       # Historical if historical, predicted if predicted
+solardata = "Historical"                       # Historical if historical, old predictions if old predictions
 #####^ SETUP VARIABLES ^###################################################################
 ###########################################################################################
 
@@ -149,8 +149,8 @@ body_settings = environment_setup.get_default_body_settings(
     global_frame_origin,
     global_frame_orientation)
 
-# Atmospheric model, INPUT SOLAR WEATHER DATA FILE HERE IF USING PREDICTED (space_weather_file ="SW-20220906-Final.txt")
-body_settings.get("Earth").atmosphere_settings = environment_setup.atmosphere.nrlmsise00(space_weather_file ="SW-20220906-Final.txt")
+# Atmospheric model, INPUT SOLAR WEATHER DATA FILE HERE IF USING PREDICTED (space_weather_file ="SW-20220906_V3.txt")
+body_settings.get("Earth").atmosphere_settings = environment_setup.atmosphere.nrlmsise00()
 atmomodel = "NRLMSISE-00"
 
 # Create system of selected celestial bodies
@@ -265,11 +265,12 @@ dep_vars_array = result2array(dep_vars)
 Time = (dep_vars_array[:,0] - datetime_to_tudat(date1).epoch()) / (3600 * 24) #In days
 altitude = dep_vars_array[:, 1] / 1000
 now = datetime.now()
-np.save(f"PREDICTIONS_SINGLE\{satellite}\Time vector starting {date1.date()} - {now.day}-{now.month}-{now.year} {now.hour}h{now.minute}", Time)
-np.save(f"PREDICTIONS_SINGLE\{satellite}\Altitude vector - {now.day}-{now.month}-{now.year} {now.hour}h{now.minute}", altitude)
+np.save(f"PREDICTIONS_SINGLE\Time - stepsize={fixed_step_size}", Time)
+np.save(f"PREDICTIONS_SINGLE\Altitude - stepsize={fixed_step_size}", altitude)
 EOL_estimate = Time[-1]
 EOL_date = datetime_to_python(date_time_from_epoch(EOL_estimate * (3600 * 24) + datetime_to_tudat(date1).epoch())).date()
 print(f"Final remaining lifetime estimate: {EOL_estimate} days. This estimates re-entry on {EOL_date}")
+"""
 plt.figure(figsize=(9, 5))
 plt.title(f"{satellite} altitude, starting from {date1.date()}.")
 plt.plot(Time, altitude)
@@ -278,14 +279,15 @@ plt.ylabel('Altitude [km]')
 plt.xlim([min(Time), max(Time)])
 plt.grid()
 plt.tight_layout()
-plt.savefig(f"PREDICTIONS_SINGLE\{satellite}\{satellite} altitude, starting from {date1.date()}. - {now.day}-{now.month}-{now.year} {now.hour}h{now.minute}.png")
-
+plt.savefig(f"PREDICTIONS_SINGLE\LATEST\{satellite} altitude, starting from {date1.date()}. - {now.day}-{now.month}-{now.year} {now.hour}h{now.minute}.png")
+"""
 endtime = time.time()
 runtime = endtime - starttime
 print(f"Ran in {runtime/60} minutes")
 
 # Create text file with all inputs and outputs
-ff = open(f"PREDICTIONS_SINGLE\{satellite}\{satellite} EOL Prediction - {now.day}-{now.month}-{now.year} {now.hour}h{now.minute}", "w")
+"""
+ff = open(f"PREDICTIONS_SINGLE\LATEST\{satellite} EOL Prediction - {now.day}-{now.month}-{now.year} {now.hour}h{now.minute}", "w")
 ff.write(f"============== End-of-Life Prediction for {satellite} ==============\n")
 ff.write(f"### File creation on {datetime.now()} \n")
 ff.write(f"### Associated graph: {satellite} altitude, starting from {date1.date()}. - {now.day}-{now.month}-{now.year} {now.hour}h{now.minute} \n")
@@ -314,6 +316,6 @@ ff.write(f"Remaining lifetime estimate: {EOL_estimate} [days] \n")
 ff.write(f"                             {EOL_estimate/365} [years] \n")
 ff.write(f"Estimated re-entry:          {EOL_date} \n")
 ff.write(f"Runtime:                     {runtime/60} [min] \n")
-
+"""
 # Play sound to notify of code being finished running
 playsound("microwaveping.mp3")
