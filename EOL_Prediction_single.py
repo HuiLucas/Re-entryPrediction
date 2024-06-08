@@ -98,7 +98,7 @@ PQ_data =   ["Delfi-PQ",   51074, 0.6, 0.011, 2.37, 1.1,  "2022-01-13"] # True P
 dataset = C3_data                                   # For automatic data input
 tle_date = "2022-09-06--2022-09-07"                 # Date for TLE (One-day interval, takes first TLE in it)
 propagation_duration = 9999                         # How long to propagate for at most [days] (in case something goes wrong, so that the code doesn't keep running until the end of time)
-fixed_step_size = 120.0                             # Step size for integrator
+fixed_step_size = 180.0                             # Step size for integrator
 
 # Set manually if needed, otherwise change dataset
 satellite = dataset[0]                              # Satellite name
