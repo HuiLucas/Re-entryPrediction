@@ -35,10 +35,10 @@ def get_tle(norad_cat_id, date):
     # EXAMPLE: get_tle(32789, 2022-09-06)
     # OUTPUT: TLE in lines one and two for entering into tudatpy TLE
 
-    # Define the login data
+    # DEFINE LOGIN DATA FOR SPACETRACK; USE YOUR OWN ACCOUNT
     login_data = {
-        'identity': 'robbe.truyts@icloud.com',
-        'password': 'STWw20230923!--'}
+        'identity': '', # email address
+        'password': ''} # password
     
     NORAD_CAT_ID = norad_cat_id
     DATE = date
