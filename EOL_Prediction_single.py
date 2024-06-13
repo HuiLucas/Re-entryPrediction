@@ -98,7 +98,7 @@ PQ_data =   ["Delfi-PQ",   51074, 0.6, 0.011, 2.37, 1.1,  "2022-01-13"] # True P
 dataset = C3_data                                   # For automatic data input
 tle_date = "2022-09-06--2022-09-07"                 # Date for TLE (One-day interval, takes first TLE in it)
 propagation_duration = 9999                         # How long to propagate for at most [days] (in case something goes wrong, so that the code doesn't keep running until the end of time)
-fixed_step_size = 180.0                             # Step size for integrator
+fixed_step_size = 100.0                             # Step size for integrator
 
 # Set manually if needed, otherwise change dataset
 satellite = dataset[0]                              # Satellite name
@@ -108,7 +108,7 @@ reference_area = dataset[3]                         # Reference area for aerodyn
 drag_coefficient = dataset[4]                       # Drag coefficient [-]
 reference_area_radiation = dataset[3]               # Reference area for radiation pressure [m²]
 radiation_pressure_coefficient = dataset[5]         # Radiation pressure coefficient [-]
-solardata = "Historical"                       # Historical if historical, old predictions if old predictions
+solardata = "Old predictions"                       # "Historical" if historical, "Old predictions" if old predictions
 #####^ SETUP VARIABLES ^###################################################################
 ###########################################################################################
 
@@ -150,7 +150,10 @@ body_settings = environment_setup.get_default_body_settings(
     global_frame_orientation)
 
 # Atmospheric model, INPUT SOLAR WEATHER DATA FILE HERE IF USING PREDICTED (space_weather_file ="SW-20220906_V3.txt")
-body_settings.get("Earth").atmosphere_settings = environment_setup.atmosphere.nrlmsise00()
+if solardata == "Old predictions":
+    body_settings.get("Earth").atmosphere_settings = environment_setup.atmosphere.nrlmsise00(space_weather_file ="SW-20220906_V3.txt")
+else:
+    body_settings.get("Earth").atmosphere_settings = environment_setup.atmosphere.nrlmsise00()
 atmomodel = "NRLMSISE-00"
 
 # Create system of selected celestial bodies
@@ -217,7 +220,6 @@ acceleration_models = propagation_setup.create_acceleration_models(
 tle = environment.Tle(line1, line2)
 ephemeris = environment.TleEphemeris( "Earth", "J2000", tle, False )
 initial_state = ephemeris.cartesian_state( simulation_start_epoch )
-#print(element_conversion.cartesian_to_keplerian(initial_state, bodies.get("Earth").gravitational_parameter))
 
 # Define list of dependent variables to save
 dependent_variables_to_save = [
@@ -230,12 +232,7 @@ termination_altitude = propagation_setup.propagator.dependent_variable_terminati
 hybrid_termination_condition = propagation_setup.propagator.hybrid_termination([termination_time, termination_altitude], True)
 
 # Create numerical integrator settings
-#integrator_settings = propagation_setup.integrator.runge_kutta_4(fixed_step_size)
 integrator_settings = propagation_setup.integrator.runge_kutta_fixed_step(time_step=fixed_step_size, coefficient_set=propagation_setup.integrator.rkf_78)
-#integrator_settings = propagation_setup.integrator.bulirsch_stoer_variable_step(initial_time_step=fixed_step_size,extrapolation_sequence = propagation_setup.integrator.deufelhard_sequence, maximum_number_of_steps=7, 
-#                                                                                step_size_control_settings =propagation_setup.integrator.step_size_control_elementwise_scalar_tolerance(1.0E-10, 1.0E-10, minimum_factor_increase=0.05),
-#                                                                                step_size_validation_settings =propagation_setup.integrator.step_size_validation(0.1, 10000.0),
-#                                                                                assess_termination_on_minor_steps = False)
 integrator_used = "Runge-Kutta 78, fixed time step" # For text file
 
 # Create propagation settings
@@ -265,12 +262,10 @@ dep_vars_array = result2array(dep_vars)
 Time = (dep_vars_array[:,0] - datetime_to_tudat(date1).epoch()) / (3600 * 24) #In days
 altitude = dep_vars_array[:, 1] / 1000
 now = datetime.now()
-np.save(f"PREDICTIONS_SINGLE\Time - stepsize={fixed_step_size}", Time)
-np.save(f"PREDICTIONS_SINGLE\Altitude - stepsize={fixed_step_size}", altitude)
 EOL_estimate = Time[-1]
 EOL_date = datetime_to_python(date_time_from_epoch(EOL_estimate * (3600 * 24) + datetime_to_tudat(date1).epoch())).date()
 print(f"Final remaining lifetime estimate: {EOL_estimate} days. This estimates re-entry on {EOL_date}")
-"""
+
 plt.figure(figsize=(9, 5))
 plt.title(f"{satellite} altitude, starting from {date1.date()}.")
 plt.plot(Time, altitude)
@@ -280,13 +275,12 @@ plt.xlim([min(Time), max(Time)])
 plt.grid()
 plt.tight_layout()
 plt.savefig(f"PREDICTIONS_SINGLE\LATEST\{satellite} altitude, starting from {date1.date()}. - {now.day}-{now.month}-{now.year} {now.hour}h{now.minute}.png")
-"""
+
 endtime = time.time()
 runtime = endtime - starttime
 print(f"Ran in {runtime/60} minutes")
 
 # Create text file with all inputs and outputs
-"""
 ff = open(f"PREDICTIONS_SINGLE\LATEST\{satellite} EOL Prediction - {now.day}-{now.month}-{now.year} {now.hour}h{now.minute}", "w")
 ff.write(f"============== End-of-Life Prediction for {satellite} ==============\n")
 ff.write(f"### File creation on {datetime.now()} \n")
@@ -316,6 +310,6 @@ ff.write(f"Remaining lifetime estimate: {EOL_estimate} [days] \n")
 ff.write(f"                             {EOL_estimate/365} [years] \n")
 ff.write(f"Estimated re-entry:          {EOL_date} \n")
 ff.write(f"Runtime:                     {runtime/60} [min] \n")
-"""
+
 # Play sound to notify of code being finished running
 playsound("microwaveping.mp3")
