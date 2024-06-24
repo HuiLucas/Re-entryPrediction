@@ -87,7 +87,7 @@ def simulate(CD=1.8):
         global_frame_origin,
         global_frame_orientation)
 
-    body_settings.get("Earth").atmosphere_settings = environment_setup.atmosphere.nrlmsise00(space_weather_file ="SW-20220906_V3.txt")
+    body_settings.get("Earth").atmosphere_settings = environment_setup.atmosphere.nrlmsise00(space_weather_file ="SW-All.txt")
 
     # Create system of selected celestial bodies
     bodies = environment_setup.create_system_of_bodies(body_settings)
